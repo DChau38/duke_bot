@@ -47,3 +47,18 @@ export const handleStatusCommand=async(message:Message,tracker:Record<string,str
         }
     }
 }
+
+import { EmbedBuilder } from 'discord.js';
+
+export const handleFeaturesCommand = async (message: Message) => {
+    const embed = new EmbedBuilder()
+        .setColor('#00FF00')
+        .setTitle('communityBot Features')
+        .addFields(
+            { name: '**!status [username]**', value: 'Check the online/offline status of a user.' },
+            { name: '**Reminders**', value: 'Receive periodic reminders.' }
+        )
+        .setFooter({ text: 'Bot created by Duke :)' });
+
+    (message.channel as TextChannel).send({ embeds: [embed] });
+};
