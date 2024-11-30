@@ -1,6 +1,6 @@
 import {ChannelType, TextChannel,PresenceStatus} from 'discord.js';
 import {client, tracker, startBot, kill_week_old_entries, sendReminder} from './src/setup';
-import {handleStatusCommand,handleFeaturesCommand} from './src/functions'
+import {handleStatusCommand,handleFeaturesCommand, handleRouletteCommand, handleJoinVCCommand} from './src/functions'
 import 'dotenv/config';
 
 client.once('ready', async () => {
@@ -51,17 +51,28 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
-    // Test case
+    // !test
     if (message.content === '!test') {
         message.channel.send("TEST==TRUE");
     }
 
-    // Time tracker case
+    // !status <@xyz>
     if (message.content.startsWith('!status')) {
         handleStatusCommand(message,tracker);
     }
+    // !features
     if (message.content==='!features'){
         handleFeaturesCommand(message);
+    }
+
+    // !roulette
+    if (message.content.startsWith('!roulette')) {
+        handleRouletteCommand(message);
+    }
+
+    // !joinvc
+    if (message.content==='!joinvc'){
+        handleJoinVCCommand(message);
     }
 });
 
