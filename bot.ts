@@ -50,7 +50,13 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
     }
 });
 
+client.on('messageCreate',(message)=>{
+    if (message.author.bot) return;
 
+    if (message.content==='!test'){
+        message.channel.send("TEST");
+    }
+})
 
 // Async function for login with error handling
 async function startBot() {
