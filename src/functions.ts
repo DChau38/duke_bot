@@ -1,4 +1,4 @@
-import {Message,TextChannel} from 'discord.js';
+import {Message,TextChannel, VoiceChannel} from 'discord.js';
 
 
 export const handleStatusCommand=async(message:Message,tracker:Record<string,string>)=>{
@@ -106,8 +106,11 @@ export const handleRouletteCommand=async(message:Message)=>{
     // Announce the roulette result
     try {
         // Disconnect the chosen user from the voice channel
-        const targetChannel="Ten Courts of Hell";
-        await chosenOne.member.voice.setChannel(targetChannel);
+        const targetChannel = message.guild.channels.cache.find(channel => channel.name === "Ten Courts of Hell");
+        if (!targetChannel) {
+            return message.reply("Could not find the target voice channel 'Ten Courts of Hell'.");
+        }
+        await chosenOne.member.voice.setChannel(targetChannel as VoiceChannel);
 
         // Send a more detailed message
         const resultMessage = `🎲 Roulette Result: ${chosenOne.name} was banished from the voice channel!`;
