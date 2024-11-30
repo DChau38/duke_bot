@@ -6,25 +6,50 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers, 
+        GatewayIntentBits.GuildPresences,
     ]
 });
 
-client.once('ready', () => {
-    console.log("Bot is online!");
-   
-    // Find the first text channel in a specific server
-    const channel = client.channels.cache.find(
-        (channel): channel is TextChannel =>
-            channel.type === ChannelType.GuildText &&
-            channel.guildId === process.env.SERVER_ID
-    );
- 
-    if (channel) {
-        channel.send('(2/2) CHANNEL CONNECTION: SUCCESS');
-    } else {
-        console.log("(2/2) No channel found to send initial message");
+client.once('ready', async () => {
+    // Check if the bot can access the server (guild)
+    try {
+        const guild = await client.guilds.fetch(process.env.SERVER_ID as string);
+        console.log(`(2) SERVER CONNECTION: SUCCESS - ${guild.name} (${guild.id})`);
+
+        // Find the first text channel in the specific server
+        const channel = guild.channels.cache.find(
+            (channel): channel is TextChannel =>
+                channel.type === ChannelType.GuildText
+        );
+
+        if (channel) {
+            console.log("(3) CHANNEL CONNECTION: SUCCESS");
+            channel.send('(3) CHANNEL CONNECTION: SUCCESS');
+        } else {
+            console.log("(3) No channel found to send initial message");
+        }
+    } catch (error) {
+        console.error(`READY: ${error}`);
     }
 });
+
+
+client.on('presenceUpdate', (oldPresence, newPresence) => {
+    if (!newPresence || !newPresence.user) return;
+
+    const userId = newPresence.user.id;
+    const status = newPresence.status;
+
+    if (status === 'offline') {
+        // Get the current time in a human-readable format
+        const currentTime = new Date().toLocaleString(); // More readable format
+
+        // Log the message with a clear, human-readable output
+        console.log(`${newPresence.user.username} has gone offline at ${currentTime}.`);
+    }
+});
+
 
 
 // Async function for login with error handling
@@ -35,10 +60,9 @@ async function startBot() {
         }
         
         await client.login(process.env.BOT_TOKEN);
-        console.log(' (1/2) LOGIN: SUCCESS');
+        console.log('(1) LOGIN: SUCCESS');
     } catch (error) {
-        console.error('(1/2) LOGIN: FAIL-', error);
-        process.exit(1);
+        console.error('(1) LOGIN: FAIL-', error);
     }
 }
 
