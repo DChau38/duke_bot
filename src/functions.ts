@@ -56,12 +56,15 @@ export const handleFeaturesCommand = async (message: Message) => {
         .setTitle('communityBot Features')
         .addFields(
             { name: '**!status [username]**', value: 'Check the online/offline status of a user.' },
+            { name: '**!roulette @username**', value: 'Play roulette with another user in the same voice channel.' },
+            { name: '**!joinvc**', value: 'Make the bot join your current voice channel.' },
             { name: '**Reminders**', value: 'Receive periodic reminders.' }
         )
         .setFooter({ text: 'Bot created by Duke :)' });
 
     (message.channel as TextChannel).send({ embeds: [embed] });
 };
+
 
 
 export const handleRouletteCommand=async(message:Message)=>{
