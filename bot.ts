@@ -1,17 +1,9 @@
 import 'dotenv/config';
-import { Client, GatewayIntentBits, ChannelType, TextChannel,PresenceStatus } from 'discord.js';
+import {ChannelType, TextChannel,PresenceStatus } from 'discord.js';
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers, 
-        GatewayIntentBits.GuildPresences,
-    ]
-});
+import {client, tracker, kill_week_old_entries,startBot} from './src/setup';
 
-const tracker:{[userId:string]:string}={};
+
 
 client.once('ready', async () => {
     // Check if the bot can access the server (guild)
@@ -116,31 +108,13 @@ client.on('messageCreate', async (message) => {
 });
 
 
-// Async function for login with error handling
-async function startBot() {
-    try {
-        if (!process.env.BOT_TOKEN) {
-            throw new Error('Bot token is not defined in environment variables');
-        }
-        
-        await client.login(process.env.BOT_TOKEN);
-        console.log('(1) LOGIN: SUCCESS');
-    } catch (error) {
-        console.error('(1) LOGIN: FAIL-', error);
-    }
-}
+
 
 // Call the async function to start the bot
 startBot();
 
 // if they are offline for one week, delete thme
-setInterval(() => {
-    const oneWeek = 7 * 24 * 60 * 60 * 1000; 
-    for (const userId in tracker) {
-        const offlineTime = new Date(tracker[userId]);
-        const timeDiff = new Date().getTime() - offlineTime.getTime();
-        if (timeDiff > oneWeek) {
-            delete tracker[userId];
-        }
-    }
-}, 24 * 60 * 60 * 1000); // Run daily
+setInterval(kill_week_old_entries, 24 * 60 * 60 * 1000); 
+
+
+
