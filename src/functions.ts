@@ -104,6 +104,7 @@ export const handleFeaturesCommand = async (message: Message) => {
             { name: '**!sleepCheck [username]**', value: 'Check how long you slept. Upon waking up and logging on, you have 15m to check the time difference.' },
             { name: '**!arena @username @username2 ...**', value: 'Roll the dice against your opponents in the voice call.' },
             { name: '**!flip**', value: 'Flip the coin to get heads or tails.' },
+            { name: '**!hangman**', value: 'Play Hangman with your friends' },
             { name: '**!joinvc**', value: 'Make me join your current voice channel.' },
             { name: '**!attack @username**', value: 'Send your favorite friend a happy image'},
             { name: '**Reminders**', value: 'Receive periodic reminders.' }
@@ -346,5 +347,62 @@ export const handleCoinFlipCommand = async (message: Message) => {
     await (message.channel as TextChannel).send({
         embeds: [embed],
         files: [resultImage],
+    });
+};
+export const handleHangman = async (message: Message) => {
+    const word = 'hippy'; // Get a random word
+    let hiddenWord = '_'.repeat(word.length);  // Set the initial hidden word (e.g., '____')
+    let attempts = 0;
+    let guessedLetters: string[] = [];
+
+    // Create a variable for the channel with the correct type
+    const channel = message.channel as TextChannel;
+
+    // Send a welcome message using sendEmbed, including the number of letters to guess
+    sendEmbed(channel, 'Hangman Game Started', `The word has ${word.length} letters: ${hiddenWord}`);
+
+    // Start the message collector without filtering for a specific user
+    const filter = (response: Message) => response.content.length === 1 && /^[a-z]$/i.test(response.content); // Only accept valid letter guesses
+    const collector = channel.createMessageCollector({ filter, time: config.HANGMAN_TIME });
+
+    collector.on('collect', (response: Message) => {
+        const guess = response.content.toLowerCase(); // Get the lowercase version of the guess
+
+        // Check if the guessed letter has been guessed before
+        if (guessedLetters.includes(guess)) {
+            sendEmbed(channel, 'Duplicate Guess', `You already guessed the letter ${guess}!`);
+            return; // Skip the rest of the code if the letter has been guessed already
+        }
+
+        guessedLetters.push(guess); // Add the guess to the list of guessed letters
+        attempts++; // Increase the number of attempts made
+
+        let updatedWord = '';
+
+        // Update the hidden word with the correct guess
+        for (let i = 0; i < word.length; i++) {
+            updatedWord += word[i] === guess ? guess : hiddenWord[i];
+        }
+
+        hiddenWord = updatedWord; // Update the hidden word to show progress
+
+        // Calculate the remaining letters (number of underscores in hiddenWord)
+        const remainingLetters = hiddenWord.split('_').length - 1;
+
+        // Check if the player has guessed all the letters correctly
+        if (hiddenWord === word) {
+            sendEmbed(channel, 'Congratulations!', `You guessed the word: ${word} in ${attempts} attempts.`);
+            collector.stop(); // Stop the game if the word is guessed
+        } else {
+            // Display the current progress and how many letters are left to guess
+            sendEmbed(channel, 'Guess Progress', `There are ${remainingLetters} letters left to guess: ${hiddenWord}`);
+        }
+    });
+
+    // When the collector stops (time runs out or game is won), inform the players
+    collector.on('end', () => {
+        if (hiddenWord !== word) {
+            sendEmbed(channel, 'Game Over', `Time's up! The correct word was: ${word}`);
+        }
     });
 };

@@ -170,6 +170,9 @@ client.on('messageCreate', async (message) => {
     if (message.content.toUpperCase()===('!FLIP')){
         FUNCTIONS.handleCoinFlipCommand(message);
     }
+    if (message.content.toUpperCase()===('!HANGMAN')){
+        FUNCTIONS.handleHangman(message);
+    }
 });
 
 
