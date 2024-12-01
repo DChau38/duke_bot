@@ -45,6 +45,8 @@ client.once('ready', async () => {
     }
 });
 
+const deletion_timers=new Map<string, NodeJS.Timeout>();
+const addition_timers=new Map<string, NodeJS.Timeout>();
 client.on('presenceUpdate', (oldPresence, newPresence) => {
     if (!newPresence || !newPresence.user) {
         console.log("No presence update detected.");
@@ -65,10 +67,48 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 
     if (isOfflineStatus(status)) {
         const currentTime = new Date().toISOString();
-        tracker[username] = currentTime;
+        // if entry already exists
+        if (tracker[username]){
+            const oldTime=tracker[username];
+            const old_date=new Date(oldTime);
+            const new_date=new Date(currentTime);
+            const time_diff=new_date.getTime()-old_date.getTime();
+            // if the difference is over an hour, keep the old one. Else, keep replacing so that you have the freshest start point
+            if (time_diff>(1*60*60*1000)){
+                return;
+            }
+            else {
+                tracker[username]=currentTime;
+            }
+        }
+        else {
+            tracker[username]=currentTime;
+        }
+        // handle replacement if we deleted after we went offline
+        if (addition_timers.has(username)){
+            clearTimeout(addition_timers.get(username));
+        }
+        const timeout=setTimeout(()=>{
+            if (tracker[username])return;
+            tracker[username]=currentTime;
+            addition_timers.delete(username);
+        },15*60*1000)
+        addition_timers.set(username,timeout);
+
+
         console.log(`${newPresence.user.username} has gone offline at ${currentTime}`);
     } else if (!isOfflineStatus(status) && tracker[username]) {
-        delete tracker[username];
+        // if they have been on already, skip
+        if (deletion_timers.has(username)){
+            return;
+        }
+
+        // add the timer for them to be knocked out the first time they come online
+        const timeout=setTimeout(()=>{
+            delete tracker[username];
+            deletion_timers.delete(username);
+        }, 15*60*1000)
+        deletion_timers.set(username,timeout);
     }
 });
 
@@ -85,7 +125,7 @@ client.on('messageCreate', async (message) => {
     }
 
     // !status <@xyz> (case-insensitive)
-    if (message.content.toUpperCase().startsWith('!STATUS')) {
+    if (message.content.toUpperCase().startsWith('!SLEEPCHECK')) {
         handleStatusCommand(message, tracker);
     }
 

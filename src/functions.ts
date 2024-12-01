@@ -14,7 +14,7 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
 
     // If the username is not provided or invalid
     if (!username) {
-        return sendEmbed(message.channel as TextChannel, 'Invalid Command', 'Please provide a username or use `!status all` to see all tracked users!');
+        return sendEmbed(message.channel as TextChannel, 'Invalid Command', 'Please provide a username or use `!sleepcheck all` to see all tracked users!');
     }
     // If the user provided "all", list all tracked users
     if (username.toLowerCase() === "all") {
@@ -101,7 +101,7 @@ export const handleFeaturesCommand = async (message: Message) => {
         .setColor('#00FF00')
         .setTitle('Tang Sanzhang Features')
         .addFields(
-            { name: '**!status [username]**', value: 'Check the online/offline status of a user.' },
+            { name: '**!sleepCheck [username]**', value: 'Check how long you slept. Upon waking up and logging on, you have 15m to check the time difference.' },
             { name: '**!arena @username @username2 ...**', value: 'Roll the dice against your opponents in the voice call.' },
             { name: '**!joinvc**', value: 'Make me join your current voice channel.' },
             { name: '**!attack @username**', value: 'Send your favorite friend a happy image'},
