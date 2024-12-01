@@ -14,7 +14,10 @@ client.once('ready', async () => {
             (channel): channel is TextChannel =>
                 channel.type === ChannelType.GuildText
         );
-
+        // put itself in tracker
+        const currentTime = new Date().toISOString();
+        tracker["BOT"]=currentTime;
+        
         if (channel) {
             console.log("(3) CHANNEL CONNECTION: SUCCESS");
         } else {

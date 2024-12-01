@@ -5,6 +5,7 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
     const args = message.content.split(' ');
     const username = args[1];
     const CURRENT_TIME = new Date();
+    const botUsername="BOT";
 
     // If the user provided "all", list all tracked users
     if (username === "all") {
@@ -12,11 +13,15 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
             (message.channel as TextChannel).send("No users are currently being tracked.");
             return;
         }
-
         let allStatuses = "**Tracked Users' Offline Status:**\n";
-
+        if (botUsername in tracker) {
+            const botStartTime = new Date(tracker[botUsername]);
+            const {days, hours, minutes, seconds} = calculateTimeDifference(botStartTime, CURRENT_TIME);
+            allStatuses += `- **${botUsername}**: Started at ${botStartTime.toLocaleString()}, which was ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n`;
+        }
         // Loop through tracker and calculate offline times
         for (const [user, offlineTime] of Object.entries(tracker)) {
+            if (user === botUsername)continue;
             const OFFLINE_TIME = new Date(offlineTime);
             const {days,hours,minutes,seconds}=calculateTimeDifference(OFFLINE_TIME,CURRENT_TIME);
 
