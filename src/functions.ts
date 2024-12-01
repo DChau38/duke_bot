@@ -69,11 +69,11 @@ import { EmbedBuilder } from 'discord.js';
 export const handleFeaturesCommand = async (message: Message) => {
     const embed = new EmbedBuilder()
         .setColor('#00FF00')
-        .setTitle('communityBot Features')
+        .setTitle('Tang Sanzhang Features')
         .addFields(
             { name: '**!status [username]**', value: 'Check the online/offline status of a user.' },
-            { name: '**!roulette @username**', value: 'Play roulette with another user in the same voice channel.' },
-            { name: '**!joinvc**', value: 'Make the bot join your current voice channel.' },
+            { name: '**!arena @username @username2**', value: 'Roll the dice against your opponents in the voice call.' },
+            { name: '**!joinvc**', value: 'Make me join your current voice channel.' },
             { name: '**Reminders**', value: 'Receive periodic reminders.' }
         )
         .setFooter({ text: 'Bot created by Duke :)' });
@@ -83,7 +83,7 @@ export const handleFeaturesCommand = async (message: Message) => {
 
 
 
-export const handleRouletteCommand = async (message: Message) => {
+export const handleArenaCommand = async (message: Message) => {
     // Non-null assertion for guild (only use in a guild context)
     const guild = message.guild!;
    

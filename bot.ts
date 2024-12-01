@@ -1,6 +1,6 @@
 import {ChannelType, TextChannel,PresenceStatus} from 'discord.js';
 import {client, tracker, startBot, kill_week_old_entries, sendReminder} from './src/setup';
-import {handleStatusCommand,handleFeaturesCommand, handleRouletteCommand, handleJoinVCCommand} from './src/functions'
+import {handleStatusCommand,handleFeaturesCommand, handleArenaCommand, handleJoinVCCommand} from './src/functions'
 import 'dotenv/config';
 
 client.once('ready', async () => {
@@ -59,27 +59,28 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
-    // !test
-    if (message.content === '!test') {
+    // !test (case-insensitive)
+    if (message.content.toLowerCase() === '!test') {
         message.channel.send("TEST==TRUE");
     }
 
-    // !status <@xyz>
-    if (message.content.startsWith('!status')) {
-        handleStatusCommand(message,tracker);
+    // !status <@xyz> (case-insensitive)
+    if (message.content.toLowerCase().startsWith('!status')) {
+        handleStatusCommand(message, tracker);
     }
-    // !features
-    if (message.content==='!features'){
+
+    // !features (case-insensitive)
+    if (message.content.toLowerCase() === '!features') {
         handleFeaturesCommand(message);
     }
 
-    // !roulette
-    if (message.content.startsWith('!roulette')) {
-        handleRouletteCommand(message);
+    // !arena (case-insensitive)
+    if (message.content.toLowerCase().startsWith('!arena')) {
+        handleArenaCommand(message);
     }
 
-    // !joinvc
-    if (message.content==='!joinvc'){
+    // !joinvc (case-insensitive)
+    if (message.content.toLowerCase() === '!joinvc') {
         handleJoinVCCommand(message);
     }
 });
