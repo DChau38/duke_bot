@@ -8,45 +8,52 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
     const args = message.content.split(' ');
     const username = args[1];
     const CURRENT_TIME = new Date();
-    const botUsername="BOT";
+    const botUsername = "BOT";
 
     // If the user provided "all", list all tracked users
-    if (username === "all") {
+    if (username.toLowerCase() === "all") {
         if (Object.keys(tracker).length === 0) {
             (message.channel as TextChannel).send("No users are currently being tracked.");
             return;
         }
-        let allStatuses = "**Tracked Users' Offline Status:**\n";
+        
+        const embed = new EmbedBuilder()
+            .setColor('#00FF00')
+            .setTitle("Tracked Users' Offline Status")
+            .setDescription("Here are the statuses of all tracked users:");
+
         if (botUsername in tracker) {
             const botStartTime = new Date(tracker[botUsername]);
-            const {days, hours, minutes, seconds} = calculateTimeDifference(botStartTime, CURRENT_TIME);
-            allStatuses += `- **${botUsername}**: Started at ${botStartTime.toLocaleString()}, which was ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n`;
+            const { days, hours, minutes, seconds } = calculateTimeDifference(botStartTime, CURRENT_TIME);
+            embed.addFields({
+                name: `**${botUsername}**`,
+                value: `Started at ${botStartTime.toLocaleString()}, which was ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.`,
+            });
         }
+
         // Loop through tracker and calculate offline times
         for (const [user, offlineTime] of Object.entries(tracker)) {
-            if (user === botUsername)continue;
+            if (user === botUsername) continue;
             const OFFLINE_TIME = new Date(offlineTime);
-            const {days,hours,minutes,seconds}=calculateTimeDifference(OFFLINE_TIME,CURRENT_TIME);
-            
+            const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
+            const member = message.guild?.members.cache.get(user);
+            const nickname = member?.nickname || user; // Fallback to username if no nickname
+
             if (Math.abs(OFFLINE_TIME.getTime() - new Date(tracker[botUsername]).getTime()) <= TIME_THRESHOLD) {
-                allStatuses += `- **${user}**: (UNKNOWN) OFFLINE SINCE BOT STARTED\n`;
+                embed.addFields({
+                    name: `**${nickname}**`,
+                    value: `(UNKNOWN) OFFLINE SINCE BOT STARTED`,
+                });
             } else {
-                allStatuses += `- **${user}**: Offline for ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds.\n`;
+                embed.addFields({
+                    name: `**${nickname}**`,
+                    value: `Offline for ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`,
+                });
             }
         }
 
-        // Send the compiled list
-        const MAX_MESSAGE_LENGTH = 2000;
-        while (allStatuses.length > MAX_MESSAGE_LENGTH) {
-            const messagePart = allStatuses.substring(0, MAX_MESSAGE_LENGTH);
-            await (message.channel as TextChannel).send(messagePart);
-            allStatuses = allStatuses.substring(MAX_MESSAGE_LENGTH);
-        }
-
-        // Send any remaining part of the message
-        if (allStatuses.length > 0) {
-            (message.channel as TextChannel).send(allStatuses);
-        }
+        // Send the embed
+        (message.channel as TextChannel).send({ embeds: [embed] });
 
         return;
     }
@@ -60,9 +67,15 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
     // If the user is in the tracker (i.e., offline)
     if (username in tracker) {
         const OFFLINE_TIME = new Date(tracker[username]);
-        const {days,hours,minutes,seconds}=calculateTimeDifference(OFFLINE_TIME,CURRENT_TIME);
+        const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
 
-        (message.channel as TextChannel).send(`${username} has been offline for ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`);
+        const embed = new EmbedBuilder()
+            .setColor('#FF0000')
+            .setTitle(`${username}'s Status`)
+            .setDescription(`${username} has been offline for ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`)
+            .setThumbnail(message.guild?.members.cache.get(username)?.user.avatarURL() || '');
+
+        (message.channel as TextChannel).send({ embeds: [embed] });
     } else {
         // Check if the user is currently online (presence)
         const guild = message.guild;
