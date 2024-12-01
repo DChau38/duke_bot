@@ -1,6 +1,9 @@
 import {Message,TextChannel, ChannelType, VoiceChannel,GuildMember,User} from 'discord.js';
 import { calculateTimeDifference } from './helperFunctionts';
 
+// common variables
+const TIME_THRESHOLD = 1000;
+
 export const handleStatusCommand = async (message: Message, tracker: Record<string, string>) => {
     const args = message.content.split(' ');
     const username = args[1];
@@ -24,12 +27,27 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
             if (user === botUsername)continue;
             const OFFLINE_TIME = new Date(offlineTime);
             const {days,hours,minutes,seconds}=calculateTimeDifference(OFFLINE_TIME,CURRENT_TIME);
-
-            allStatuses += `- **${user}**: Offline for ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds.\n`;
+            
+            if (Math.abs(OFFLINE_TIME.getTime() - new Date(tracker[botUsername]).getTime()) <= TIME_THRESHOLD) {
+                allStatuses += `- **${user}**: (UNKNOWN) OFFLINE SINCE BOT STARTED\n`;
+            } else {
+                allStatuses += `- **${user}**: Offline for ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds.\n`;
+            }
         }
 
         // Send the compiled list
-        (message.channel as TextChannel).send(allStatuses);
+        const MAX_MESSAGE_LENGTH = 2000;
+        while (allStatuses.length > MAX_MESSAGE_LENGTH) {
+            const messagePart = allStatuses.substring(0, MAX_MESSAGE_LENGTH);
+            await (message.channel as TextChannel).send(messagePart);
+            allStatuses = allStatuses.substring(MAX_MESSAGE_LENGTH);
+        }
+
+        // Send any remaining part of the message
+        if (allStatuses.length > 0) {
+            (message.channel as TextChannel).send(allStatuses);
+        }
+
         return;
     }
 

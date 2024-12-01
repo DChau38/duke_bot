@@ -3,6 +3,10 @@ import {client, tracker, startBot, kill_week_old_entries, sendReminder} from './
 import {handleStatusCommand,handleFeaturesCommand, handleArenaCommand, handleJoinVCCommand} from './src/functions'
 import 'dotenv/config';
 
+// common variables
+const requiredRoles = ['nobles', 'mahjongers']; 
+
+
 client.once('ready', async () => {
     // Check if the bot can access the server (guild)
     try {
@@ -17,7 +21,22 @@ client.once('ready', async () => {
         // put itself in tracker
         const currentTime = new Date().toISOString();
         tracker["BOT"]=currentTime;
-        
+
+        // put invisible users in the tracker
+        const members = await guild.members.fetch();
+        const correctMembers = members.filter((member) =>
+            member.roles.cache.some((role) => requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
+        );
+        correctMembers.forEach((member) => {
+            // If the member does not have presence data (i.e., they're offline or not online yet)
+            if (!member.presence) {
+                // Get the current time and add the member to the tracker
+                const currentTime = new Date().toISOString();
+                tracker[member.user.username] = currentTime;
+                console.log(`${member.user.username} is offline and has been added to the tracker.`);
+            }
+        });
+
         if (channel) {
             console.log("(3) CHANNEL CONNECTION: SUCCESS");
         } else {
@@ -40,7 +59,6 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
     const isOfflineStatus = (s: string): s is 'offline' => s === 'offline';
 
     const member = newPresence.guild?.members.cache.get(newPresence.user.id);
-    const requiredRoles = ['nobles', 'mahjongers']; 
 
     if (!member || !member.roles.cache.some(role => requiredRoles.includes(role.name))) {
         // User does not have any of the required roles
