@@ -1,5 +1,7 @@
-import {Message,TextChannel, ChannelType, VoiceChannel,GuildMember,User, EmbedBuilder} from 'discord.js';
+import {Message,TextChannel, ChannelType, VoiceChannel,GuildMember,User, EmbedBuilder, AttachmentBuilder, Guild} from 'discord.js';
 import { calculateTimeDifference, sendEmbed } from './helperFunctionts';
+import {client} from './setup'
+import { requiredRoles } from './config';
 
 // common variables
 const TIME_THRESHOLD = 1000;
@@ -100,8 +102,9 @@ export const handleFeaturesCommand = async (message: Message) => {
         .setTitle('Tang Sanzhang Features')
         .addFields(
             { name: '**!status [username]**', value: 'Check the online/offline status of a user.' },
-            { name: '**!arena @username @username2**', value: 'Roll the dice against your opponents in the voice call.' },
+            { name: '**!arena @username @username2 ...**', value: 'Roll the dice against your opponents in the voice call.' },
             { name: '**!joinvc**', value: 'Make me join your current voice channel.' },
+            { name: '**!attack @username**', value: 'Send your favorite friend a happy image'},
             { name: '**Reminders**', value: 'Receive periodic reminders.' }
         )
         .setFooter({ text: 'Bot created by Duke :)' });
@@ -237,3 +240,84 @@ export const handleJoinVCCommand = async (message: Message) => {
         message.reply('There was an error while trying to join your voice channel.');
     }
 };
+
+export const handleAttackCommand=async(message:Message)=>{
+    const mentionedUser = message.mentions.users.first();
+    if (!mentionedUser) {
+        return sendEmbed(message.channel as TextChannel,'Missing User', 'Please add a user for this feature');
+    }
+
+    // make embed
+    const embed = new EmbedBuilder()
+    .setDescription('you give me c')
+    .setColor('#3498db');
+
+    // calculate chance for miss
+    const one_percent_chance=Math.floor(Math.random()*100);
+    let current_userid;
+    // if 1/101 => person in roles
+    if (one_percent_chance===1){
+        const guild = await client.guilds.fetch(process.env.SERVER_ID as string)
+        const members = await guild.members.fetch();
+        // random person from roles
+        const correctMembers = members.filter((member) =>
+            member.roles.cache.some((role) => requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
+        );
+
+        const randomMember = correctMembers.random(); // .random() gives you a random element from a collection
+        if (!randomMember) {
+            return sendEmbed(message.channel as TextChannel, 'Error', 'Failed to select a random member.');
+        }
+        embed.setAuthor({
+            name: `${randomMember.user.username}#${randomMember.user.discriminator}`,
+            iconURL: randomMember.user.displayAvatarURL(),
+        });
+        embed.addFields({
+            name: '...',
+            value: `huh? <@${randomMember.user.id}>`,
+        });
+        current_userid=randomMember.user.id;
+        
+    }
+    // if 0/101 => literally random person
+    else if (one_percent_chance===0){
+        const guild = await client.guilds.fetch(process.env.SERVER_ID as string)
+        const members = await guild.members.fetch();
+        // literally random person in server
+        const randomMember = members.random(); 
+        if (!randomMember) {
+            return sendEmbed(message.channel as TextChannel, 'Error', 'Failed to select a random member.');
+        }
+        embed.setAuthor({
+            name: `${randomMember.user.username}#${randomMember.user.discriminator}`,
+            iconURL: randomMember.user.displayAvatarURL(),
+        });
+        embed.addFields({
+            name: '...',
+            value: `huh? <@${randomMember.user.id}>`,
+        });
+        current_userid=randomMember.user.id;
+    } 
+    // regular hit
+    else {
+        embed.setAuthor({
+            name: `${mentionedUser.username}#${mentionedUser.discriminator}`,
+            iconURL: mentionedUser.displayAvatarURL(),
+        });
+        embed.addFields({
+            name: 'Bang!',
+            value: `<@${mentionedUser.id}> gets hit!`,
+        });
+        current_userid=mentionedUser.id;
+
+
+    }
+
+    //attach image + send image
+    const attachment=new AttachmentBuilder('./src/Zhu.webp');
+    embed.setImage('attachment://Zhu.webp');
+    (message.channel as TextChannel).send(`<@${current_userid}>`);
+    (message.channel as TextChannel).send({embeds:[embed],files:[attachment]});
+
+
+}

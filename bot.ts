@@ -1,10 +1,8 @@
 import {ChannelType, TextChannel,PresenceStatus} from 'discord.js';
 import {client, tracker, startBot, kill_week_old_entries, sendReminder} from './src/setup';
-import {handleStatusCommand,handleFeaturesCommand, handleArenaCommand, handleJoinVCCommand} from './src/functions'
+import {handleStatusCommand,handleFeaturesCommand, handleArenaCommand, handleJoinVCCommand, handleAttackCommand} from './src/functions'
+import {requiredRoles} from './src/config'
 import 'dotenv/config';
-
-// common variables
-const requiredRoles = ['nobles', 'mahjongers']; 
 
 
 client.once('ready', async () => {
@@ -125,6 +123,9 @@ client.on('messageCreate', async (message) => {
 
         // Send the impersonation message
         message.channel.send({ embeds: [impersonateEmbed] });
+    }
+    if (message.content.toUpperCase().startsWith('!ATTACK')){
+        handleAttackCommand(message);
     }
 });
 
