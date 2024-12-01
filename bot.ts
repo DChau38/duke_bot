@@ -81,27 +81,27 @@ client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
     // !test (case-insensitive)
-    if (message.content.toLowerCase() === '!test') {
+    if (message.content.toUpperCase() === '!TEST') {
         message.channel.send("TEST==TRUE");
     }
 
     // !status <@xyz> (case-insensitive)
-    if (message.content.toLowerCase().startsWith('!status')) {
+    if (message.content.toUpperCase().startsWith('!STATUS')) {
         handleStatusCommand(message, tracker);
     }
 
     // !features (case-insensitive)
-    if (message.content.toLowerCase() === '!features') {
+    if (message.content.toUpperCase() === '!FEATURES') {
         handleFeaturesCommand(message);
     }
 
     // !arena (case-insensitive)
-    if (message.content.toLowerCase().startsWith('!arena')) {
+    if (message.content.toUpperCase().startsWith('!ARENA')) {
         handleArenaCommand(message);
     }
 
     // !joinvc (case-insensitive)
-    if (message.content.toLowerCase() === '!joinvc') {
+    if (message.content.toUpperCase() === '!JOINVC') {
         handleJoinVCCommand(message);
     }
 });

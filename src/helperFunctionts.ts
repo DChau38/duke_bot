@@ -1,3 +1,4 @@
+import {EmbedBuilder,Channel, TextChannel} from 'discord.js';
 export const calculateTimeDifference = (startTime: Date, endTime: Date) => {
     const timeDiff = endTime.getTime() - startTime.getTime();
     
@@ -8,3 +9,17 @@ export const calculateTimeDifference = (startTime: Date, endTime: Date) => {
 
     return { days, hours, minutes, seconds };
 };
+
+export const sendEmbed = async (channel: TextChannel, title: string, description: string) => {
+    const embed = new EmbedBuilder()
+      .setColor('#FF0000')
+      .setTitle(title)
+      .setDescription(description);
+  
+    try {
+      await channel.send({ embeds: [embed] });
+    } catch (error) {
+      console.error('Error sending embed:', error);
+    }
+  };
+  

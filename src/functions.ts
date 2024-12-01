@@ -1,5 +1,5 @@
-import {Message,TextChannel, ChannelType, VoiceChannel,GuildMember,User} from 'discord.js';
-import { calculateTimeDifference } from './helperFunctionts';
+import {Message,TextChannel, ChannelType, VoiceChannel,GuildMember,User, EmbedBuilder} from 'discord.js';
+import { calculateTimeDifference, sendEmbed } from './helperFunctionts';
 
 // common variables
 const TIME_THRESHOLD = 1000;
@@ -10,11 +10,14 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
     const CURRENT_TIME = new Date();
     const botUsername = "BOT";
 
+    // If the username is not provided or invalid
+    if (!username) {
+        return sendEmbed(message.channel as TextChannel, 'Invalid Command', 'Please provide a username or use `!status all` to see all tracked users!');
+    }
     // If the user provided "all", list all tracked users
     if (username.toLowerCase() === "all") {
         if (Object.keys(tracker).length === 0) {
-            (message.channel as TextChannel).send("No users are currently being tracked.");
-            return;
+            return sendEmbed(message.channel as TextChannel, 'No Users Tracked', 'No users are currently being tracked.');        
         }
         
         const embed = new EmbedBuilder()
@@ -56,14 +59,7 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
         (message.channel as TextChannel).send({ embeds: [embed] });
 
         return;
-    }
-
-    // If the username is not provided or invalid
-    if (!username) {
-        (message.channel as TextChannel).send("Please provide a username or use `!status all` to see all tracked users!");
-        return;
-    }
-
+    } else 
     // If the user is in the tracker (i.e., offline)
     if (username in tracker) {
         const OFFLINE_TIME = new Date(tracker[username]);
@@ -80,27 +76,23 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
         // Check if the user is currently online (presence)
         const guild = message.guild;
         if (!guild) {
-            (message.channel as TextChannel).send("Could not find the server.");
-            return;
+            return sendEmbed(message.channel as TextChannel, 'Error', "Could not find the server.");
         }
 
         const member = guild.members.cache.find((member) => member.user.username === username);
 
         if (!member) {
-            (message.channel as TextChannel).send(`${username} not found in the server.`);
-            return;
+            return sendEmbed(message.channel as TextChannel, 'User Not Found', `${username} not found in the server.`);
         }
 
         const presence = member.presence;
         if (presence && presence.status !== 'offline') {
-            (message.channel as TextChannel).send(`${username} is online!`);
+            return sendEmbed(message.channel as TextChannel, 'User Status', `${username} is online!`);
         } else {
-            (message.channel as TextChannel).send(`${username} is not in the database and also not currently online.`);
-        }
+            return sendEmbed(message.channel as TextChannel, 'User Status', `${username} is not in the database and also not currently online.`);        }
     }
 };
 
-import { EmbedBuilder } from 'discord.js';
 
 export const handleFeaturesCommand = async (message: Message) => {
     const embed = new EmbedBuilder()
@@ -126,13 +118,11 @@ export const handleArenaCommand = async (message: Message) => {
     // Get all mentioned users (convert Collection to array)
     const mentionedUsers = Array.from(message.mentions.users.values());
     if (mentionedUsers.length === 0) {
-        return message.reply('Please mention at least one user to play the roulette with! Usage: !roulette @username1');
-    }
+        return sendEmbed(message.channel as TextChannel, 'No Users Mentioned', 'Please mention at least one user to play the roulette with! Usage: !roulette @username1');    }
 
     // Check if the caller is trying to include themselves
     if (mentionedUsers.some(user => user.id === message.author.id)) {
-        return message.reply('You cannot play roulette with yourself!');
-    }
+        return sendEmbed(message.channel as TextChannel, 'Self-Play Not Allowed', 'You cannot play roulette with yourself!');    }
 
     // Get GuildMember objects with proper type handling
     const senderMember = guild.members.cache.get(message.author.id);
@@ -142,16 +132,16 @@ export const handleArenaCommand = async (message: Message) => {
 
     // Validate members exist and are in voice channels
     if (!senderMember) {
-        return message.reply('Could not find the sender in the server.');
+        return sendEmbed(message.channel as TextChannel, 'Sender Not Found', 'Could not find the sender in the server.');    
     }
 
     if (defendingMembers.length === 0) {
-        return message.reply('Could not find the mentioned users in the server.');
+        return sendEmbed(message.channel as TextChannel, 'Defenders Not Found', 'Could not find the mentioned users in the server.');    
     }
 
     // Null checks for voice channels
     if (!senderMember.voice?.channel) {
-        return message.reply('You must be in a voice channel to play roulette!');
+        return sendEmbed(message.channel as TextChannel, 'Not in Voice Channel', 'You must be in a voice channel to play roulette!');
     }
 
     const senderVoiceChannelId = senderMember.voice.channel.id;
@@ -162,7 +152,7 @@ export const handleArenaCommand = async (message: Message) => {
     );
 
     if (invalidDefenders.length > 0) {
-        return message.reply('All users must be in the SAME voice channel to play roulette!');
+        return sendEmbed(message.channel as TextChannel, 'Voice Channel Mismatch', 'All users must be in the SAME voice channel to play roulette!');    
     }
 
     // Calculate total participants
@@ -178,7 +168,7 @@ export const handleArenaCommand = async (message: Message) => {
     );
     
     if (!targetChannel) {
-        return message.reply("Could not find the target voice channel 'Ten Courts of Hell'.");
+        return sendEmbed(message.channel as TextChannel, 'Channel Not Found', "Could not find the target voice channel 'Ten Courts of Hell'.");    
     }
 
     try {
@@ -194,13 +184,11 @@ export const handleArenaCommand = async (message: Message) => {
                 .map(member => member.user.username)
                 .join(' and ');
             
-            const resultMessage = `🎲 Roulette Result: ${affectedUsers} were ALL banished from the voice channel!`;
-            (message.channel as TextChannel).send(resultMessage);
+                return sendEmbed(message.channel as TextChannel, 'Roulette Result', `🎲 Roulette Result: ${affectedUsers} were ALL banished from the voice channel!`);
         } else {
             // Original caller gets kicked
             await senderMember.voice.setChannel(targetChannel as VoiceChannel);
-            const resultMessage = `🎲 Roulette Result: ${senderMember.user.username} was banished from the voice channel!`;
-            (message.channel as TextChannel).send(resultMessage);
+            return sendEmbed(message.channel as TextChannel, 'Roulette Result', `🎲 Roulette Result: ${senderMember.user.username} was banished from the voice channel!`);
         }
     } catch (error) {
         console.error('Error in roulette command:', error);
@@ -215,8 +203,7 @@ export const handleArenaCommand = async (message: Message) => {
             }
         }
        
-        (message.channel as TextChannel).send(errorMessage);
-    }
+        return sendEmbed(message.channel as TextChannel, 'Error', errorMessage);    }
 }
 
 
@@ -226,7 +213,7 @@ import { joinVoiceChannel, VoiceConnectionStatus } from '@discordjs/voice';
 export const handleJoinVCCommand = async (message: Message) => {
     // Error checking: Make sure the message is in a guild
     if (!message.guild) {
-        return message.reply('This command can only be used in a server.');
+        return sendEmbed(message.channel as TextChannel, 'Not a Guild', 'This command can only be used in a server.');    
     }
 
     // Get the member sending the command
@@ -234,7 +221,7 @@ export const handleJoinVCCommand = async (message: Message) => {
 
     // Check if the member is in a voice channel (null check for voice.channel)
     if (!member || !member.voice || !member.voice.channel) {
-        return message.reply('You must be in a voice channel for me to join!');
+        return sendEmbed(message.channel as TextChannel, 'Not in Voice Channel', 'You must be in a voice channel for me to join!');    
     }
 
     try {
@@ -243,15 +230,6 @@ export const handleJoinVCCommand = async (message: Message) => {
             channelId: member.voice.channel.id,
             guildId: message.guild.id,
             adapterCreator: message.guild.voiceAdapterCreator,
-        });
-
-        connection.on(VoiceConnectionStatus.Ready, () => {
-            // Use optional chaining to avoid errors if channel is null
-            message.reply(`I have joined the **${member.voice.channel?.name ?? 'an unknown'}** voice channel!`);
-        });
-
-        connection.on(VoiceConnectionStatus.Disconnected, () => {
-            console.log('Bot got disconnected from the voice channel');
         });
 
     } catch (error) {
