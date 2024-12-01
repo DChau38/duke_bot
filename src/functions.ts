@@ -1,9 +1,10 @@
 import {Message,TextChannel, VoiceChannel} from 'discord.js';
-
+import { calculateTimeDifference } from './helperFunctionts';
 
 export const handleStatusCommand = async (message: Message, tracker: Record<string, string>) => {
     const args = message.content.split(' ');
     const username = args[1];
+    const CURRENT_TIME = new Date();
 
     // If the user provided "all", list all tracked users
     if (username === "all") {
@@ -13,17 +14,11 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
         }
 
         let allStatuses = "**Tracked Users' Offline Status:**\n";
-        const CURRENT_TIME = new Date();
 
         // Loop through tracker and calculate offline times
         for (const [user, offlineTime] of Object.entries(tracker)) {
             const OFFLINE_TIME = new Date(offlineTime);
-            const TIME_DIFF = CURRENT_TIME.getTime() - OFFLINE_TIME.getTime();
-
-            const days = Math.floor(TIME_DIFF / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((TIME_DIFF % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((TIME_DIFF % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((TIME_DIFF % (1000 * 60)) / 1000);
+            const {days,hours,minutes,seconds}=calculateTimeDifference(OFFLINE_TIME,CURRENT_TIME);
 
             allStatuses += `- **${user}**: Offline for ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds.\n`;
         }
@@ -42,17 +37,9 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
     // If the user is in the tracker (i.e., offline)
     if (username in tracker) {
         const OFFLINE_TIME = new Date(tracker[username]);
-        const CURRENT_TIME = new Date();
-        const TIME_DIFF = CURRENT_TIME.getTime() - OFFLINE_TIME.getTime();
+        const {days,hours,minutes,seconds}=calculateTimeDifference(OFFLINE_TIME,CURRENT_TIME);
 
-        // Format and send the offline time
-        const days = Math.floor(TIME_DIFF / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((TIME_DIFF % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((TIME_DIFF % (1000 * 60)) / (1000 * 60));
-        const seconds = Math.floor((TIME_DIFF % (1000 * 60)) / 1000);
-        const milliseconds = TIME_DIFF % 1000;
-
-        (message.channel as TextChannel).send(`${username} has been offline for ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds, and ${milliseconds} milliseconds.`);
+        (message.channel as TextChannel).send(`${username} has been offline for ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`);
     } else {
         // Check if the user is currently online (presence)
         const guild = message.guild;
