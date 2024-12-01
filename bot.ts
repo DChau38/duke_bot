@@ -36,6 +36,14 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 
     const isOfflineStatus = (s: string): s is 'offline' => s === 'offline';
 
+    const member = newPresence.guild?.members.cache.get(newPresence.user.id);
+    const requiredRoles = ['nobles', 'mahjongers']; 
+
+    if (!member || !member.roles.cache.some(role => requiredRoles.includes(role.name))) {
+        // User does not have any of the required roles
+        return;
+    }
+
     if (isOfflineStatus(status)) {
         const currentTime = new Date().toISOString();
         tracker[username] = currentTime;
