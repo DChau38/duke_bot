@@ -46,13 +46,14 @@ export const sendReminder = async () => {
         const guild = client.guilds.cache.get(process.env.SERVER_ID as string);
         if (guild) {
             const channel = guild.channels.cache.find(
-                (ch) => ch.type === ChannelType.GuildText && ch.name === 'bigBrother'
+                (ch) => ch.type === ChannelType.GuildText && ch.name === 'bigbrother'
             ) as TextChannel;
 
             if (channel) {
-                await channel.send("<@yan240> Reminder to do one's racket :)");
+                const member=guild.members.cache.find((mem)=>mem.user.username==='yan240')
+                await channel.send(`<@${member?.user.id}> Reminder to do one's racket :)`);
             } else {
-                console.log("bigBrother channel not found");
+                console.log("bigbrother channel not found");
             }
         }
     } catch (error) {

@@ -92,5 +92,6 @@ startBot();
 
 // if they are offline for one week, delete thme
 setInterval(kill_week_old_entries, 24 * 60 * 60 * 1000); 
-setInterval(sendReminder, Math.floor((Math.random()*24) * 60 * 60 * 1000))
+
+setInterval(sendReminder, Math.floor((Math.random()*12)) * 60 * 60 * 1000);
 
