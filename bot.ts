@@ -1,6 +1,6 @@
 import {ChannelType, TextChannel,PresenceStatus} from 'discord.js';
 import {client, tracker, startBot, kill_week_old_entries, sendReminder} from './src/setup';
-import {handleStatusCommand,handleFeaturesCommand, handleArenaCommand, handleJoinVCCommand, handleAttackCommand} from './src/functions'
+import * as FUNCTIONS from './src/functions'
 import config from './src/config'
 import 'dotenv/config';
 
@@ -126,22 +126,22 @@ client.on('messageCreate', async (message) => {
 
     // !status <@xyz> (case-insensitive)
     if (message.content.toUpperCase().startsWith('!SLEEPCHECK')) {
-        handleStatusCommand(message, tracker);
+        FUNCTIONS.handleStatusCommand(message, tracker);
     }
 
     // !features (case-insensitive)
     if (message.content.toUpperCase() === '!FEATURES') {
-        handleFeaturesCommand(message);
+        FUNCTIONS.handleFeaturesCommand(message);
     }
 
     // !arena (case-insensitive)
     if (message.content.toUpperCase().startsWith('!ARENA')) {
-        handleArenaCommand(message);
+        FUNCTIONS.handleArenaCommand(message);
     }
 
     // !joinvc (case-insensitive)
     if (message.content.toUpperCase() === '!JOINVC') {
-        handleJoinVCCommand(message);
+        FUNCTIONS.handleJoinVCCommand(message);
     }
 
     if (message.content.toUpperCase().startsWith('!XYZ')) {
@@ -165,7 +165,10 @@ client.on('messageCreate', async (message) => {
         message.channel.send({ embeds: [impersonateEmbed] });
     }
     if (message.content.toUpperCase().startsWith('!ATTACK')){
-        handleAttackCommand(message);
+        FUNCTIONS.handleAttackCommand(message);
+    }
+    if (message.content.toUpperCase()===('!FLIP')){
+        FUNCTIONS.handleCoinFlipCommand(message);
     }
 });
 

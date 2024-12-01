@@ -1,4 +1,4 @@
-import {Message,TextChannel, ChannelType, VoiceChannel,GuildMember,User, EmbedBuilder, AttachmentBuilder, Guild} from 'discord.js';
+import {Message,Attachment, TextChannel, ChannelType, VoiceChannel,GuildMember,User, EmbedBuilder, AttachmentBuilder, Guild} from 'discord.js';
 import { calculateTimeDifference, sendEmbed } from './helperFunctionts';
 import {client} from './setup'
 import config from './config';
@@ -103,6 +103,7 @@ export const handleFeaturesCommand = async (message: Message) => {
         .addFields(
             { name: '**!sleepCheck [username]**', value: 'Check how long you slept. Upon waking up and logging on, you have 15m to check the time difference.' },
             { name: '**!arena @username @username2 ...**', value: 'Roll the dice against your opponents in the voice call.' },
+            { name: '**!flip**', value: 'Flip the coin to get heads or tails.' },
             { name: '**!joinvc**', value: 'Make me join your current voice channel.' },
             { name: '**!attack @username**', value: 'Send your favorite friend a happy image'},
             { name: '**Reminders**', value: 'Receive periodic reminders.' }
@@ -314,10 +315,36 @@ export const handleAttackCommand=async(message:Message)=>{
     }
 
     //attach image + send image
-    const attachment=new AttachmentBuilder('./src/Zhu.webp');
+    const attachment=new AttachmentBuilder('./static/Zhu.webp');
     embed.setImage('attachment://Zhu.webp');
     (message.channel as TextChannel).send(`<@${current_userid}>`);
     (message.channel as TextChannel).send({embeds:[embed],files:[attachment]});
 
 
 }
+
+export const handleCoinFlipCommand = async (message: Message) => {
+    const coinSides = ['Heads', 'Tails'];
+    const result = coinSides[Math.floor(Math.random() * coinSides.length)];
+
+    // Decide the images based on the result (Heads = Win, Tails = Lose)
+    const heads_image = new AttachmentBuilder('./static/heads.JPG');  // Local path
+    const tails_image = new AttachmentBuilder('./static/tails.JPG');  // Local path
+
+    // Select the image based on the coin flip result
+    const resultImage = result === 'Heads' ? heads_image : tails_image;
+    const imageFileName = result === 'Heads' ? 'heads.JPG' : 'tails.JPG';
+
+    // Create an embed for the result
+    const embed = new EmbedBuilder()
+        .setColor('#FFD700')  // Gold color for the coin flip
+        .setTitle('Coin Flip Result')
+        .setDescription(`The coin landed on **${result}**!`)
+        .setImage(`attachment://${imageFileName}`);  // Dynamically set the image
+
+    // Send the result to the channel
+    await (message.channel as TextChannel).send({
+        embeds: [embed],
+        files: [resultImage],
+    });
+};
