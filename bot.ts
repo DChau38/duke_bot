@@ -76,6 +76,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 
 
 
+import {EmbedBuilder} from 'discord.js';
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
@@ -103,6 +104,27 @@ client.on('messageCreate', async (message) => {
     // !joinvc (case-insensitive)
     if (message.content.toUpperCase() === '!JOINVC') {
         handleJoinVCCommand(message);
+    }
+
+    if (message.content.toUpperCase().startsWith('!XYZ')) {
+        const mentionedUser = message.mentions.users.first();
+        
+        if (!mentionedUser) {
+            return message.channel.send('Please mention a user to impersonate!');
+        }
+
+        // Create the impersonation embed
+        const impersonateEmbed = new EmbedBuilder()
+            .setAuthor({
+                name: `${mentionedUser.username}#${mentionedUser.discriminator}`,
+                iconURL: mentionedUser.displayAvatarURL()
+            })
+            .setDescription('you give me c')
+            .setColor('#3498db')  // You can choose any color you like
+            .setTimestamp();
+
+        // Send the impersonation message
+        message.channel.send({ embeds: [impersonateEmbed] });
     }
 });
 
