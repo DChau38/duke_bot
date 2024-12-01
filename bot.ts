@@ -1,7 +1,7 @@
 import {ChannelType, TextChannel,PresenceStatus} from 'discord.js';
 import {client, tracker, startBot, kill_week_old_entries, sendReminder} from './src/setup';
 import {handleStatusCommand,handleFeaturesCommand, handleArenaCommand, handleJoinVCCommand, handleAttackCommand} from './src/functions'
-import {requiredRoles} from './src/config'
+import config from './src/config'
 import 'dotenv/config';
 
 
@@ -23,7 +23,7 @@ client.once('ready', async () => {
         // put invisible users in the tracker
         const members = await guild.members.fetch();
         const correctMembers = members.filter((member) =>
-            member.roles.cache.some((role) => requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
+            member.roles.cache.some((role) => config.requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
         );
         correctMembers.forEach((member) => {
             // If the member does not have presence data (i.e., they're offline or not online yet)
@@ -60,7 +60,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 
     const member = newPresence.guild?.members.cache.get(newPresence.user.id);
 
-    if (!member || !member.roles.cache.some(role => requiredRoles.includes(role.name))) {
+    if (!member || !member.roles.cache.some(role => config.requiredRoles.includes(role.name))) {
         // User does not have any of the required roles
         return;
     }
@@ -92,7 +92,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
             if (tracker[username])return;
             tracker[username]=currentTime;
             addition_timers.delete(username);
-        },15*60*1000)
+        },config.GRACE_PERIOD)
         addition_timers.set(username,timeout);
 
 
@@ -107,7 +107,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
         const timeout=setTimeout(()=>{
             delete tracker[username];
             deletion_timers.delete(username);
-        }, 15*60*1000)
+        }, config.GRACE_PERIOD)
         deletion_timers.set(username,timeout);
     }
 });

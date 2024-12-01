@@ -1,7 +1,7 @@
 import {Message,TextChannel, ChannelType, VoiceChannel,GuildMember,User, EmbedBuilder, AttachmentBuilder, Guild} from 'discord.js';
 import { calculateTimeDifference, sendEmbed } from './helperFunctionts';
 import {client} from './setup'
-import { requiredRoles } from './config';
+import config from './config';
 
 // common variables
 const TIME_THRESHOLD = 1000;
@@ -261,7 +261,7 @@ export const handleAttackCommand=async(message:Message)=>{
         const members = await guild.members.fetch();
         // random person from roles
         const correctMembers = members.filter((member) =>
-            member.roles.cache.some((role) => requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
+            member.roles.cache.some((role) => config.requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
         );
 
         const randomMember = correctMembers.random(); // .random() gives you a random element from a collection
