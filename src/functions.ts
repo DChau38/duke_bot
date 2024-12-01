@@ -1,12 +1,41 @@
 import {Message,TextChannel, VoiceChannel} from 'discord.js';
 
 
-export const handleStatusCommand=async(message:Message,tracker:Record<string,string>)=>{
+export const handleStatusCommand = async (message: Message, tracker: Record<string, string>) => {
     const args = message.content.split(' ');
     const username = args[1];
 
+    // If the user provided "all", list all tracked users
+    if (username === "all") {
+        if (Object.keys(tracker).length === 0) {
+            (message.channel as TextChannel).send("No users are currently being tracked.");
+            return;
+        }
+
+        let allStatuses = "**Tracked Users' Offline Status:**\n";
+        const CURRENT_TIME = new Date();
+
+        // Loop through tracker and calculate offline times
+        for (const [user, offlineTime] of Object.entries(tracker)) {
+            const OFFLINE_TIME = new Date(offlineTime);
+            const TIME_DIFF = CURRENT_TIME.getTime() - OFFLINE_TIME.getTime();
+
+            const days = Math.floor(TIME_DIFF / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((TIME_DIFF % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((TIME_DIFF % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((TIME_DIFF % (1000 * 60)) / 1000);
+
+            allStatuses += `- **${user}**: Offline for ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds.\n`;
+        }
+
+        // Send the compiled list
+        (message.channel as TextChannel).send(allStatuses);
+        return;
+    }
+
+    // If the username is not provided or invalid
     if (!username) {
-        (message.channel as TextChannel).send("Please add a username!");
+        (message.channel as TextChannel).send("Please provide a username or use `!status all` to see all tracked users!");
         return;
     }
 
@@ -19,7 +48,7 @@ export const handleStatusCommand=async(message:Message,tracker:Record<string,str
         // Format and send the offline time
         const days = Math.floor(TIME_DIFF / (1000 * 60 * 60 * 24));
         const hours = Math.floor((TIME_DIFF % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((TIME_DIFF % (1000 * 60 * 60)) / (1000 * 60));
+        const minutes = Math.floor((TIME_DIFF % (1000 * 60)) / (1000 * 60));
         const seconds = Math.floor((TIME_DIFF % (1000 * 60)) / 1000);
         const milliseconds = TIME_DIFF % 1000;
 
@@ -46,7 +75,7 @@ export const handleStatusCommand=async(message:Message,tracker:Record<string,str
             (message.channel as TextChannel).send(`${username} is not in the database and also not currently online.`);
         }
     }
-}
+};
 
 import { EmbedBuilder } from 'discord.js';
 
