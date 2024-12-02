@@ -128,7 +128,7 @@ client.on('messageCreate', async (message) => {
 
         // !status <@xyz> (case-insensitive)
         else if (message.content.toUpperCase().startsWith('!SLEEPCHECK')) {
-            FUNCTIONS.handleStatusCommand(message, tracker);
+            FUNCTIONS.handleSleepCommand(message, tracker);
         }
 
         // !features (case-insensitive)

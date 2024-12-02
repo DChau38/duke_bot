@@ -6,7 +6,7 @@ import config from './config';
 // common variables
 const TIME_THRESHOLD = 1000;
 
-export const handleStatusCommand = async (message: Message, tracker: Record<string, string>) => {
+export const handleSleepCommand = async (message: Message, tracker: Record<string, string>) => {
     const args = message.content.split(' ');
     const username = args[1];
     const CURRENT_TIME = new Date();
@@ -32,7 +32,7 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
             const { days, hours, minutes, seconds } = calculateTimeDifference(botStartTime, CURRENT_TIME);
             embed.addFields({
                 name: `**${botUsername}**`,
-                value: `Started at ${botStartTime.toLocaleString()}, which was ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.`,
+                value: `Started: ${botStartTime.toLocaleString()}\nTime difference:${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.`,
             });
         }
 
@@ -52,7 +52,7 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
             } else {
                 embed.addFields({
                     name: `**${nickname}**`,
-                    value: `Offline for ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`,
+                    value: `Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference:${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`,
                 });
             }
         }
@@ -70,7 +70,7 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
         const embed = new EmbedBuilder()
             .setColor('#FF0000')
             .setTitle(`${username}'s Status`)
-            .setDescription(`${username} has been offline for ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`);
+            .setDescription(`Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference:${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`);
         const member = message.guild?.members.cache.get(username);
         const avatarURL = member?.user.avatarURL();
         if (avatarURL) {
