@@ -349,8 +349,9 @@ export const handleCoinFlipCommand = async (message: Message) => {
         files: [resultImage],
     });
 };
+import {generate} from 'random-words'
 export const handleHangman = async (message: Message) => {
-    const word = 'hippy'; // Get a random word
+    const word = generate(); // Get a random word
     let hiddenWord = '_'.repeat(word.length);  // Set the initial hidden word (e.g., '____')
     let attempts = 0;
     let guessedLetters: string[] = [];
