@@ -24,7 +24,7 @@ client.once('ready', async () => {
         // put invisible users in the tracker
         const members = await guild.members.fetch();
         const correctMembers = members.filter((member) =>
-            member.roles.cache.some((role) => config.requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
+            member.roles.cache.some((role) => config.mis.requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
         );
         correctMembers.forEach((member) => {
             // If the member does not have presence data (i.e., they're offline or not online yet)
@@ -61,7 +61,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 
     const member = newPresence.guild?.members.cache.get(newPresence.user.id);
 
-    if (!member || !member.roles.cache.some(role => config.requiredRoles.includes(role.name))) {
+    if (!member || !member.roles.cache.some(role => config.mis.requiredRoles.includes(role.name))) {
         // User does not have any of the required roles
         return;
     }
@@ -75,7 +75,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
             const new_date=new Date(currentTime);
             const time_diff=new_date.getTime()-old_date.getTime();
             // if the difference is over an hour, keep the old one. Else, keep replacing so that you have the freshest start point
-            if (time_diff>(1*60*60*1000)){
+            if (time_diff>(config.times.SLEEPCHECK_CHECK_PERIOD)){
                 return;
             }
             else {
@@ -93,7 +93,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
             if (tracker[username])return;
             tracker[username]=currentTime;
             addition_timers.delete(username);
-        },config.GRACE_PERIOD)
+        },config.times.SLEEPCHECK_CHECK_PERIOD)
         addition_timers.set(username,timeout);
 
 
@@ -108,7 +108,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
         const timeout=setTimeout(()=>{
             delete tracker[username];
             deletion_timers.delete(username);
-        }, config.GRACE_PERIOD)
+        }, config.times.SLEEPCHECK_CHECK_PERIOD)
         deletion_timers.set(username,timeout);
     }
 });
@@ -203,7 +203,7 @@ client.on('disconnect', async () => {
     console.log('Bot disconnected from Discord.');
 
     // Send a message to a specific channel about the disconnection
-    const channel = client.channels.cache.get(config.BIGBROTHER);  // Replace with your actual channel ID
+    const channel = client.channels.cache.get(config.ids.BIGBROTHER);  // Replace with your actual channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
         await sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon!");
@@ -214,7 +214,7 @@ client.on('disconnect', async () => {
 process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
 
-    const channel = client.channels.cache.get(config.BIGBROTHER); // Replace with your channel ID
+    const channel = client.channels.cache.get(config.ids.BIGBROTHER); // Replace with your channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
         sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
@@ -227,7 +227,7 @@ process.on('uncaughtException', (error) => {
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection:', reason);
 
-    const channel = client.channels.cache.get(config.BIGBROTHER); // Replace with your channel ID
+    const channel = client.channels.cache.get(config.ids.BIGBROTHER); // Replace with your channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
         sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");

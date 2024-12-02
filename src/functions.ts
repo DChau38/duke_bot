@@ -267,7 +267,7 @@ export const handleAttackCommand=async(message:Message)=>{
         const members = await guild.members.fetch();
         // random person from roles
         const correctMembers = members.filter((member) =>
-            member.roles.cache.some((role) => config.requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
+            member.roles.cache.some((role) => config.mis.requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
         );
 
         const randomMember = correctMembers.random(); // .random() gives you a random element from a collection
@@ -370,7 +370,7 @@ export const handleHangman = async (message: Message) => {
 
     // Start the message collector without filtering for a specific user
     const filter = (response: Message) => response.content.length === 1 && /^[a-z]$/i.test(response.content); // Only accept valid letter guesses
-    const collector = channel.createMessageCollector({ filter, time: config.HANGMAN_TIME });
+    const collector = channel.createMessageCollector({ filter, time: config.times.GAME_HANGMAN_GAMETIME });
 
     collector.on('collect', (response: Message) => {
         const guess = response.content.toLowerCase(); // Get the lowercase version of the guess
