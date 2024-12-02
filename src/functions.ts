@@ -70,8 +70,12 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
         const embed = new EmbedBuilder()
             .setColor('#FF0000')
             .setTitle(`${username}'s Status`)
-            .setDescription(`${username} has been offline for ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`)
-            .setThumbnail(message.guild?.members.cache.get(username)?.user.avatarURL() || '');
+            .setDescription(`${username} has been offline for ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`);
+        const member = message.guild?.members.cache.get(username);
+        const avatarURL = member?.user.avatarURL();
+        if (avatarURL) {
+            embed.setThumbnail(avatarURL);
+        }
 
         (message.channel as TextChannel).send({ embeds: [embed] });
     } else {
@@ -256,7 +260,7 @@ export const handleAttackCommand=async(message:Message)=>{
 
     // calculate chance for miss
     const one_percent_chance=Math.floor(Math.random()*100);
-    let current_userid;
+    let current_userid:string;
     // if 1/101 => person in roles
     if (one_percent_chance===1){
         const guild = await client.guilds.fetch(process.env.SERVER_ID as string)
