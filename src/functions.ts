@@ -394,7 +394,7 @@ export const handleHangman = async (message: Message) => {
 
         // CHECK: already guessed
         if (guessedLetters.includes(guess)) {
-            sendEmbed(channel, null, 'Duplicate Guess', `You already guessed the letter "${guess}".\nHere are the letters you've guessed so far: \n\`${guessedLetters.join(', ')}\``);
+            sendEmbed(channel, null, 'Duplicate Guess', `You already guessed the letter "${guess}".\nHere are the letters you've guessed so far: \n\`${guessedLetters.join(', ')}\`\nYou have ${tries} attempts remaining`);
             return; // Skip the rest of the code if the letter has been guessed already
         }
 
@@ -444,7 +444,7 @@ export const handleHangman = async (message: Message) => {
         } else {
             // CONTINUE
             const spacedHiddenWord = '`' + hiddenWord.split('').join(' ') + '`'; // Format hidden word with spaces and wrap in backticks
-            embedDescription += `\n\nThere are ${remainingLetters} letters left to guess: \n${spacedHiddenWord}`;
+            embedDescription += `\n\nThere are ${remainingLetters} letters left to guess: \n${spacedHiddenWord}\nYou have ${tries} attempts remaining`;
             const invertedTries=6-tries;
             embedImage = `./static/hangman_${invertedTries}.JPG`;
         }
