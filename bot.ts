@@ -1,7 +1,7 @@
 import {ChannelType, TextChannel,PresenceStatus} from 'discord.js';
-import {client, tracker, startBot, kill_week_old_entries, sendReminder} from './src/setup';
-import * as FUNCTIONS from './src/functions'
-import { sendEmbed } from './src/helperFunctionts';
+import {client, tracker, startBot} from './src/setup';
+import * as FUNCTIONS from './src/features'
+import * as HELPERFUNCTIONS from './src/helperFunctionts';
 import config from './src/config'
 import 'dotenv/config';
 
@@ -190,12 +190,12 @@ client.on('messageCreate', async (message) => {
 
         // unknown input
         else if (message.content.startsWith('!')) {
-            sendEmbed((message.channel as TextChannel), null, "??", `Unknown input: ${message.content}`);
+            HELPERFUNCTIONS.sendEmbed((message.channel as TextChannel), null, "??", `Unknown input: ${message.content}`);
         }
     } catch (error) {
         console.error('An error occurred:', error);
         (message.channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        sendEmbed(message.channel as TextChannel, './static/dead_discord.GIF', "You fucked me", "Uhhhh I got to go. I'll be back soon!");
+        HELPERFUNCTIONS.sendEmbed(message.channel as TextChannel, './static/dead_discord.GIF', "You fucked me", "Uhhhh I got to go. I'll be back soon!");
     }
 });
 // network issue
@@ -206,7 +206,7 @@ client.on('disconnect', async () => {
     const channel = client.channels.cache.get(config.ids.BIGBROTHER);  // Replace with your actual channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        await sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon!");
+        await HELPERFUNCTIONS.sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon!");
     }
 });
 
@@ -217,7 +217,7 @@ process.on('uncaughtException', (error) => {
     const channel = client.channels.cache.get(config.ids.BIGBROTHER); // Replace with your channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
+        HELPERFUNCTIONS.sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
     }
 
     process.exit(1);  // Optional: terminate the bot after handling the error
@@ -230,7 +230,7 @@ process.on('unhandledRejection', (reason, promise) => {
     const channel = client.channels.cache.get(config.ids.BIGBROTHER); // Replace with your channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
+        HELPERFUNCTIONS.sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
     }
 
     process.exit(1);  // Optional: terminate the bot after handling the rejection
@@ -241,7 +241,7 @@ process.on('unhandledRejection', (reason, promise) => {
 startBot();
 
 // if they are offline for one week, delete thme
-setInterval(kill_week_old_entries, 24 * 60 * 60 * 1000); 
+setInterval(HELPERFUNCTIONS.kill_week_old_entries, 24 * 60 * 60 * 1000); 
 
-setInterval(sendReminder, Math.floor((Math.random()*12)) * 60 * 60 * 1000);
+setInterval(HELPERFUNCTIONS.sendReminder, Math.floor((Math.random()*12)) * 60 * 60 * 1000);
 
