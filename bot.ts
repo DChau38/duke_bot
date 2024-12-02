@@ -213,11 +213,16 @@ client.on('interactionCreate',async(interaction)=>{
     const {commandName}=interaction;
     const commandInteraction=(interaction as CommandInteraction);
 
+    if (commandName==='test'){
+        await commandInteraction.reply('TEST===TRUE');
+    }
     // /flip
     if (commandName==='coinflip'){
-        FUNCTIONS_BOT.handleCoinFlipCommand(commandInteraction);
+        await FUNCTIONS_BOT.handleCoinFlipCommand(commandInteraction);
     }
-})
+
+});
+
 // network issue
 client.on('disconnect', async () => {
     console.log('Bot disconnected from Discord.');

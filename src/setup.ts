@@ -4,8 +4,12 @@ import 'dotenv/config';
 
 const commands = [
     {
+        name:'test',
+        description:'test if API is working',
+    },
+    {
         name:'coinflip',
-        description: 'Flip a coin'
+        description: 'Flip a coin',
     },
   ];
   
@@ -34,7 +38,7 @@ export async function startBot() {
         await client.login(process.env.DISCORD_BOT_TOKEN);
         console.log('(1) LOGIN: SUCCESS');
 
-        //await registerSlashCommands();
+        await registerSlashCommands();
     } catch (error) {
         console.error('(1) LOGIN: FAIL-', error);
     }
