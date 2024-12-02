@@ -358,13 +358,15 @@ export const handleHangman = async (message: Message) => {
     const word = generate(); // Get a random word
     let hiddenWord = '_'.repeat(word.length);  // Set the initial hidden word (e.g., '____')
     let attempts = 0;
+    let tries = 5;
     let guessedLetters: string[] = [];
 
     // Create a variable for the channel with the correct type
     const channel = message.channel as TextChannel;
 
     // Send a welcome message using sendEmbed, including the number of letters to guess
-    sendEmbed(channel, null,'Hangman Game Started', `The word has ${word.length} letters: ${hiddenWord}`);
+    const spacedHiddenWord = '`' + hiddenWord.split('').join(' ') + '`'; // Wrap the spaced hidden word in backticks
+    sendEmbed(channel, null, 'Hangman Game Started', `The word has ${word.length} letters: ${spacedHiddenWord}`);
 
     // Start the message collector without filtering for a specific user
     const filter = (response: Message) => response.content.length === 1 && /^[a-z]$/i.test(response.content); // Only accept valid letter guesses
@@ -375,7 +377,7 @@ export const handleHangman = async (message: Message) => {
 
         // CHECK: already guessed
         if (guessedLetters.includes(guess)) {
-            sendEmbed(channel,null,'Duplicate Guess', `You already guessed the letter ${guess}!`);
+            sendEmbed(channel, null, 'Duplicate Guess', `You already guessed the letter "${guess}".\nHere are the letters you've guessed so far: \n\`${guessedLetters.join(', ')}\``);
             return; // Skip the rest of the code if the letter has been guessed already
         }
 
@@ -394,24 +396,52 @@ export const handleHangman = async (message: Message) => {
         // Calculate the remaining letters (number of underscores in hiddenWord)
         const remainingLetters = hiddenWord.split('_').length - 1;
 
-        // CHECK: DEAD 
-        if (attempts===5){
-            sendEmbed(channel,'./static/hangman_dead.JPG', 'GG', 'Poor wife and kids ...');
-        } else
-        // Check if the player has guessed all the letters correctly
-        if (hiddenWord === word) {
-            sendEmbed(channel,'./static/hangman_alive.JPG', 'Congratulations!', `You guessed the word: ${word} in ${attempts} attempts.`);
+        let embedTitle = '';
+        let embedDescription = '';
+        let embedImage = '';
+
+        // If the guess is incorrect, subtract from tries and inform the user
+        if (!word.includes(guess)) {
+            tries--;
+            embedTitle = 'Incorrect Guess';
+            embedDescription = `You guessed the letter "${guess}" wrong!\nHere are the letters you've guessed so far: \n\`${guessedLetters.join(', ')}\``;
+        } else {
+            // If the guess is correct, inform the user
+            embedTitle = 'Correct Guess';
+            embedDescription = `Good job! You guessed the letter "${guess}" correctly!\nHere are the letters you've guessed so far: \n\`${guessedLetters.join(', ')}\``;
+        }
+
+        // CHECK: NO TRIES LEFT
+        if (tries === 0) {
+            embedTitle = 'Game Over';
+            embedDescription = `Poor wife and kids... You're out of guesses! The correct word was: \n${word}`;
+            embedImage = './static/hangman_dead.JPG';
+            collector.stop();
+        }
+        // CHECK: IF SUCCESS
+        else if (hiddenWord === word) {
+            embedTitle = 'Congratulations!';
+            embedDescription = `You guessed the word: ${word} in ${attempts} attempts! Well Done!`;
+            embedImage = './static/hangman_alive.JPG';
             collector.stop(); // Stop the game if the word is guessed
         } else {
-            // Display the current progress and how many letters are left to guess
-            sendEmbed(channel,`./static/hangman_${attempts}.JPG`, 'Guess Progress', `There are ${remainingLetters} letters left to guess: ${hiddenWord}`);
+            // CONTINUE
+            const spacedHiddenWord = '`' + hiddenWord.split('').join(' ') + '`'; // Format hidden word with spaces and wrap in backticks
+            embedDescription += `\n\nThere are ${remainingLetters} letters left to guess: \n${spacedHiddenWord}`;
+            const invertedTries=6-tries;
+            embedImage = `./static/hangman_${invertedTries}.JPG`;
         }
+
+        // Send the embed with updated information
+        sendEmbed(channel, embedImage, embedTitle, embedDescription);
     });
 
     // When the collector stops (time runs out or game is won), inform the players
     collector.on('end', () => {
-        if (hiddenWord !== word) {
-            sendEmbed(channel, './static/hangman_dead.JPG','Game Over', `Time's up! The correct word was: ${word}`);
+        if (hiddenWord !== word && tries === 0) {
+            sendEmbed(channel, './static/hangman_dead.JPG', 'Game Over', `You're out of guesses! The correct word was: ${word}`);
+        } else if (hiddenWord !== word && tries > 0) {
+            sendEmbed(channel, './static/hangman_dead.JPG', 'Game Over', `Time's up! The correct word was: ${word}`);
         }
     });
 };
