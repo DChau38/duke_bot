@@ -4,32 +4,8 @@ import 'dotenv/config';
 
 const commands = [
     {
-      name: 'arena',
-      description: 'Play roulette with mentioned users in a voice channel.',
-    },
-    {
-        name: 'hangman',
-        description: 'Play Hangman with your friends'
-    },
-    {
         name:'coinflip',
         description: 'Flip a coin'
-    },
-    {
-      name: 'joinvc',
-      description: 'Make the bot join your current voice channel.',
-    },
-    {
-      name: 'attack',
-      description: 'Send a happy attack image to the mentioned user.',
-      options:[
-        {
-            type:6, // 6 is a user
-            name:'target',
-            description:'The user to be attacked',
-            required:true,
-        }
-      ],
     },
   ];
   
