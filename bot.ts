@@ -194,6 +194,7 @@ client.on('messageCreate', async (message) => {
         }
     } catch (error) {
         console.error('An error occurred:', error);
+        (message.channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
         sendEmbed(message.channel as TextChannel, './static/dead_discord.GIF', "You fucked me", "Uhhhh I got to go. I'll be back soon!");
     }
 });
@@ -204,6 +205,7 @@ client.on('disconnect', async () => {
     // Send a message to a specific channel about the disconnection
     const channel = client.channels.cache.get(config.BIGBROTHER);  // Replace with your actual channel ID
     if (channel) {
+        (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
         await sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon!");
     }
 });
@@ -214,6 +216,7 @@ process.on('uncaughtException', (error) => {
 
     const channel = client.channels.cache.get(config.BIGBROTHER); // Replace with your channel ID
     if (channel) {
+        (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
         sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
     }
 
@@ -226,6 +229,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
     const channel = client.channels.cache.get(config.BIGBROTHER); // Replace with your channel ID
     if (channel) {
+        (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
         sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
     }
 
