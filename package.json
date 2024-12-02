@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "S": "tsx bot.ts",
-    "S2": "nohup tsx bot.ts > bot.log 2>1& &",
+    "start": "tsx bot.ts",
+    "start_p" : "nohup tsx bot.ts>bot.log 2>bot.err &",
+    "old": "nohup tsx bot.ts > bot.log 2>1& &",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -118,69 +118,119 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 import {EmbedBuilder} from 'discord.js';
 
 client.on('messageCreate', async (message) => {
-    if (message.author.bot) return;
+    try {
+        if (message.author.bot) return;
 
-    // !test (case-insensitive)
-    if (message.content.toUpperCase() === '!TEST') {
-        message.channel.send("TEST==TRUE");
-    }
-
-    // !status <@xyz> (case-insensitive)
-    else if (message.content.toUpperCase().startsWith('!SLEEPCHECK')) {
-        FUNCTIONS.handleStatusCommand(message, tracker);
-    }
-
-    // !features (case-insensitive)
-    else if (message.content.toUpperCase() === '!FEATURES') {
-        FUNCTIONS.handleFeaturesCommand(message);
-    }
-
-    // !arena (case-insensitive)
-    else if (message.content.toUpperCase().startsWith('!ARENA')) {
-        FUNCTIONS.handleArenaCommand(message);
-    }
-
-    // !joinvc (case-insensitive)
-    else if (message.content.toUpperCase() === '!JOINVC') {
-        FUNCTIONS.handleJoinVCCommand(message);
-    }
-
-    else if (message.content.toUpperCase().startsWith('!XYZ')) {
-        const mentionedUser = message.mentions.users.first();
-        
-        if (!mentionedUser) {
-            return message.channel.send('Please mention a user to impersonate!');
+        // !test (case-insensitive)
+        if (message.content.toUpperCase() === '!TEST') {
+            message.channel.send("TEST==TRUE");
         }
 
-        // Create the impersonation embed
-        const impersonateEmbed = new EmbedBuilder()
-            .setAuthor({
-                name: `${mentionedUser.username}#${mentionedUser.discriminator}`,
-                iconURL: mentionedUser.displayAvatarURL()
-            })
-            .setDescription('you give me c')
-            .setColor('#3498db')  // You can choose any color you like
-            .setTimestamp();
+        // !status <@xyz> (case-insensitive)
+        else if (message.content.toUpperCase().startsWith('!SLEEPCHECK')) {
+            FUNCTIONS.handleStatusCommand(message, tracker);
+        }
 
-        // Send the impersonation message
-        message.channel.send({ embeds: [impersonateEmbed] });
+        // !features (case-insensitive)
+        else if (message.content.toUpperCase() === '!FEATURES') {
+            FUNCTIONS.handleFeaturesCommand(message);
+        }
+
+        // !arena (case-insensitive)
+        else if (message.content.toUpperCase().startsWith('!ARENA')) {
+            FUNCTIONS.handleArenaCommand(message);
+        }
+
+        // !joinvc (case-insensitive)
+        else if (message.content.toUpperCase() === '!JOINVC') {
+            FUNCTIONS.handleJoinVCCommand(message);
+        }
+
+        // !xyz (case-insensitive) with mention
+        else if (message.content.toUpperCase().startsWith('!XYZ')) {
+            const mentionedUser = message.mentions.users.first();
+            
+            if (!mentionedUser) {
+                return message.channel.send('Please mention a user to impersonate!');
+            }
+
+            // Create the impersonation embed
+            const impersonateEmbed = new EmbedBuilder()
+                .setAuthor({
+                    name: `${mentionedUser.username}#${mentionedUser.discriminator}`,
+                    iconURL: mentionedUser.displayAvatarURL()
+                })
+                .setDescription('you give me c')
+                .setColor('#3498db')  // You can choose any color you like
+                .setTimestamp();
+
+            // Send the impersonation message
+            message.channel.send({ embeds: [impersonateEmbed] });
+        }
+
+        // !attack (case-insensitive)
+        else if (message.content.toUpperCase().startsWith('!ATTACK')) {
+            FUNCTIONS.handleAttackCommand(message);
+        }
+
+        // !flip (case-insensitive)
+        else if (message.content.toUpperCase() === '!FLIP') {
+            FUNCTIONS.handleCoinFlipCommand(message);
+        }
+
+        // !hangman (case-insensitive)
+        else if (message.content.toUpperCase() === '!HANGMAN') {
+            FUNCTIONS.handleHangman(message);
+        } 
+
+        // Simulate an error with !error
+        else if (message.content.toUpperCase().startsWith('!ERROR')) {
+            throw new Error("Simulated error");
+        }
+
+        // unknown input
+        else if (message.content.startsWith('!')) {
+            sendEmbed((message.channel as TextChannel), null, "??", `Unknown input: ${message.content}`);
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        sendEmbed(message.channel as TextChannel, './static/dead_discord.GIF', "You fucked me", "Uhhhh I got to go. I'll be back soon!");
     }
-    else if (message.content.toUpperCase().startsWith('!ATTACK')){
-        FUNCTIONS.handleAttackCommand(message);
-    }
-    else if (message.content.toUpperCase()===('!FLIP')){
-        FUNCTIONS.handleCoinFlipCommand(message);
-    }
-    else if (message.content.toUpperCase()===('!HANGMAN')){
-        FUNCTIONS.handleHangman(message);
-    } 
-    // unknown input
-    else if (message.content.startsWith('!')){
-        sendEmbed((message.channel as TextChannel),null,"??",`Unknown input: ${message.content}`)
+});
+// network issue
+client.on('disconnect', async () => {
+    console.log('Bot disconnected from Discord.');
+
+    // Send a message to a specific channel about the disconnection
+    const channel = client.channels.cache.get(config.BIGBROTHER);  // Replace with your actual channel ID
+    if (channel) {
+        await sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon!");
     }
 });
 
+// Global error handling for uncaught exceptions
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
 
+    const channel = client.channels.cache.get(config.BIGBROTHER); // Replace with your channel ID
+    if (channel) {
+        sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
+    }
+
+    process.exit(1);  // Optional: terminate the bot after handling the error
+});
+
+// Global error handling for unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection:', reason);
+
+    const channel = client.channels.cache.get(config.BIGBROTHER); // Replace with your channel ID
+    if (channel) {
+        sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
+    }
+
+    process.exit(1);  // Optional: terminate the bot after handling the rejection
+});
 
 
 // Call the async function to start the bot
