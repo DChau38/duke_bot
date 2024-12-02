@@ -369,7 +369,7 @@ export const handleHangman = async (message: Message) => {
     collector.on('collect', (response: Message) => {
         const guess = response.content.toLowerCase(); // Get the lowercase version of the guess
 
-        // Check if the guessed letter has been guessed before
+        // CHECK: already guessed
         if (guessedLetters.includes(guess)) {
             sendEmbed(channel,null,'Duplicate Guess', `You already guessed the letter ${guess}!`);
             return; // Skip the rest of the code if the letter has been guessed already
@@ -390,20 +390,24 @@ export const handleHangman = async (message: Message) => {
         // Calculate the remaining letters (number of underscores in hiddenWord)
         const remainingLetters = hiddenWord.split('_').length - 1;
 
+        // CHECK: DEAD 
+        if (attempts===5){
+            sendEmbed(channel,'./static/hangman_dead.JPG', 'GG', 'Poor wife and kids ...');
+        } else
         // Check if the player has guessed all the letters correctly
         if (hiddenWord === word) {
-            sendEmbed(channel,null, 'Congratulations!', `You guessed the word: ${word} in ${attempts} attempts.`);
+            sendEmbed(channel,'./static/hangman_alive.JPG', 'Congratulations!', `You guessed the word: ${word} in ${attempts} attempts.`);
             collector.stop(); // Stop the game if the word is guessed
         } else {
             // Display the current progress and how many letters are left to guess
-            sendEmbed(channel,null, 'Guess Progress', `There are ${remainingLetters} letters left to guess: ${hiddenWord}`);
+            sendEmbed(channel,`./static/hangman_${attempts}.JPG`, 'Guess Progress', `There are ${remainingLetters} letters left to guess: ${hiddenWord}`);
         }
     });
 
     // When the collector stops (time runs out or game is won), inform the players
     collector.on('end', () => {
         if (hiddenWord !== word) {
-            sendEmbed(channel, null,'Game Over', `Time's up! The correct word was: ${word}`);
+            sendEmbed(channel, './static/hangman_dead.JPG','Game Over', `Time's up! The correct word was: ${word}`);
         }
     });
 };
