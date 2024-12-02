@@ -1,6 +1,7 @@
 import {ChannelType, TextChannel,PresenceStatus} from 'discord.js';
 import {client, tracker, startBot, kill_week_old_entries, sendReminder} from './src/setup';
 import * as FUNCTIONS from './src/functions'
+import { sendEmbed } from './src/helperFunctionts';
 import config from './src/config'
 import 'dotenv/config';
 
@@ -125,26 +126,26 @@ client.on('messageCreate', async (message) => {
     }
 
     // !status <@xyz> (case-insensitive)
-    if (message.content.toUpperCase().startsWith('!SLEEPCHECK')) {
+    else if (message.content.toUpperCase().startsWith('!SLEEPCHECK')) {
         FUNCTIONS.handleStatusCommand(message, tracker);
     }
 
     // !features (case-insensitive)
-    if (message.content.toUpperCase() === '!FEATURES') {
+    else if (message.content.toUpperCase() === '!FEATURES') {
         FUNCTIONS.handleFeaturesCommand(message);
     }
 
     // !arena (case-insensitive)
-    if (message.content.toUpperCase().startsWith('!ARENA')) {
+    else if (message.content.toUpperCase().startsWith('!ARENA')) {
         FUNCTIONS.handleArenaCommand(message);
     }
 
     // !joinvc (case-insensitive)
-    if (message.content.toUpperCase() === '!JOINVC') {
+    else if (message.content.toUpperCase() === '!JOINVC') {
         FUNCTIONS.handleJoinVCCommand(message);
     }
 
-    if (message.content.toUpperCase().startsWith('!XYZ')) {
+    else if (message.content.toUpperCase().startsWith('!XYZ')) {
         const mentionedUser = message.mentions.users.first();
         
         if (!mentionedUser) {
@@ -164,14 +165,18 @@ client.on('messageCreate', async (message) => {
         // Send the impersonation message
         message.channel.send({ embeds: [impersonateEmbed] });
     }
-    if (message.content.toUpperCase().startsWith('!ATTACK')){
+    else if (message.content.toUpperCase().startsWith('!ATTACK')){
         FUNCTIONS.handleAttackCommand(message);
     }
-    if (message.content.toUpperCase()===('!FLIP')){
+    else if (message.content.toUpperCase()===('!FLIP')){
         FUNCTIONS.handleCoinFlipCommand(message);
     }
-    if (message.content.toUpperCase()===('!HANGMAN')){
+    else if (message.content.toUpperCase()===('!HANGMAN')){
         FUNCTIONS.handleHangman(message);
+    } 
+    // unknown input
+    else if (message.content.startsWith('! ')){
+        sendEmbed((message.channel as TextChannel),"??",`Unknown input: ${message.content}`)
     }
 });
 
