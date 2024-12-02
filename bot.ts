@@ -175,8 +175,8 @@ client.on('messageCreate', async (message) => {
         FUNCTIONS.handleHangman(message);
     } 
     // unknown input
-    else if (message.content.startsWith('! ')){
-        sendEmbed((message.channel as TextChannel),"??",`Unknown input: ${message.content}`)
+    else if (message.content.startsWith('!')){
+        sendEmbed((message.channel as TextChannel),null,"??",`Unknown input: ${message.content}`)
     }
 });
 

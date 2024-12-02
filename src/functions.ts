@@ -14,12 +14,12 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
 
     // If the username is not provided or invalid
     if (!username) {
-        return sendEmbed(message.channel as TextChannel, 'Invalid Command', 'Please provide a username or use `!sleepcheck all` to see all tracked users!');
+        return sendEmbed(message.channel as TextChannel, null,'Invalid Command', 'Please provide a username or use `!sleepcheck all` to see all tracked users!');
     }
     // If the user provided "all", list all tracked users
     if (username.toLowerCase() === "all") {
         if (Object.keys(tracker).length === 0) {
-            return sendEmbed(message.channel as TextChannel, 'No Users Tracked', 'No users are currently being tracked.');        
+            return sendEmbed(message.channel as TextChannel, null,'No Users Tracked', 'No users are currently being tracked.');        
         }
         
         const embed = new EmbedBuilder()
@@ -78,20 +78,20 @@ export const handleStatusCommand = async (message: Message, tracker: Record<stri
         // Check if the user is currently online (presence)
         const guild = message.guild;
         if (!guild) {
-            return sendEmbed(message.channel as TextChannel, 'Error', "Could not find the server.");
+            return sendEmbed(message.channel as TextChannel, null,'Error', "Could not find the server.");
         }
 
         const member = guild.members.cache.find((member) => member.user.username === username);
 
         if (!member) {
-            return sendEmbed(message.channel as TextChannel, 'User Not Found', `${username} not found in the server.`);
+            return sendEmbed(message.channel as TextChannel,null, 'User Not Found', `${username} not found in the server.`);
         }
 
         const presence = member.presence;
         if (presence && presence.status !== 'offline') {
-            return sendEmbed(message.channel as TextChannel, 'User Status', `${username} is online!`);
+            return sendEmbed(message.channel as TextChannel,null,'User Status', `${username} is online!`);
         } else {
-            return sendEmbed(message.channel as TextChannel, 'User Status', `${username} is not in the database and also not currently online.`);        }
+            return sendEmbed(message.channel as TextChannel, null,'User Status', `${username} is not in the database and also not currently online.`);        }
     }
 };
 
@@ -123,11 +123,11 @@ export const handleArenaCommand = async (message: Message) => {
     // Get all mentioned users (convert Collection to array)
     const mentionedUsers = Array.from(message.mentions.users.values());
     if (mentionedUsers.length === 0) {
-        return sendEmbed(message.channel as TextChannel, 'No Users Mentioned', 'Please mention at least one user to play the roulette with! Usage: !roulette @username1');    }
+        return sendEmbed(message.channel as TextChannel, null,'No Users Mentioned', 'Please mention at least one user to play the roulette with! Usage: !roulette @username1');    }
 
     // Check if the caller is trying to include themselves
     if (mentionedUsers.some(user => user.id === message.author.id)) {
-        return sendEmbed(message.channel as TextChannel, 'Self-Play Not Allowed', 'You cannot play roulette with yourself!');    }
+        return sendEmbed(message.channel as TextChannel, null,'Self-Play Not Allowed', 'You cannot play roulette with yourself!');    }
 
     // Get GuildMember objects with proper type handling
     const senderMember = guild.members.cache.get(message.author.id);
@@ -137,16 +137,16 @@ export const handleArenaCommand = async (message: Message) => {
 
     // Validate members exist and are in voice channels
     if (!senderMember) {
-        return sendEmbed(message.channel as TextChannel, 'Sender Not Found', 'Could not find the sender in the server.');    
+        return sendEmbed(message.channel as TextChannel, null,'Sender Not Found', 'Could not find the sender in the server.');    
     }
 
     if (defendingMembers.length === 0) {
-        return sendEmbed(message.channel as TextChannel, 'Defenders Not Found', 'Could not find the mentioned users in the server.');    
+        return sendEmbed(message.channel as TextChannel,null, 'Defenders Not Found', 'Could not find the mentioned users in the server.');    
     }
 
     // Null checks for voice channels
     if (!senderMember.voice?.channel) {
-        return sendEmbed(message.channel as TextChannel, 'Not in Voice Channel', 'You must be in a voice channel to play roulette!');
+        return sendEmbed(message.channel as TextChannel,null, 'Not in Voice Channel', 'You must be in a voice channel to play roulette!');
     }
 
     const senderVoiceChannelId = senderMember.voice.channel.id;
@@ -157,7 +157,7 @@ export const handleArenaCommand = async (message: Message) => {
     );
 
     if (invalidDefenders.length > 0) {
-        return sendEmbed(message.channel as TextChannel, 'Voice Channel Mismatch', 'All users must be in the SAME voice channel to play roulette!');    
+        return sendEmbed(message.channel as TextChannel,null,'Voice Channel Mismatch', 'All users must be in the SAME voice channel to play roulette!');    
     }
 
     // Calculate total participants
@@ -173,7 +173,7 @@ export const handleArenaCommand = async (message: Message) => {
     );
     
     if (!targetChannel) {
-        return sendEmbed(message.channel as TextChannel, 'Channel Not Found', "Could not find the target voice channel 'Ten Courts of Hell'.");    
+        return sendEmbed(message.channel as TextChannel,null,'Channel Not Found', "Could not find the target voice channel 'Ten Courts of Hell'.");    
     }
 
     try {
@@ -189,11 +189,11 @@ export const handleArenaCommand = async (message: Message) => {
                 .map(member => member.user.username)
                 .join(' and ');
             
-                return sendEmbed(message.channel as TextChannel, 'Roulette Result', `🎲 Roulette Result: ${affectedUsers} were ALL banished from the voice channel!`);
+                return sendEmbed(message.channel as TextChannel, null,'Roulette Result', `🎲 Roulette Result: ${affectedUsers} were ALL banished from the voice channel!`);
         } else {
             // Original caller gets kicked
             await senderMember.voice.setChannel(targetChannel as VoiceChannel);
-            return sendEmbed(message.channel as TextChannel, 'Roulette Result', `🎲 Roulette Result: ${senderMember.user.username} was banished from the voice channel!`);
+            return sendEmbed(message.channel as TextChannel, null,'Roulette Result', `🎲 Roulette Result: ${senderMember.user.username} was banished from the voice channel!`);
         }
     } catch (error) {
         console.error('Error in roulette command:', error);
@@ -208,7 +208,7 @@ export const handleArenaCommand = async (message: Message) => {
             }
         }
        
-        return sendEmbed(message.channel as TextChannel, 'Error', errorMessage);    }
+        return sendEmbed(message.channel as TextChannel, null,'Error', errorMessage);    }
 }
 
 
@@ -218,7 +218,7 @@ import { joinVoiceChannel, VoiceConnectionStatus } from '@discordjs/voice';
 export const handleJoinVCCommand = async (message: Message) => {
     // Error checking: Make sure the message is in a guild
     if (!message.guild) {
-        return sendEmbed(message.channel as TextChannel, 'Not a Guild', 'This command can only be used in a server.');    
+        return sendEmbed(message.channel as TextChannel,null, 'Not a Guild', 'This command can only be used in a server.');    
     }
 
     // Get the member sending the command
@@ -226,7 +226,7 @@ export const handleJoinVCCommand = async (message: Message) => {
 
     // Check if the member is in a voice channel (null check for voice.channel)
     if (!member || !member.voice || !member.voice.channel) {
-        return sendEmbed(message.channel as TextChannel, 'Not in Voice Channel', 'You must be in a voice channel for me to join!');    
+        return sendEmbed(message.channel as TextChannel,null, 'Not in Voice Channel', 'You must be in a voice channel for me to join!');    
     }
 
     try {
@@ -246,7 +246,7 @@ export const handleJoinVCCommand = async (message: Message) => {
 export const handleAttackCommand=async(message:Message)=>{
     const mentionedUser = message.mentions.users.first();
     if (!mentionedUser) {
-        return sendEmbed(message.channel as TextChannel,'Missing User', 'Please add a user for this feature');
+        return sendEmbed(message.channel as TextChannel,null,'Missing User', 'Please add a user for this feature');
     }
 
     // make embed
@@ -268,7 +268,7 @@ export const handleAttackCommand=async(message:Message)=>{
 
         const randomMember = correctMembers.random(); // .random() gives you a random element from a collection
         if (!randomMember) {
-            return sendEmbed(message.channel as TextChannel, 'Error', 'Failed to select a random member.');
+            return sendEmbed(message.channel as TextChannel, null,'Error', 'Failed to select a random member.');
         }
         embed.setAuthor({
             name: `${randomMember.user.username}#${randomMember.user.discriminator}`,
@@ -288,7 +288,7 @@ export const handleAttackCommand=async(message:Message)=>{
         // literally random person in server
         const randomMember = members.random(); 
         if (!randomMember) {
-            return sendEmbed(message.channel as TextChannel, 'Error', 'Failed to select a random member.');
+            return sendEmbed(message.channel as TextChannel, null,'Error', 'Failed to select a random member.');
         }
         embed.setAuthor({
             name: `${randomMember.user.username}#${randomMember.user.discriminator}`,
@@ -360,7 +360,7 @@ export const handleHangman = async (message: Message) => {
     const channel = message.channel as TextChannel;
 
     // Send a welcome message using sendEmbed, including the number of letters to guess
-    sendEmbed(channel, 'Hangman Game Started', `The word has ${word.length} letters: ${hiddenWord}`);
+    sendEmbed(channel, null,'Hangman Game Started', `The word has ${word.length} letters: ${hiddenWord}`);
 
     // Start the message collector without filtering for a specific user
     const filter = (response: Message) => response.content.length === 1 && /^[a-z]$/i.test(response.content); // Only accept valid letter guesses
@@ -371,7 +371,7 @@ export const handleHangman = async (message: Message) => {
 
         // Check if the guessed letter has been guessed before
         if (guessedLetters.includes(guess)) {
-            sendEmbed(channel, 'Duplicate Guess', `You already guessed the letter ${guess}!`);
+            sendEmbed(channel,null,'Duplicate Guess', `You already guessed the letter ${guess}!`);
             return; // Skip the rest of the code if the letter has been guessed already
         }
 
@@ -392,18 +392,18 @@ export const handleHangman = async (message: Message) => {
 
         // Check if the player has guessed all the letters correctly
         if (hiddenWord === word) {
-            sendEmbed(channel, 'Congratulations!', `You guessed the word: ${word} in ${attempts} attempts.`);
+            sendEmbed(channel,null, 'Congratulations!', `You guessed the word: ${word} in ${attempts} attempts.`);
             collector.stop(); // Stop the game if the word is guessed
         } else {
             // Display the current progress and how many letters are left to guess
-            sendEmbed(channel, 'Guess Progress', `There are ${remainingLetters} letters left to guess: ${hiddenWord}`);
+            sendEmbed(channel,null, 'Guess Progress', `There are ${remainingLetters} letters left to guess: ${hiddenWord}`);
         }
     });
 
     // When the collector stops (time runs out or game is won), inform the players
     collector.on('end', () => {
         if (hiddenWord !== word) {
-            sendEmbed(channel, 'Game Over', `Time's up! The correct word was: ${word}`);
+            sendEmbed(channel, null,'Game Over', `Time's up! The correct word was: ${word}`);
         }
     });
 };
