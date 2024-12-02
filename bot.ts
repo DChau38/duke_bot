@@ -9,10 +9,18 @@ import 'dotenv/config';
 client.once('ready', async () => {
     // Check if the bot can access the server (guild)
     try {
-        const guild = await client.guilds.fetch(process.env.SERVER_ID as string);
+        const guild = await client.guilds.fetch(process.env.DISCORD_GUILD_ID as string);
+        if (!guild) {
+            console.error("Guild not found");
+            return;
+        }
         console.log(`(2) SERVER CONNECTION: SUCCESS - ${guild.name} (${guild.id})`);
 
         // Find the first text channel in the specific server
+        if (!guild.channels) {
+            console.error("Guild channels not found");
+            return;
+        }
         const channel = guild.channels.cache.find(
             (channel): channel is TextChannel =>
                 channel.type === ChannelType.GuildText
