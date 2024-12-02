@@ -2,7 +2,7 @@ import {ChannelType, TextChannel,PresenceStatus, CommandInteraction} from 'disco
 import {client, tracker, startBot} from './src/setup';
 import * as FUNCTIONS_MSG from './src/features_msg';
 import * as FUNCTIONS_BOT from './src/features_bot';
-import * as HELPERFUNCTIONS_MSG from './src/helperFunctionts';
+import * as HELPERFUNCTIONS from './src/helperFunctionts';
 import config from './src/config'
 import 'dotenv/config';
 
@@ -199,32 +199,39 @@ client.on('messageCreate', async (message) => {
 
         // unknown input
         else if (message.content.startsWith('!')) {
-            HELPERFUNCTIONS_MSG.sendEmbed((message.channel as TextChannel), null, "??", `Unknown input: ${message.content}`);
+            HELPERFUNCTIONS.sendEmbed((message.channel as TextChannel), null, "??", `Unknown input: ${message.content}`);
         }
     } catch (error) {
         console.error('An error occurred:', error);
         (message.channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        HELPERFUNCTIONS_MSG.sendEmbed(message.channel as TextChannel, './static/dead_discord.GIF', "You fucked me", "Uhhhh I got to go. I'll be back soon!");
+        HELPERFUNCTIONS.sendEmbed(message.channel as TextChannel, './static/dead_discord.GIF', "You fucked me", "Uhhhh I got to go. I'll be back soon!");
     }
 });
 
 client.on('interactionCreate',async(interaction)=>{
     if (!interaction.isCommand())return; // commands only
     const {commandName}=interaction;
-    const commandInteraction=(interaction as CommandInteraction);
+    
     // arguments
+    const commandInteraction=(interaction as CommandInteraction);
     const normalizedCommandName=commandName.toUpperCase();
     const channel=(commandInteraction.channel as TextChannel) ;
 
+    // hang
     if (normalizedCommandName==='TEST'){
         await commandInteraction.reply('TEST===TRUE');
     }
-    // /flip
+    // flip
+    else if (normalizedCommandName==='REPLY'){
+        await HELPERFUNCTIONS.interactionReply(interaction,'./static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
+    }
+    // coinflip
     else if (normalizedCommandName==='COINFLIP'){
-        await FUNCTIONS_BOT.handleCoinFlipCommand(commandInteraction);
+        await FUNCTIONS_BOT.handleCoinFlipInteraction(commandInteraction);
     } 
+    // hangman
     else if (normalizedCommandName==='HANGMAN'){
-        await FUNCTIONS_BOT.handleHangmanCommand(commandInteraction,channel);
+        await FUNCTIONS_BOT.handleHangmanInteraction(commandInteraction,channel);
     }
 
 });
@@ -237,7 +244,7 @@ client.on('disconnect', async () => {
     const channel = client.channels.cache.get(config.ids.BIGBROTHER);  // Replace with your actual channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        await HELPERFUNCTIONS_MSG.sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon!");
+        await HELPERFUNCTIONS.sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon!");
     }
 });
 
@@ -248,7 +255,7 @@ process.on('uncaughtException', (error) => {
     const channel = client.channels.cache.get(config.ids.BIGBROTHER); // Replace with your channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        HELPERFUNCTIONS_MSG.sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
+        HELPERFUNCTIONS.sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
     }
 
     process.exit(1);  // Optional: terminate the bot after handling the error
@@ -261,7 +268,7 @@ process.on('unhandledRejection', (reason, promise) => {
     const channel = client.channels.cache.get(config.ids.BIGBROTHER); // Replace with your channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        HELPERFUNCTIONS_MSG.sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
+        HELPERFUNCTIONS.sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
     }
 
     process.exit(1);  // Optional: terminate the bot after handling the rejection
@@ -272,7 +279,7 @@ process.on('unhandledRejection', (reason, promise) => {
 startBot();
 
 // if they are offline for one week, delete thme
-setInterval(HELPERFUNCTIONS_MSG.kill_week_old_entries, 24 * 60 * 60 * 1000); 
+setInterval(HELPERFUNCTIONS.kill_week_old_entries, 24 * 60 * 60 * 1000); 
 
-setInterval(HELPERFUNCTIONS_MSG.sendReminder, Math.floor((Math.random()*12)) * 60 * 60 * 1000);
+setInterval(HELPERFUNCTIONS.sendReminder, Math.floor((Math.random()*12)) * 60 * 60 * 1000);
 

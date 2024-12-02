@@ -1,5 +1,6 @@
-import { EmbedBuilder, AttachmentBuilder, TextChannel, ChannelType } from 'discord.js';
+import { EmbedBuilder, AttachmentBuilder, TextChannel, ChannelType, CommandInteraction } from 'discord.js';
 import { client, tracker } from './setup';
+import config from './config';
 
 export const calculateTimeDifference = (startTime: Date, endTime: Date) => {
     const timeDiff = endTime.getTime() - startTime.getTime();
@@ -12,7 +13,7 @@ export const calculateTimeDifference = (startTime: Date, endTime: Date) => {
     return { days, hours, minutes, seconds };
 };
 
-export const sendEmbed = async (channel: TextChannel, URL: string|null, title: string, description: string) => {
+export const sendEmbed = async (channel: TextChannel, URL: string | null, title: string, description: string) => {
     const embed = new EmbedBuilder()
         .setColor('#FF0000')
         .setTitle(title)
@@ -23,15 +24,44 @@ export const sendEmbed = async (channel: TextChannel, URL: string|null, title: s
         const fileName = URL.match(/[^/]+$/)?.[0]; // This will capture everything after the last slash
         attachment = new AttachmentBuilder(URL);
         embed.setImage('attachment://' + fileName);
-        
+
     }
     try {
-        if (URL) await channel.send({ embeds: [embed], files:[attachment] });
+        if (URL) await channel.send({ embeds: [embed], files: [attachment] });
         else await channel.send({ embeds: [embed] });
     } catch (error) {
         console.error('Error sending embed:', error);
     }
 };
+
+export const interactionReply = async (interaction: CommandInteraction, URL: string | null, title: string, description: string) => {
+    try {
+        // Define embed object directly without using EmbedBuilder
+        const embed: any = {
+            color: parseInt('#FF0000', 16),  // Convert hex color to int
+            title: title,
+            description: description,
+            image: URL ? { url: 'attachment://' + URL.match(/[^/]+$/)?.[0] } : undefined
+        };
+
+        // Prepare the reply options
+        const replyOptions: any = {
+            embeds: [embed],  // Directly use the embed object here
+            //ephemeral: true    // Make the message ephemeral
+        };
+
+        // If URL is provided, add the file to the reply
+        if (URL) {
+            replyOptions.files = [new AttachmentBuilder(URL)];
+        }
+
+        // Send the reply with the prepared options
+        await interaction.reply(replyOptions);
+    } catch (error) {
+        console.error('Error sending reply:', error);
+    }
+};
+
 
 export function kill_week_old_entries() {
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
@@ -54,7 +84,7 @@ export const sendReminder = async () => {
             ) as TextChannel;
 
             if (channel) {
-                const member=guild.members.cache.find((mem)=>mem.user.username==='yan240')
+                const member = guild.members.cache.find((mem) => mem.user.username === 'yan240')
                 await channel.send(`<@${member?.user.id}> Reminder to do one's racket :)`);
             } else {
                 console.log("aaa channel not found");
@@ -62,5 +92,35 @@ export const sendReminder = async () => {
         }
     } catch (error) {
         console.error("Error in sendReminder:", error);
+    }
+};
+
+export const selectMemberWithRequiredRoles = async () => {
+    try {
+        const guild = await client.guilds.fetch(process.env.SERVER_ID as string);
+        const members = await guild.members.fetch();
+
+        const correctMembers = members.filter((member) =>
+            member.roles.cache.some((role) =>
+                config.mis.requiredRoles.includes(role.name)
+            )
+        );
+
+        return correctMembers.random();
+    } catch (error) {
+        console.error('Error selecting member with required roles:', error);
+        return null;
+    }
+};
+
+export const selectRandomServerMember = async () => {
+    try {
+        const guild = await client.guilds.fetch(process.env.SERVER_ID as string);
+        const members = await guild.members.fetch();
+
+        return members.random();
+    } catch (error) {
+        console.error('Error selecting random server member:', error);
+        return null;
     }
 };

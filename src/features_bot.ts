@@ -1,9 +1,10 @@
-import { Interaction, EmbedBuilder, AttachmentBuilder, TextChannel,CommandInteraction, Message } from 'discord.js';
+import { Interaction, EmbedBuilder, AttachmentBuilder, TextChannel,CommandInteraction, Message, User } from 'discord.js';
 import {generate} from 'random-words'
-import { sendEmbed } from './helperFunctionts';
+import { selectMemberWithRequiredRoles, selectRandomServerMember, sendEmbed } from './helperFunctionts';
 import config from './config';
+import { client } from './setup';
 
-export const handleCoinFlipCommand=async(interaction:CommandInteraction)=>{
+export const handleCoinFlipInteraction=async(interaction:CommandInteraction)=>{
     const coinSides = ['Heads', 'Tails'];
     const result = coinSides[Math.floor(Math.random() * coinSides.length)];
 
@@ -30,7 +31,7 @@ export const handleCoinFlipCommand=async(interaction:CommandInteraction)=>{
 }
 
 
-export const handleHangmanCommand = async (interaction:CommandInteraction, channel:TextChannel) => {
+export const handleHangmanInteraction = async (interaction:CommandInteraction, channel:TextChannel) => {
     const word = generate(); // Get a random word
     let hiddenWord = '_'.repeat(word.length);  // Set the initial hidden word (e.g., '____')
     let attempts = 0;
@@ -118,3 +119,99 @@ export const handleHangmanCommand = async (interaction:CommandInteraction, chann
         }
     });
 };
+
+  
+export const handleAttackInteraction = async (interaction: CommandInteraction): Promise<void> => {
+    // Validate mentioned user
+    const mentionedUser = interaction.options.get('target')?.user as User | undefined;
+    if (!mentionedUser) {
+        await interaction.reply({
+            embeds: [{
+                title: 'Missing User',
+                description: 'Please mention a user for this feature',
+                color: 0xff0000
+            }],
+            ephemeral: true
+        });
+        return;
+    }
+
+    // Determine attack outcome
+    const attackChance = Math.floor(Math.random() * 101);
+    let current_userid: string;
+    let targetUser: User;
+
+    // Create embed
+    const embed = new EmbedBuilder().setColor('#3498db');
+
+    if (attackChance === 1) {
+        // 1% chance: Random member with required roles
+        const randomMember = await selectMemberWithRequiredRoles();
+        if (!randomMember) {
+            await interaction.reply({
+                embeds: [{
+                    title: 'Error',
+                    description: 'Failed to select a random member.',
+                    color: 0xff0000
+                }],
+                ephemeral: true
+            });
+            return;
+        }
+
+        targetUser = randomMember.user;
+        embed.setAuthor({
+            name: `${targetUser.username}#${targetUser.discriminator}`,
+            iconURL: targetUser.displayAvatarURL()
+        });
+        embed.setDescription('you give me c');
+        embed.addFields({ name: '...', value: `huh? <@${targetUser.id}>` });
+        current_userid = targetUser.id;
+    } else if (attackChance === 0) {
+        // 0% chance: Literally random person in server
+        const randomMember = await selectRandomServerMember();
+        if (!randomMember) {
+            await interaction.reply({
+                embeds: [{
+                    title: 'Error',
+                    description: 'Failed to select a random member.',
+                    color: 0xff0000
+                }],
+                ephemeral: true
+            });
+            return;
+        }
+
+        targetUser = randomMember.user;
+        embed.setAuthor({
+            name: `${targetUser.username}#${targetUser.discriminator}`,
+            iconURL: targetUser.displayAvatarURL()
+        });
+        embed.setDescription('you give me c');
+        embed.addFields({ name: '...', value: `huh? <@${targetUser.id}>` });
+        current_userid = targetUser.id;
+    } else {
+        // Regular hit on mentioned user
+        targetUser = mentionedUser;
+        embed.setAuthor({
+            name: `${targetUser.username}#${targetUser.discriminator}`,
+            iconURL: targetUser.displayAvatarURL()
+        });
+        embed.addFields({ name: 'Bang!', value: `<@${targetUser.id}> gets hit!` });
+        current_userid = targetUser.id;
+    }
+
+    // Prepare attachment
+    const attachment = new AttachmentBuilder('./static/Zhu.webp');
+    embed.setImage('attachment://Zhu.webp');
+
+    // Send response
+    await interaction.reply({
+        content: `<@${current_userid}>`,
+        embeds: [embed],
+        files: [attachment]
+    });
+};
+
+
+
