@@ -11,6 +11,10 @@ const commands = [
         name:'coinflip',
         description: 'Flip a coin',
     },
+    {
+        name:'hangman',
+        description:'hangman',
+    },
   ];
   
 

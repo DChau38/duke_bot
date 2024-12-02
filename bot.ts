@@ -212,13 +212,19 @@ client.on('interactionCreate',async(interaction)=>{
     if (!interaction.isCommand())return; // commands only
     const {commandName}=interaction;
     const commandInteraction=(interaction as CommandInteraction);
+    // arguments
+    const normalizedCommandName=commandName.toUpperCase();
+    const channel=(commandInteraction.channel as TextChannel) ;
 
-    if (commandName==='test'){
+    if (normalizedCommandName==='TEST'){
         await commandInteraction.reply('TEST===TRUE');
     }
     // /flip
-    if (commandName==='coinflip'){
+    else if (normalizedCommandName==='COINFLIP'){
         await FUNCTIONS_BOT.handleCoinFlipCommand(commandInteraction);
+    } 
+    else if (normalizedCommandName==='HANGMAN'){
+        await FUNCTIONS_BOT.handleHangmanCommand(commandInteraction,channel);
     }
 
 });
