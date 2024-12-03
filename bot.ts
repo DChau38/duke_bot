@@ -240,6 +240,9 @@ client.on('interactionCreate', async (interaction) => {
         else if (normalizedCommandName === 'ATTACK') {
             await FUNCTIONS_BOT.handleAttackInteraction(commandInteraction);
         }
+        else if (normalizedCommandName === 'SLEEP'){
+            await FUNCTIONS_BOT.handleSleepInteraction(commandInteraction);
+        }
     } catch (error) {
         console.error('Error handling interaction:', error);
     }

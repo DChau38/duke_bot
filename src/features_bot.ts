@@ -1,8 +1,8 @@
-import { Interaction, EmbedBuilder, AttachmentBuilder, TextChannel,CommandInteraction, Message, User, VoiceChannel } from 'discord.js';
+import { Interaction, EmbedBuilder, AttachmentBuilder, TextChannel,CommandInteraction, Message, User, VoiceChannel, Guild } from 'discord.js';
 import {generate} from 'random-words'
-import { interactionReply, selectMemberWithRequiredRoles, selectRandomServerMember, sendEmbed } from './helperFunctionts';
+import { calculateTimeDifference, getNicknameOrUsernameElseNull, interactionReply, selectMemberWithRequiredRoles, selectRandomServerMember, sendEmbed } from './helperFunctionts';
 import config from './config';
-import { client } from './setup';
+import { client, tracker } from './setup';
 
 export async function testFunction(commandInteraction: CommandInteraction) {
     await commandInteraction.reply('TEST===TRUE');
@@ -181,5 +181,69 @@ export const handleJoinVCCommand = async (interaction: CommandInteraction, voice
             'Error Joining Voice Channel',
             'An error occurred while trying to join your voice channel.'
         );
+    }
+};
+const TIME_THRESHOLD=1000;
+export const handleSleepInteraction = async (interaction: CommandInteraction) => {
+    const mentionedUser = interaction.options.get('target')?.user as User | null;
+    const CURRENT_TIME = new Date();
+    const botUsername = "BOT";
+
+    // Case: No input argument (go for all)
+    if (!mentionedUser) {
+        if (Object.keys(tracker).length === 0) {
+            return interactionReply(interaction, null, 'No Users Tracked', 'No users are currently being tracked.');
+        }
+
+        let description = "Here are the statuses of all tracked users:\n\n";
+
+        if (botUsername in tracker) {
+            const botStartTime = new Date(tracker[botUsername]);
+            const { days, hours, minutes, seconds } = calculateTimeDifference(botStartTime, CURRENT_TIME);
+            description += `**${botUsername}**\nStarted: ${botStartTime.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n\n`;
+        }
+
+        for (const [tracker_id, offlineTime] of Object.entries(tracker)) {
+            if (tracker_id === botUsername) continue;
+            const OFFLINE_TIME = new Date(offlineTime);
+            const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
+
+            if (Math.abs(OFFLINE_TIME.getTime() - new Date(tracker[botUsername]).getTime()) <= TIME_THRESHOLD) {
+                description += `**${tracker_id}**\n(UNKNOWN) OFFLINE SINCE BOT STARTED\n\n`;
+            } else {
+                description += `**${tracker_id}**\nLast online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.\n\n`;
+            }
+        }
+
+        return interactionReply(interaction, null, "Tracked Users' Offline Status", description.trim());
+    }
+
+    // Case: Username/Nickname was given
+    const tracker_id = getNicknameOrUsernameElseNull(interaction.guild as Guild, mentionedUser.username) as string;
+
+    if (tracker_id in tracker) {
+        const OFFLINE_TIME = new Date(tracker[tracker_id]);
+        const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
+
+        return interactionReply(
+            interaction,
+            null,
+            `${tracker_id}'s Status`,
+            `Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`
+        );
+    } else {
+        const guild = interaction.guild;
+        if (!guild) {
+            return interactionReply(interaction, null, 'Error', "Could not find the server.");
+        }
+
+        const username = mentionedUser.username;
+        const member = guild.members.cache.find((m) => m.user.username === username);
+
+        if (member?.presence && member.presence.status !== 'offline') {
+            return interactionReply(interaction, null, 'User Status', `${username} is already online!`);
+        } else {
+            return interactionReply(interaction, null, 'User Status', `${username} is not part of the club.`);
+        }
     }
 };

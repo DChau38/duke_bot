@@ -35,6 +35,18 @@ const commands = [
             },
         ],
     },
+    {
+        name: 'sleep',
+        description: 'Check the sleep status of a user',
+        options: [
+            {
+                type: 6,  // Type 6 corresponds to a `User` type argument
+                name: 'target',
+                description: 'The user to check sleep status for',
+                required: false,  // Make this optional
+            },
+        ],
+    },
 ];
 
   
