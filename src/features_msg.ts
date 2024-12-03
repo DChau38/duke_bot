@@ -1,6 +1,6 @@
-import {Message,Attachment, TextChannel, ChannelType, VoiceChannel,GuildMember,User, EmbedBuilder, AttachmentBuilder, Guild} from 'discord.js';
-import { calculateTimeDifference, sendEmbed } from './helperFunctionts';
-import {client} from './setup'
+import { Message, Attachment, TextChannel, ChannelType, VoiceChannel, GuildMember, User, EmbedBuilder, AttachmentBuilder, Guild } from 'discord.js';
+import { calculateTimeDifference, sendEmbed, getNicknameOrUsernameElseNull } from './helperFunctionts';
+import { client } from './setup'
 import config from './config';
 
 // common variables
@@ -8,20 +8,21 @@ const TIME_THRESHOLD = 1000;
 
 export const handleSleepCommand = async (message: Message, tracker: Record<string, string>) => {
     const args = message.content.split(' ');
-    const username = args[1];
+    const inputArgument = args[1];
+    const tracker_id = getNicknameOrUsernameElseNull(message.guild as Guild, inputArgument);
     const CURRENT_TIME = new Date();
     const botUsername = "BOT";
 
-    // If the username is not provided or invalid
-    if (!username) {
-        return sendEmbed(message.channel as TextChannel, null,'Invalid Command', 'Please provide a username or use `!sleepcheck all` to see all tracked users!');
+    // case: no input argument
+    if (!inputArgument) {
+        return sendEmbed(message.channel as TextChannel, null, 'Missing Argument', 'Please provide a username or use `!sleepcheck all` to see all tracked users!');
     }
-    // If the user provided "all", list all tracked users
-    if (username.toLowerCase() === "all") {
+    // case: !sleepcheck all
+    else if (inputArgument.toLowerCase() === "all") {
         if (Object.keys(tracker).length === 0) {
-            return sendEmbed(message.channel as TextChannel, null,'No Users Tracked', 'No users are currently being tracked.');        
+            return sendEmbed(message.channel as TextChannel, null, 'No Users Tracked', 'No users are currently being tracked.');
         }
-        
+
         const embed = new EmbedBuilder()
             .setColor('#00FF00')
             .setTitle("Tracked Users' Offline Status")
@@ -37,65 +38,77 @@ export const handleSleepCommand = async (message: Message, tracker: Record<strin
         }
 
         // Loop through tracker and calculate offline times
-        for (const [user, offlineTime] of Object.entries(tracker)) {
-            if (user === botUsername) continue;
+        for (const [tracker_id, offlineTime] of Object.entries(tracker)) {
+            if (tracker_id === botUsername) continue;
             const OFFLINE_TIME = new Date(offlineTime);
             const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
-            const member = message.guild?.members.cache.get(user);
-            const nickname = member?.nickname || user; // Fallback to username if no nickname
 
             if (Math.abs(OFFLINE_TIME.getTime() - new Date(tracker[botUsername]).getTime()) <= TIME_THRESHOLD) {
                 embed.addFields({
-                    name: `**${nickname}**`,
+                    name: `**${tracker_id}**`,
                     value: `(UNKNOWN) OFFLINE SINCE BOT STARTED`,
                 });
             } else {
                 embed.addFields({
-                    name: `**${nickname}**`,
+                    name: `**${tracker_id}**`,
                     value: `Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference:${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`,
                 });
             }
         }
 
         // Send the embed
-        (message.channel as TextChannel).send({ embeds: [embed] });
-
-        return;
-    } else 
-    // If the user is in the tracker (i.e., offline)
-    if (username in tracker) {
-        const OFFLINE_TIME = new Date(tracker[username]);
+        return (message.channel as TextChannel).send({ embeds: [embed] });
+    }
+    // case: did give a string, but it's not a nickname/username/all
+    else if (tracker_id === null) {
+        return sendEmbed((message.channel as TextChannel), null, 'Invalid argument', 'For your string argument, please provide all, a nickname, or a username');
+    }
+    // case: username/nickname was given
+    else if (tracker_id in tracker) {
+        const OFFLINE_TIME = new Date(tracker[tracker_id]);
         const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
 
         const embed = new EmbedBuilder()
             .setColor('#FF0000')
-            .setTitle(`${username}'s Status`)
+            .setTitle(`${tracker_id}'s Status`)
             .setDescription(`Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference:${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`);
-        const member = message.guild?.members.cache.get(username);
+        const member = message.guild?.members.cache.get(tracker_id);
         const avatarURL = member?.user.avatarURL();
         if (avatarURL) {
             embed.setThumbnail(avatarURL);
         }
 
         (message.channel as TextChannel).send({ embeds: [embed] });
-    } else {
+    }
+    else {
         // Check if the user is currently online (presence)
         const guild = message.guild;
         if (!guild) {
-            return sendEmbed(message.channel as TextChannel, null,'Error', "Could not find the server.");
+            return sendEmbed(message.channel as TextChannel, null, 'Error', "Could not find the server.");
         }
 
-        const member = guild.members.cache.find((member) => member.user.username === username);
+        // Try to find the member by username first
+        let member = guild.members.cache.find((member) => member.user.username === inputArgument);
+
+        // If not found, try searching by nickname
+        if (!member) {
+            member = guild.members.cache.find((member) => member.nickname === inputArgument);
+        }
 
         if (!member) {
-            return sendEmbed(message.channel as TextChannel,null, 'User Not Found', `${username} not found in the server.`);
+            // Case: user not found in the server by username or nickname
+            return sendEmbed(message.channel as TextChannel, null, 'User Not Found', `${inputArgument} not found in the server.`);
         }
 
+        // Case: check if the user is online
         const presence = member.presence;
         if (presence && presence.status !== 'offline') {
-            return sendEmbed(message.channel as TextChannel,null,'User Status', `${username} is online!`);
+            // User is online
+            return sendEmbed(message.channel as TextChannel, null, 'User Status', `${inputArgument} is already online!`);
         } else {
-            return sendEmbed(message.channel as TextChannel, null,'User Status', `${username} is not in the database and also not currently online.`);        }
+            // User is offline
+            return sendEmbed(message.channel as TextChannel, null, 'User Status', `${inputArgument} is not online currently.`);
+        }
     }
 };
 
@@ -110,7 +123,7 @@ export const handleFeaturesCommand = async (message: Message) => {
             { name: '**!flip**', value: 'Flip the coin to get heads or tails.' },
             { name: '**!hangman**', value: 'Play Hangman with your friends.' },
             { name: '**!joinvc**', value: 'Make me join your current voice channel.' },
-            { name: '**!attack @username**', value: 'Send your favorite friend a happy image'},
+            { name: '**!attack @username**', value: 'Send your favorite friend a happy image' },
             { name: '**Reminders**', value: 'Receive periodic reminders.' }
         )
         .setFooter({ text: 'Bot created by Duke :)' });
@@ -123,15 +136,17 @@ export const handleFeaturesCommand = async (message: Message) => {
 export const handleArenaCommand = async (message: Message) => {
     // Non-null assertion for guild (only use in a guild context)
     const guild = message.guild!;
-   
+
     // Get all mentioned users (convert Collection to array)
     const mentionedUsers = Array.from(message.mentions.users.values());
     if (mentionedUsers.length === 0) {
-        return sendEmbed(message.channel as TextChannel, null,'No Users Mentioned', 'Please mention at least one user to play the roulette with! Usage: !roulette @username1');    }
+        return sendEmbed(message.channel as TextChannel, null, 'No Users Mentioned', 'Please mention at least one user to play the roulette with! Usage: !roulette @username1');
+    }
 
     // Check if the caller is trying to include themselves
     if (mentionedUsers.some(user => user.id === message.author.id)) {
-        return sendEmbed(message.channel as TextChannel, null,'Self-Play Not Allowed', 'You cannot play roulette with yourself!');    }
+        return sendEmbed(message.channel as TextChannel, null, 'Self-Play Not Allowed', 'You cannot play roulette with yourself!');
+    }
 
     // Get GuildMember objects with proper type handling
     const senderMember = guild.members.cache.get(message.author.id);
@@ -141,27 +156,27 @@ export const handleArenaCommand = async (message: Message) => {
 
     // Validate members exist and are in voice channels
     if (!senderMember) {
-        return sendEmbed(message.channel as TextChannel, null,'Sender Not Found', 'Could not find the sender in the server.');    
+        return sendEmbed(message.channel as TextChannel, null, 'Sender Not Found', 'Could not find the sender in the server.');
     }
 
     if (defendingMembers.length === 0) {
-        return sendEmbed(message.channel as TextChannel,null, 'Defenders Not Found', 'Could not find the mentioned users in the server.');    
+        return sendEmbed(message.channel as TextChannel, null, 'Defenders Not Found', 'Could not find the mentioned users in the server.');
     }
 
     // Null checks for voice channels
     if (!senderMember.voice?.channel) {
-        return sendEmbed(message.channel as TextChannel,null, 'Not in Voice Channel', 'You must be in a voice channel to play roulette!');
+        return sendEmbed(message.channel as TextChannel, null, 'Not in Voice Channel', 'You must be in a voice channel to play roulette!');
     }
 
     const senderVoiceChannelId = senderMember.voice.channel.id;
 
     // Check if all defending members are in the same voice channel
-    const invalidDefenders = defendingMembers.filter(member => 
+    const invalidDefenders = defendingMembers.filter(member =>
         !member.voice?.channel || member.voice.channel.id !== senderVoiceChannelId
     );
 
     if (invalidDefenders.length > 0) {
-        return sendEmbed(message.channel as TextChannel,null,'Voice Channel Mismatch', 'All users must be in the SAME voice channel to play roulette!');    
+        return sendEmbed(message.channel as TextChannel, null, 'Voice Channel Mismatch', 'All users must be in the SAME voice channel to play roulette!');
     }
 
     // Calculate total participants
@@ -172,18 +187,18 @@ export const handleArenaCommand = async (message: Message) => {
     // 1/x chance ALL get kicked
     // (x-1)/x chance only original caller gets kicked
     const randomValue = Math.random();
-    const targetChannel = guild.channels.cache.find(channel => 
+    const targetChannel = guild.channels.cache.find(channel =>
         channel.name === "Ten Courts of Hell" && channel.type === ChannelType.GuildVoice
     );
-    
+
     if (!targetChannel) {
-        return sendEmbed(message.channel as TextChannel,null,'Channel Not Found', "Could not find the target voice channel 'Ten Courts of Hell'.");    
+        return sendEmbed(message.channel as TextChannel, null, 'Channel Not Found', "Could not find the target voice channel 'Ten Courts of Hell'.");
     }
 
     try {
         if (randomValue < 1 / totalParticipants) {
             // ALL participants get kicked
-            const kickPromises = defendingMembers.map(member => 
+            const kickPromises = defendingMembers.map(member =>
                 member.voice.setChannel(targetChannel as VoiceChannel)
             );
 
@@ -192,16 +207,16 @@ export const handleArenaCommand = async (message: Message) => {
             const affectedUsers = defendingMembers
                 .map(member => member.user.username)
                 .join(' and ');
-            
-                return sendEmbed(message.channel as TextChannel, null,'Roulette Result', `🎲 Roulette Result: ${affectedUsers} were ALL banished from the voice channel!`);
+
+            return sendEmbed(message.channel as TextChannel, null, 'Roulette Result', `🎲 Roulette Result: ${affectedUsers} were ALL banished from the voice channel!`);
         } else {
             // Original caller gets kicked
             await senderMember.voice.setChannel(targetChannel as VoiceChannel);
-            return sendEmbed(message.channel as TextChannel, null,'Roulette Result', `🎲 Roulette Result: ${senderMember.user.username} was banished from the voice channel!`);
+            return sendEmbed(message.channel as TextChannel, null, 'Roulette Result', `🎲 Roulette Result: ${senderMember.user.username} was banished from the voice channel!`);
         }
     } catch (error) {
         console.error('Error in roulette command:', error);
-   
+
         // Provide a more informative error message
         let errorMessage = 'Failed to move the user(s) to the voice channel.';
         if (error instanceof Error) {
@@ -211,8 +226,9 @@ export const handleArenaCommand = async (message: Message) => {
                 errorMessage = "The target voice channel doesn't exist or is invalid.";
             }
         }
-       
-        return sendEmbed(message.channel as TextChannel, null,'Error', errorMessage);    }
+
+        return sendEmbed(message.channel as TextChannel, null, 'Error', errorMessage);
+    }
 }
 
 
@@ -222,7 +238,7 @@ import { joinVoiceChannel, VoiceConnectionStatus } from '@discordjs/voice';
 export const handleJoinVCCommand = async (message: Message) => {
     // Error checking: Make sure the message is in a guild
     if (!message.guild) {
-        return sendEmbed(message.channel as TextChannel,null, 'Not a Guild', 'This command can only be used in a server.');    
+        return sendEmbed(message.channel as TextChannel, null, 'Not a Guild', 'This command can only be used in a server.');
     }
 
     // Get the member sending the command
@@ -230,7 +246,7 @@ export const handleJoinVCCommand = async (message: Message) => {
 
     // Check if the member is in a voice channel (null check for voice.channel)
     if (!member || !member.voice || !member.voice.channel) {
-        return sendEmbed(message.channel as TextChannel,null, 'Not in Voice Channel', 'You must be in a voice channel for me to join!');    
+        return sendEmbed(message.channel as TextChannel, null, 'Not in Voice Channel', 'You must be in a voice channel for me to join!');
     }
 
     try {
@@ -247,22 +263,22 @@ export const handleJoinVCCommand = async (message: Message) => {
     }
 };
 
-export const handleAttackCommand=async(message:Message)=>{
+export const handleAttackCommand = async (message: Message) => {
     const mentionedUser = message.mentions.users.first();
     if (!mentionedUser) {
-        return sendEmbed(message.channel as TextChannel,null,'Missing User', 'Please add a user for this feature');
+        return sendEmbed(message.channel as TextChannel, null, 'Missing User', 'Please add a user for this feature');
     }
 
     // make embed
     const embed = new EmbedBuilder()
-    .setDescription('you give me c')
-    .setColor('#3498db');
+        .setDescription('you give me c')
+        .setColor('#3498db');
 
     // calculate chance for miss
-    const one_percent_chance=Math.floor(Math.random()*100);
-    let current_userid:string;
+    const one_percent_chance = Math.floor(Math.random() * 100);
+    let current_userid: string;
     // if 1/101 => person in roles
-    if (one_percent_chance===1){
+    if (one_percent_chance === 1) {
         const guild = await client.guilds.fetch(process.env.SERVER_ID as string)
         const members = await guild.members.fetch();
         // random person from roles
@@ -272,7 +288,7 @@ export const handleAttackCommand=async(message:Message)=>{
 
         const randomMember = correctMembers.random(); // .random() gives you a random element from a collection
         if (!randomMember) {
-            return sendEmbed(message.channel as TextChannel, null,'Error', 'Failed to select a random member.');
+            return sendEmbed(message.channel as TextChannel, null, 'Error', 'Failed to select a random member.');
         }
         embed.setAuthor({
             name: `${randomMember.user.username}#${randomMember.user.discriminator}`,
@@ -282,17 +298,17 @@ export const handleAttackCommand=async(message:Message)=>{
             name: '...',
             value: `huh? <@${randomMember.user.id}>`,
         });
-        current_userid=randomMember.user.id;
-        
+        current_userid = randomMember.user.id;
+
     }
     // if 0/101 => literally random person
-    else if (one_percent_chance===0){
+    else if (one_percent_chance === 0) {
         const guild = await client.guilds.fetch(process.env.SERVER_ID as string)
         const members = await guild.members.fetch();
         // literally random person in server
-        const randomMember = members.random(); 
+        const randomMember = members.random();
         if (!randomMember) {
-            return sendEmbed(message.channel as TextChannel, null,'Error', 'Failed to select a random member.');
+            return sendEmbed(message.channel as TextChannel, null, 'Error', 'Failed to select a random member.');
         }
         embed.setAuthor({
             name: `${randomMember.user.username}#${randomMember.user.discriminator}`,
@@ -302,8 +318,8 @@ export const handleAttackCommand=async(message:Message)=>{
             name: '...',
             value: `huh? <@${randomMember.user.id}>`,
         });
-        current_userid=randomMember.user.id;
-    } 
+        current_userid = randomMember.user.id;
+    }
     // regular hit
     else {
         embed.setAuthor({
@@ -314,16 +330,16 @@ export const handleAttackCommand=async(message:Message)=>{
             name: 'Bang!',
             value: `<@${mentionedUser.id}> gets hit!`,
         });
-        current_userid=mentionedUser.id;
+        current_userid = mentionedUser.id;
 
 
     }
 
     //attach image + send image
-    const attachment=new AttachmentBuilder('./static/Zhu.webp');
+    const attachment = new AttachmentBuilder('./static/Zhu.webp');
     embed.setImage('attachment://Zhu.webp');
     (message.channel as TextChannel).send(`<@${current_userid}>`);
-    (message.channel as TextChannel).send({embeds:[embed],files:[attachment]});
+    (message.channel as TextChannel).send({ embeds: [embed], files: [attachment] });
 
 
 }
@@ -353,7 +369,7 @@ export const handleCoinFlipCommand = async (message: Message) => {
         files: [resultImage],
     });
 };
-import {generate} from 'random-words'
+import { generate } from 'random-words'
 export const handleHangman = async (message: Message) => {
     const word = generate(); // Get a random word
     let hiddenWord = '_'.repeat(word.length);  // Set the initial hidden word (e.g., '____')
@@ -428,7 +444,7 @@ export const handleHangman = async (message: Message) => {
             // CONTINUE
             const spacedHiddenWord = '`' + hiddenWord.split('').join(' ') + '`'; // Format hidden word with spaces and wrap in backticks
             embedDescription += `\n\nThere are ${remainingLetters} letters left to guess: \n${spacedHiddenWord}\nYou have ${tries} attempts remaining`;
-            const invertedTries=6-tries;
+            const invertedTries = 6 - tries;
             embedImage = `./static/hangman_${invertedTries}.JPG`;
         }
 

@@ -1,4 +1,4 @@
-import { EmbedBuilder, AttachmentBuilder, TextChannel, ChannelType, CommandInteraction, VoiceChannel } from 'discord.js';
+import { EmbedBuilder, AttachmentBuilder, TextChannel, ChannelType, CommandInteraction, VoiceChannel, Guild } from 'discord.js';
 import { client, tracker } from './setup';
 import config from './config';
 
@@ -145,3 +145,18 @@ export function validateVoiceChannel(interaction: CommandInteraction): VoiceChan
 
     throw new Error("You must be in a regular voice channel, not a stage channel.");
 }
+
+export const getNicknameOrUsernameElseNull = (guild: Guild, identifier: string): string | null => {
+    // Find the member using the identifier (either username or nickname)
+    const member = guild.members.cache.find(
+        (m) => m.user.username === identifier || m.nickname === identifier
+    );
+
+    if (member) {
+        // If member is found, prioritize nickname if it exists, otherwise return the username
+        return member.nickname ? member.nickname : member.user.username;
+    }
+
+    // If no member was found, return null
+    return null;
+};
