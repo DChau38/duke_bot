@@ -1,51 +1,72 @@
 import {Client, GatewayIntentBits,TextChannel,ChannelType} from 'discord.js'
 import {REST,Routes} from 'discord.js';
 import 'dotenv/config';
-
 const commands = [
     {
         name: 'test',
-        description: 'Test if API is working',
+        description: 'Test if the API is working.',
     },
     {
         name: 'reply',
-        description: 'Test reply',
+        description: 'Receive a reply to confirm the bot is responsive.',
     },
     {
         name: 'coinflip',
-        description: 'Flip a coin',
+        description: 'Flip a coin to see if it lands heads or tails! 🍀',
     },
     {
         name: 'hangman',
-        description: 'Hangman game',
+        description: 'Play Hangman with your friends and guess the word before it’s too late! 🎮🔤',
     },
     {
         name: 'joinvc',
-        description:'Join the vc',
+        description: 'Make the bot join your voice channel. 🎧',
     },
     {
         name: 'attack',
-        description: 'Attack another user with a random chance',
+        description: 'Send a friendly attack image to another user. 💥🖼️ (with a secret easter egg :)',
         options: [
             {
-                type: 6,  // Type 6 corresponds to a `User` type argument
+                type: 6, // Type 6 corresponds to a `User` type argument
                 name: 'target',
-                description: 'The user to attack',
+                description: 'The user to attack with a random image.',
                 required: true,
             },
         ],
     },
     {
         name: 'sleep',
-        description: 'Check the sleep status of a user',
+        description: 'Ever want to check how long you’ve slept?🛌💤  15m grace period upon entering Discord after sleep',
         options: [
             {
-                type: 6,  // Type 6 corresponds to a `User` type argument
+                type: 6, // Type 6 corresponds to a `User` type argument
                 name: 'target',
-                description: 'The user to check sleep status for',
-                required: false,  // Make this optional
+                description: 'The user whose sleep status to check.',
+                required: false,
             },
         ],
+    },
+    {
+        name: 'arena',
+        description: 'Roll dice to compete against friends in a voice call! 🎲',
+        options: [
+            {
+                type: 6,
+                name: 'opponent1',
+                description: 'The first user to compete against.',
+                required: true,
+            },
+            {
+                type: 6,
+                name: 'opponent2',
+                description: 'The second user to compete against (optional).',
+                required: false,
+            },
+        ],
+    },
+    {
+        name: 'reminders',
+        description: 'Set up periodic reminders for yourself or others.',
     },
 ];
 
