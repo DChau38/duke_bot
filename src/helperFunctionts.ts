@@ -64,13 +64,23 @@ export const interactionReply= async (interaction: CommandInteraction, URL: stri
 
 
 export function kill_week_old_entries() {
-    const oneWeek = 7 * 24 * 60 * 60 * 1000;
-    for (const userId in tracker) {
-        const offlineTime = new Date(tracker[userId]);
+    const oneWeek = 7 * 24 * 60 * 60 * 1000;  // One week in milliseconds
+
+    // Loop through each userIdentifier and their last offline timestamp
+    for (const [userIdentifier, lastOfflineTime] of Object.entries(tracker)) {
+        // Skip users who are currently online (whose value is null)
+        if (lastOfflineTime === null) {
+            continue;
+        }
+
+        // Convert the last offline timestamp (string) into a Date object
+        const offlineTime = new Date(lastOfflineTime);
         const timeDiff = new Date().getTime() - offlineTime.getTime();
+
+        // If the user has been offline for more than a week, remove them from the tracker
         if (timeDiff > oneWeek) {
-            delete tracker[userId];
-            console.log(`${userId} has been removed from the tracker as they were offline for over a week.`);
+            tracker[userIdentifier]=null;
+            console.log(`${userIdentifier} has been removed from the tracker as they were offline for over a week.`);
         }
     }
 }

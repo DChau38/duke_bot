@@ -6,7 +6,7 @@ import config from './config';
 // common variables
 const TIME_THRESHOLD = 1000;
 
-export const handleSleepCommand = async (message: Message, tracker: Record<string, string>) => {
+export const handleSleepCommand = async (message: Message, tracker: Record<string, string | null>) => {
     const args = message.content.split(' ');
     const inputArgument = args[1];
     const tracker_id = getNicknameOrUsernameElseNull(message.guild as Guild, inputArgument);
@@ -29,7 +29,7 @@ export const handleSleepCommand = async (message: Message, tracker: Record<strin
             .setDescription("Here are the statuses of all tracked users:");
 
         if (botUsername in tracker) {
-            const botStartTime = new Date(tracker[botUsername]);
+            const botStartTime = new Date(tracker[botUsername] as string);
             const { days, hours, minutes, seconds } = calculateTimeDifference(botStartTime, CURRENT_TIME);
             embed.addFields({
                 name: `**${botUsername}**`,
@@ -40,19 +40,28 @@ export const handleSleepCommand = async (message: Message, tracker: Record<strin
         // Loop through tracker and calculate offline times
         for (const [tracker_id, offlineTime] of Object.entries(tracker)) {
             if (tracker_id === botUsername) continue;
-            const OFFLINE_TIME = new Date(offlineTime);
-            const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
-
-            if (Math.abs(OFFLINE_TIME.getTime() - new Date(tracker[botUsername]).getTime()) <= TIME_THRESHOLD) {
+            if (offlineTime === null) {
+                // User is online
                 embed.addFields({
                     name: `**${tracker_id}**`,
-                    value: `(UNKNOWN) OFFLINE SINCE BOT STARTED`,
+                    value: `${tracker_id} is currently online.`,
                 });
             } else {
-                embed.addFields({
-                    name: `**${tracker_id}**`,
-                    value: `Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference:${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`,
-                });
+                // User is offline
+                const OFFLINE_TIME = new Date(offlineTime);
+                const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
+    
+                if (Math.abs(OFFLINE_TIME.getTime() - new Date(tracker[botUsername] as string).getTime()) <= TIME_THRESHOLD) {
+                    embed.addFields({
+                        name: `**${tracker_id}**`,
+                        value: `(UNKNOWN) OFFLINE SINCE BOT STARTED`,
+                    });
+                } else {
+                    embed.addFields({
+                        name: `**${tracker_id}**`,
+                        value: `Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`,
+                    });
+                }
             }
         }
 
@@ -65,20 +74,39 @@ export const handleSleepCommand = async (message: Message, tracker: Record<strin
     }
     // case: username/nickname was given
     else if (tracker_id in tracker) {
-        const OFFLINE_TIME = new Date(tracker[tracker_id]);
-        const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
+        if (tracker[tracker_id] === null) {
+            // User is online
+            const embed = new EmbedBuilder()
+                .setColor('#00FF00')  // Use a different color for online status
+                .setTitle(`${tracker_id}'s Status`)
+                .setDescription(`${tracker_id} is currently online.`);
 
-        const embed = new EmbedBuilder()
-            .setColor('#FF0000')
-            .setTitle(`${tracker_id}'s Status`)
-            .setDescription(`Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference:${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`);
-        const member = message.guild?.members.cache.get(tracker_id);
-        const avatarURL = member?.user.avatarURL();
-        if (avatarURL) {
-            embed.setThumbnail(avatarURL);
+            const member = message.guild?.members.cache.get(tracker_id);
+            const avatarURL = member?.user.avatarURL();
+            if (avatarURL) {
+                embed.setThumbnail(avatarURL);
+            }
+
+            (message.channel as TextChannel).send({ embeds: [embed] });
+        } 
+        else {
+            // User is offline
+            const OFFLINE_TIME = new Date(tracker[tracker_id]);
+            const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
+
+            const embed = new EmbedBuilder()
+                .setColor('#FF0000')  // Red for offline status
+                .setTitle(`${tracker_id}'s Status`)
+                .setDescription(`Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`);
+
+            const member = message.guild?.members.cache.get(tracker_id);
+            const avatarURL = member?.user.avatarURL();
+            if (avatarURL) {
+                embed.setThumbnail(avatarURL);
+            }
+
+            (message.channel as TextChannel).send({ embeds: [embed] });
         }
-
-        (message.channel as TextChannel).send({ embeds: [embed] });
     }
     else {
         // Check if the user is currently online (presence)
