@@ -147,14 +147,17 @@ export function validateVoiceChannel(interaction: CommandInteraction): VoiceChan
 }
 
 export const getNicknameOrUsernameElseNull = (guild: Guild, identifier: string): string | null => {
+    // Convert the identifier to lowercase for case-insensitive comparison
+    const lowerCaseIdentifier = identifier.toLowerCase();
+
     // Find the member using the identifier (either username or nickname)
     const member = guild.members.cache.find(
-        (m) => m.user.username === identifier || m.nickname === identifier
+        (m) => m.user.username.toLowerCase() === lowerCaseIdentifier || (m.nickname && m.nickname.toLowerCase() === lowerCaseIdentifier)
     );
 
     if (member) {
         // If member is found, prioritize nickname if it exists, otherwise return the username
-        return member.nickname ? member.nickname : member.user.username;
+        return (member.nickname ? member.nickname : member.user.username).toLowerCase();
     }
 
     // If no member was found, return null
