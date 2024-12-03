@@ -35,6 +35,12 @@ client.once('ready', async () => {
                 tracker[tracker_id] = currentTime;
                 console.log(`${tracker_id} is offline and has been added to the tracker.`);
             }
+            else {
+                // there are online, so set their value as null
+                const tracker_id=HELPERFUNCTIONS.getNicknameOrUsernameElseNull(member.guild,member.user.username) as string;
+                tracker[tracker_id]=null;
+                console.log(`${tracker_id} is online and has been added to the tracker.`);
+            }
         });
 
         // Find the first text channel in the specific server
@@ -81,7 +87,7 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
     if (isOfflineStatus(status)) {
         const currentTime = new Date().toISOString();
         // if entry already exists
-        if (tracker[tracker_id]){
+        if (tracker[tracker_id]!==null){
             const oldTime=tracker[tracker_id];
             const old_date=new Date(oldTime);
             const new_date=new Date(currentTime);
@@ -94,6 +100,7 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
                 tracker[tracker_id]=currentTime;
             }
         }
+        // if it is null
         else {
             tracker[tracker_id]=currentTime;
         }
@@ -102,7 +109,7 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
             clearTimeout(addition_timers.get(tracker_id));
         }
         const timeout=setTimeout(()=>{
-            if (tracker[tracker_id])return;
+            if (tracker[tracker_id]!==null)return;
             tracker[tracker_id]=currentTime;
             addition_timers.delete(tracker_id);
         },config.times.SLEEPCHECK_CHECK_PERIOD)
@@ -118,7 +125,7 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 
         // add the timer for them to be knocked out the first time they come online
         const timeout=setTimeout(()=>{
-            delete tracker[tracker_id];
+            tracker[tracker_id]=null;
             deletion_timers.delete(tracker_id);
         }, config.times.SLEEPCHECK_CHECK_PERIOD)
         deletion_timers.set(tracker_id,timeout);

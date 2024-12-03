@@ -84,7 +84,7 @@ export const client = new Client({
     ]
 });
 
-export const tracker:{[username:string]:string}={};
+export const tracker: { [username: string]: string | null } = {};
 
 // Async function for login with error handling
 export async function startBot() {

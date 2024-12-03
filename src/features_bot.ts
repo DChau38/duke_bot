@@ -199,17 +199,22 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         let description = "Here are the statuses of all tracked users:\n\n";
 
         if (botUsername in tracker) {
-            const botStartTime = new Date(tracker[botUsername]);
+            const botStartTime = new Date(tracker[botUsername] as string);
             const { days, hours, minutes, seconds } = calculateTimeDifference(botStartTime, CURRENT_TIME);
             description += `**${botUsername}**\nStarted: ${botStartTime.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n\n`;
         }
 
         for (const [tracker_id, offlineTime] of Object.entries(tracker)) {
             if (tracker_id === botUsername) continue;
+            if (offlineTime === null) {
+                // If the user is invisible (status is null), display them as online
+                description += `**${tracker_id}**\nis currently online\n\n`;
+                continue;
+            }
             const OFFLINE_TIME = new Date(offlineTime);
             const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
 
-            if (Math.abs(OFFLINE_TIME.getTime() - new Date(tracker[botUsername]).getTime()) <= TIME_THRESHOLD) {
+            if (Math.abs(OFFLINE_TIME.getTime() - new Date(tracker[botUsername] as string).getTime()) <= TIME_THRESHOLD) {
                 description += `**${tracker_id}**\n(UNKNOWN) OFFLINE SINCE BOT STARTED\n\n`;
             } else {
                 description += `**${tracker_id}**\nLast online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.\n\n`;
@@ -223,6 +228,15 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
     const tracker_id = getNicknameOrUsernameElseNull(interaction.guild as Guild, mentionedUser.username) as string;
 
     if (tracker_id in tracker) {
+        // case: null (online)
+        if (tracker[tracker_id] === null) {
+            return interactionReply(
+                interaction,
+                null,
+                `${tracker_id}'s Status`,
+                `${tracker_id} is currently online.`
+            );
+        }
         const OFFLINE_TIME = new Date(tracker[tracker_id]);
         const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
 
