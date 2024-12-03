@@ -145,8 +145,8 @@ client.on('messageCreate', async (message) => {
             message.channel.send("TEST==TRUE");
         }
 
-        // !status <@xyz> (case-insensitive)
-        else if (message.content.toUpperCase().startsWith('!SLEEPCHECK')) {
+        // !sleep <@xyz> (case-insensitive)
+        else if (message.content.toUpperCase().startsWith('!SLEEP')) {
             FUNCTIONS_MSG.handleSleepCommand(message, tracker);
         }
 
