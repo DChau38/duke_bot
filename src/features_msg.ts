@@ -9,15 +9,14 @@ const TIME_THRESHOLD = 1000;
 export const handleSleepCommand = async (message: Message, tracker: Record<string, string | null>) => {
     const args = message.content.split(' ');
     const inputArgument = args[1];
-    const tracker_id = getNicknameOrUsernameElseNull(message.guild as Guild, inputArgument);
     const CURRENT_TIME = new Date();
     const botUsername = "BOT";
 
     // case: no input argument
     if (!inputArgument) {
-        return sendEmbed(message.channel as TextChannel, null, 'Missing Argument', 'Please provide a username or use `!sleepcheck all` to see all tracked users!');
+        return sendEmbed(message.channel as TextChannel, null, 'Missing Argument', 'Please provide a username or use `!sleep all` to see all tracked users!');
     }
-    // case: !sleepcheck all
+    // case: !sleep all
     else if (inputArgument.toLowerCase() === "all") {
         if (Object.keys(tracker).length === 0) {
             return sendEmbed(message.channel as TextChannel, null, 'No Users Tracked', 'No users are currently being tracked.');
@@ -86,7 +85,71 @@ export const handleSleepCommand = async (message: Message, tracker: Record<strin
         // Send the embed
         return (message.channel as TextChannel).send({ embeds: [embed] });
     }
+    // case: did give a string, but it's not a nickname/username/all
+    const tracker_id = getNicknameOrUsernameElseNull(message.guild as Guild, inputArgument);
+    if (tracker_id === null) {
+        return sendEmbed((message.channel as TextChannel), null, 'Invalid argument', 'For your string argument, please provide all, a nickname, or a username');
+    }
+    // case: username/nickname was given
+    else if (tracker_id in tracker) {
+        if (tracker[tracker_id] === null) {
+            // User is online
+            const embed = new EmbedBuilder()
+                .setColor('#00FF00')  // Use a different color for online status
+                .setTitle(`${tracker_id}'s Status`)
+                .setDescription(`${tracker_id} is currently online.`);
+            const member = message.guild?.members.cache.get(tracker_id);
+            const avatarURL = member?.user.avatarURL();
+            if (avatarURL) {
+                embed.setThumbnail(avatarURL);
+            }
+            (message.channel as TextChannel).send({ embeds: [embed] });
+        } 
+        else {
+            // User is offline
+            const OFFLINE_TIME = new Date(tracker[tracker_id]);
+            const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
+            const embed = new EmbedBuilder()
+                .setColor('#FF0000')  // Red for offline status
+                .setTitle(`${tracker_id}'s Status`)
+                .setDescription(`Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`);
+            const member = message.guild?.members.cache.get(tracker_id);
+            const avatarURL = member?.user.avatarURL();
+            if (avatarURL) {
+                embed.setThumbnail(avatarURL);
+            }
+            (message.channel as TextChannel).send({ embeds: [embed] });
+        }
+    }
+    else {
+        // Check if the user is currently online (presence)
+        const guild = message.guild;
+        if (!guild) {
+            return sendEmbed(message.channel as TextChannel, null, 'Error', "Could not find the server.");
+        }
+        // Try to find the member by username first
+        let member = guild.members.cache.find((member) => member.user.username === inputArgument);
+        // If not found, try searching by nickname
+        if (!member) {
+            member = guild.members.cache.find((member) => member.nickname === inputArgument);
+        }
+        if (!member) {
+            // Case: user not found in the server by username or nickname
+            return sendEmbed(message.channel as TextChannel, null, 'User Not Found', `${inputArgument} not found in the server.`);
+        }
+        // Case: check if the user is online
+        const presence = member.presence;
+        if (presence && presence.status !== 'offline') {
+            // User is online
+            return sendEmbed(message.channel as TextChannel, null, 'User Status', `${inputArgument} is already online!`);
+        } else {
+            // User is offline
+            return sendEmbed(message.channel as TextChannel, null, 'User Status', `${inputArgument} is not online currently.`);
+        }
+    }
 };
+
+
 
 
 export const handleFeaturesCommand = async (message: Message) => {
@@ -94,7 +157,7 @@ export const handleFeaturesCommand = async (message: Message) => {
         .setColor('#00FF00')
         .setTitle('Tang Sanzhang Features')
         .addFields(
-            { name: '**!sleepCheck [username]**', value: 'Check how long you slept. Upon waking up and logging on, you have 15m to check the time difference.' },
+            { name: '**!sleep [username]**', value: 'Check how long you slept. Upon waking up and logging on, you have 15m to check the time difference.' },
             { name: '**!arena @username @username2 ...**', value: 'Roll the dice against your opponents in the voice call.' },
             { name: '**!flip**', value: 'Flip the coin to get heads or tails.' },
             { name: '**!hangman**', value: 'Play Hangman with your friends.' },

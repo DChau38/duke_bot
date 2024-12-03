@@ -4,7 +4,7 @@ Hey there! 👋 Ready to have some fun and make your server even more awesome? C
 
 ### **✨ Available Commands**
 
-- **!sleepCheck [username]**  
+- **!sleep [username]**  
   Ever wondered how long you've been asleep or how long it's been since you logged on? This command will show you exactly that! 🛌💤  
   Use "all" instead of a specific username to track the status for everyone.
 
@@ -27,7 +27,7 @@ Hey there! 👋 Ready to have some fun and make your server even more awesome? C
 
 ![hangman_example](./static/examples/hangman_example.JPG)
 ![flip_example](./static/examples/flip_example.JPG)
-![sleepcheck_example](./static/examples/sleepcheck_example.JPG)
+![sleep_example](./static/examples/sleepcheck_example.JPG)
 
 ---
 
