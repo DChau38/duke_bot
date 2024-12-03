@@ -1,4 +1,4 @@
-import { Interaction, EmbedBuilder, AttachmentBuilder, TextChannel,CommandInteraction, Message, User } from 'discord.js';
+import { Interaction, EmbedBuilder, AttachmentBuilder, TextChannel,CommandInteraction, Message, User, VoiceChannel } from 'discord.js';
 import {generate} from 'random-words'
 import { interactionReply, selectMemberWithRequiredRoles, selectRandomServerMember, sendEmbed } from './helperFunctionts';
 import config from './config';
@@ -152,4 +152,30 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
         await interactionReply(interaction,'./static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `<@${mentionedUser.id}> gets hit!`);
     }
 };
+import { joinVoiceChannel } from '@discordjs/voice';
 
+export const handleJoinVCCommand = async (interaction: CommandInteraction, voiceChannel: VoiceChannel) => {
+    try {
+        joinVoiceChannel({
+            channelId: voiceChannel.id,
+            guildId: interaction.guild!.id,
+            adapterCreator: interaction.guild!.voiceAdapterCreator,
+        });
+
+        await interactionReply(
+            interaction,
+            null, // No image URL
+            'Voice Channel Joined',
+            'I have successfully joined your voice channel!'
+        );
+    } catch (error) {
+        console.error(error);
+
+        await interactionReply(
+            interaction,
+            null, // No image URL
+            'Error Joining Voice Channel',
+            'An error occurred while trying to join your voice channel.'
+        );
+    }
+};

@@ -20,6 +20,10 @@ const commands = [
         description: 'Hangman game',
     },
     {
+        name: 'joinvc',
+        description:'Join the vc',
+    },
+    {
         name: 'attack',
         description: 'Attack another user with a random chance',
         options: [

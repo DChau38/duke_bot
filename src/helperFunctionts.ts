@@ -1,4 +1,4 @@
-import { EmbedBuilder, AttachmentBuilder, TextChannel, ChannelType, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, AttachmentBuilder, TextChannel, ChannelType, CommandInteraction, VoiceChannel } from 'discord.js';
 import { client, tracker } from './setup';
 import config from './config';
 
@@ -124,3 +124,24 @@ export const selectRandomServerMember = async () => {
         return null;
     }
 };
+
+
+export function validateVoiceChannel(interaction: CommandInteraction): VoiceChannel {
+    if (!interaction.guild) {
+        throw new Error("This command can only be used in a server.");
+    }
+
+    const member = interaction.guild.members.cache.get(interaction.user.id);
+    if (!member || !member.voice || !member.voice.channel) {
+        throw new Error("You must be in a voice channel.");
+    }
+
+    const channel = member.voice.channel;
+
+    // Check if the channel is a VoiceChannel
+    if (channel.isVoiceBased() && channel.type === ChannelType.GuildVoice) {
+        return channel as VoiceChannel;
+    }
+
+    throw new Error("You must be in a regular voice channel, not a stage channel.");
+}
