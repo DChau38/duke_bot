@@ -152,3 +152,4 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
         await interactionReply(interaction,'./static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `<@${mentionedUser.id}> gets hit!`);
     }
 };
+
