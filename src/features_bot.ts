@@ -154,7 +154,7 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
         await interactionReply(interaction,'./static/Zhu.webp', `${randomMember.user.username}#${randomMember.user.discriminator}`, 'you give me c');
     } else {
         // Regular hit on mentioned user
-        await interactionReply(interaction,'./static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `<@${mentionedUser.id}> gets hit!`);
+        await interactionReply(interaction,'./static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `${mentionedUser.username} gets hit!`);
     }
 };
 import { joinVoiceChannel } from '@discordjs/voice';
