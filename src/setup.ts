@@ -4,18 +4,35 @@ import 'dotenv/config';
 
 const commands = [
     {
-        name:'test',
-        description:'test if API is working',
+        name: 'test',
+        description: 'Test if API is working',
     },
     {
-        name:'coinflip',
+        name: 'reply',
+        description: 'Test reply',
+    },
+    {
+        name: 'coinflip',
         description: 'Flip a coin',
     },
     {
-        name:'hangman',
-        description:'hangman',
+        name: 'hangman',
+        description: 'Hangman game',
     },
-  ];
+    {
+        name: 'attack',
+        description: 'Attack another user with a random chance',
+        options: [
+            {
+                type: 6,  // Type 6 corresponds to a `User` type argument
+                name: 'target',
+                description: 'The user to attack',
+                required: true,
+            },
+        ],
+    },
+];
+
   
 
 export const client = new Client({

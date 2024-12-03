@@ -211,7 +211,7 @@ client.on('messageCreate', async (message) => {
 client.on('interactionCreate',async(interaction)=>{
     if (!interaction.isCommand())return; // commands only
     const {commandName}=interaction;
-    
+
     // arguments
     const commandInteraction=(interaction as CommandInteraction);
     const normalizedCommandName=commandName.toUpperCase();
@@ -223,7 +223,7 @@ client.on('interactionCreate',async(interaction)=>{
     }
     // flip
     else if (normalizedCommandName==='REPLY'){
-        await HELPERFUNCTIONS.interactionReply(interaction,'./static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
+        await HELPERFUNCTIONS.interactionReply(commandInteraction,'./static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
     }
     // coinflip
     else if (normalizedCommandName==='COINFLIP'){
@@ -232,6 +232,9 @@ client.on('interactionCreate',async(interaction)=>{
     // hangman
     else if (normalizedCommandName==='HANGMAN'){
         await FUNCTIONS_BOT.handleHangmanInteraction(commandInteraction,channel);
+    }
+    else if (normalizedCommandName==='ATTACK'){
+        await FUNCTIONS_BOT.handleAttackInteraction(commandInteraction);
     }
 
 });

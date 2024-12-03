@@ -1,6 +1,6 @@
 import { Interaction, EmbedBuilder, AttachmentBuilder, TextChannel,CommandInteraction, Message, User } from 'discord.js';
 import {generate} from 'random-words'
-import { selectMemberWithRequiredRoles, selectRandomServerMember, sendEmbed } from './helperFunctionts';
+import { interactionReply, selectMemberWithRequiredRoles, selectRandomServerMember, sendEmbed } from './helperFunctionts';
 import config from './config';
 import { client } from './setup';
 
@@ -120,98 +120,35 @@ export const handleHangmanInteraction = async (interaction:CommandInteraction, c
     });
 };
 
-  
 export const handleAttackInteraction = async (interaction: CommandInteraction): Promise<void> => {
     // Validate mentioned user
-    const mentionedUser = interaction.options.get('target')?.user as User | undefined;
+    const mentionedUser = interaction.options.get('target')!.user as User;
     if (!mentionedUser) {
-        await interaction.reply({
-            embeds: [{
-                title: 'Missing User',
-                description: 'Please mention a user for this feature',
-                color: 0xff0000
-            }],
-            ephemeral: true
-        });
+        await interactionReply(interaction, null, 'Missing User', 'Please mention a user for this feature');
         return;
     }
 
     // Determine attack outcome
-    const attackChance = Math.floor(Math.random() * 101);
-    let current_userid: string;
-    let targetUser: User;
+    const less_than_one_percent_chance = Math.floor(Math.random() * 101);
 
-    // Create embed
-    const embed = new EmbedBuilder().setColor('#3498db');
-
-    if (attackChance === 1) {
+    if (less_than_one_percent_chance === 1) {
         // 1% chance: Random member with required roles
-        const randomMember = await selectMemberWithRequiredRoles();
-        if (!randomMember) {
-            await interaction.reply({
-                embeds: [{
-                    title: 'Error',
-                    description: 'Failed to select a random member.',
-                    color: 0xff0000
-                }],
-                ephemeral: true
-            });
+        const randomMemberOfRightRole = await selectMemberWithRequiredRoles();
+        if (!randomMemberOfRightRole) {
+            await interactionReply(interaction, null, 'Error', 'Failed to select a random member.');
             return;
         }
-
-        targetUser = randomMember.user;
-        embed.setAuthor({
-            name: `${targetUser.username}#${targetUser.discriminator}`,
-            iconURL: targetUser.displayAvatarURL()
-        });
-        embed.setDescription('you give me c');
-        embed.addFields({ name: '...', value: `huh? <@${targetUser.id}>` });
-        current_userid = targetUser.id;
-    } else if (attackChance === 0) {
+        await interactionReply(interaction,'./static/Zhu.webp', `${randomMemberOfRightRole.user.username}#${randomMemberOfRightRole.user.discriminator}`, 'you give me c');
+    } else if (less_than_one_percent_chance === 0) {
         // 0% chance: Literally random person in server
         const randomMember = await selectRandomServerMember();
         if (!randomMember) {
-            await interaction.reply({
-                embeds: [{
-                    title: 'Error',
-                    description: 'Failed to select a random member.',
-                    color: 0xff0000
-                }],
-                ephemeral: true
-            });
+            await interactionReply(interaction, null, 'Error', 'Failed to select a random member.');
             return;
         }
-
-        targetUser = randomMember.user;
-        embed.setAuthor({
-            name: `${targetUser.username}#${targetUser.discriminator}`,
-            iconURL: targetUser.displayAvatarURL()
-        });
-        embed.setDescription('you give me c');
-        embed.addFields({ name: '...', value: `huh? <@${targetUser.id}>` });
-        current_userid = targetUser.id;
+        await interactionReply(interaction,'./static/Zhu.webp', `${randomMember.user.username}#${randomMember.user.discriminator}`, 'you give me c');
     } else {
         // Regular hit on mentioned user
-        targetUser = mentionedUser;
-        embed.setAuthor({
-            name: `${targetUser.username}#${targetUser.discriminator}`,
-            iconURL: targetUser.displayAvatarURL()
-        });
-        embed.addFields({ name: 'Bang!', value: `<@${targetUser.id}> gets hit!` });
-        current_userid = targetUser.id;
+        await interactionReply(interaction,'./static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `<@${mentionedUser.id}> gets hit!`);
     }
-
-    // Prepare attachment
-    const attachment = new AttachmentBuilder('./static/Zhu.webp');
-    embed.setImage('attachment://Zhu.webp');
-
-    // Send response
-    await interaction.reply({
-        content: `<@${current_userid}>`,
-        embeds: [embed],
-        files: [attachment]
-    });
 };
-
-
-

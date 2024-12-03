@@ -34,7 +34,7 @@ export const sendEmbed = async (channel: TextChannel, URL: string | null, title:
     }
 };
 
-export const interactionReply = async (interaction: CommandInteraction, URL: string | null, title: string, description: string) => {
+export const interactionReply= async (interaction: CommandInteraction, URL: string | null, title: string, description: string) => {
     try {
         // Define embed object directly without using EmbedBuilder
         const embed: any = {
@@ -47,7 +47,7 @@ export const interactionReply = async (interaction: CommandInteraction, URL: str
         // Prepare the reply options
         const replyOptions: any = {
             embeds: [embed],  // Directly use the embed object here
-            //ephemeral: true    // Make the message ephemeral
+            // ephemeral: true    // Make the message ephemeral
         };
 
         // If URL is provided, add the file to the reply
