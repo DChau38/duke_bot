@@ -56,7 +56,7 @@ export const interactionReply= async (interaction: CommandInteraction, URL: stri
         }
 
         // Send the reply with the prepared options
-        await interaction.reply(replyOptions);
+        await interaction.reply({ content: `<@${interaction.user.id}>` });        await interaction.followUp(replyOptions);
     } catch (error) {
         console.error('Error sending reply:', error);
     }

@@ -5,6 +5,7 @@ import config from './config';
 import { client, tracker } from './setup';
 
 export async function testFunction(commandInteraction: CommandInteraction) {
+
     await commandInteraction.reply('TEST===TRUE');
 }
 
