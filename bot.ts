@@ -17,15 +17,7 @@ client.once('ready', async () => {
         }
         console.log(`(2) SERVER CONNECTION: SUCCESS - ${guild.name} (${guild.id})`);
 
-        // Find the first text channel in the specific server
-        if (!guild.channels) {
-            console.error("Guild channels not found");
-            return;
-        }
-        const channel = guild.channels.cache.find(
-            (channel): channel is TextChannel =>
-                channel.type === ChannelType.GuildText
-        );
+
         // put itself in tracker
         const currentTime = new Date().toISOString();
         tracker["BOT"]=currentTime;
@@ -35,16 +27,25 @@ client.once('ready', async () => {
         const correctMembers = members.filter((member) =>
             member.roles.cache.some((role) => config.mis.requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
         );
-        correctMembers.forEach((member) => {
-            // If the member does not have presence data (i.e., they're offline or not online yet)
+        correctMembers.forEach(async (member) => {
             if (!member.presence) {
                 // Get the current time and add the member to the tracker
+                const tracker_id=HELPERFUNCTIONS.getNicknameOrUsernameElseNull(member.guild,member.user.username) as string;
                 const currentTime = new Date().toISOString();
-                tracker[member.user.username] = currentTime;
-                console.log(`${member.user.username} is offline and has been added to the tracker.`);
+                tracker[tracker_id] = currentTime;
+                console.log(`${tracker_id} is offline and has been added to the tracker.`);
             }
         });
 
+        // Find the first text channel in the specific server
+        if (!guild.channels) {
+            console.error("Guild channels not found");
+            return;
+        }
+        const channel = guild.channels.cache.find(
+            (channel): channel is TextChannel =>
+                channel.type === ChannelType.GuildText
+        );
         if (channel) {
             console.log("(3) CHANNEL CONNECTION: SUCCESS");
         } else {
@@ -57,29 +58,31 @@ client.once('ready', async () => {
 
 const deletion_timers=new Map<string, NodeJS.Timeout>();
 const addition_timers=new Map<string, NodeJS.Timeout>();
-client.on('presenceUpdate', (oldPresence, newPresence) => {
+client.on('presenceUpdate', async (oldPresence, newPresence) => {
     if (!newPresence || !newPresence.user) {
         console.log("No presence update detected.");
         return;
     }
 
-    const username = newPresence.user.username;
-    const status = newPresence.status;
-
+    // type guard for type narrowing
     const isOfflineStatus = (s: string): s is 'offline' => s === 'offline';
 
+    // variables
+    const username = newPresence.user.username;
+    const tracker_id=HELPERFUNCTIONS.getNicknameOrUsernameElseNull(newPresence.guild!,username) as string;
+    const status = newPresence.status;
     const member = newPresence.guild?.members.cache.get(newPresence.user.id);
 
+    // case: skip if member without the right roles
     if (!member || !member.roles.cache.some(role => config.mis.requiredRoles.includes(role.name))) {
-        // User does not have any of the required roles
         return;
     }
 
     if (isOfflineStatus(status)) {
         const currentTime = new Date().toISOString();
         // if entry already exists
-        if (tracker[username]){
-            const oldTime=tracker[username];
+        if (tracker[tracker_id]){
+            const oldTime=tracker[tracker_id];
             const old_date=new Date(oldTime);
             const new_date=new Date(currentTime);
             const time_diff=new_date.getTime()-old_date.getTime();
@@ -88,37 +91,37 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
                 return;
             }
             else {
-                tracker[username]=currentTime;
+                tracker[tracker_id]=currentTime;
             }
         }
         else {
-            tracker[username]=currentTime;
+            tracker[tracker_id]=currentTime;
         }
         // handle replacement if we deleted after we went offline
-        if (addition_timers.has(username)){
-            clearTimeout(addition_timers.get(username));
+        if (addition_timers.has(tracker_id)){
+            clearTimeout(addition_timers.get(tracker_id));
         }
         const timeout=setTimeout(()=>{
-            if (tracker[username])return;
-            tracker[username]=currentTime;
-            addition_timers.delete(username);
+            if (tracker[tracker_id])return;
+            tracker[tracker_id]=currentTime;
+            addition_timers.delete(tracker_id);
         },config.times.SLEEPCHECK_CHECK_PERIOD)
-        addition_timers.set(username,timeout);
+        addition_timers.set(tracker_id,timeout);
 
 
-        console.log(`${newPresence.user.username} has gone offline at ${currentTime}`);
-    } else if (!isOfflineStatus(status) && tracker[username]) {
+        console.log(`${tracker_id} has gone offline at ${currentTime}`);
+    } else if (!isOfflineStatus(status) && tracker[tracker_id]) {
         // if they have been on already, skip
-        if (deletion_timers.has(username)){
+        if (deletion_timers.has(tracker_id)){
             return;
         }
 
         // add the timer for them to be knocked out the first time they come online
         const timeout=setTimeout(()=>{
-            delete tracker[username];
-            deletion_timers.delete(username);
+            delete tracker[tracker_id];
+            deletion_timers.delete(tracker_id);
         }, config.times.SLEEPCHECK_CHECK_PERIOD)
-        deletion_timers.set(username,timeout);
+        deletion_timers.set(tracker_id,timeout);
     }
 });
 
@@ -208,36 +211,40 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-client.on('interactionCreate',async(interaction)=>{
-    if (!interaction.isCommand())return; // commands only
-    const {commandName}=interaction;
+client.on('interactionCreate', async (interaction) => {
+    try {
+        if (!interaction.isCommand()) return; // commands only
+        const { commandName } = interaction;
 
-    // arguments
-    const commandInteraction=(interaction as CommandInteraction);
-    const normalizedCommandName=commandName.toUpperCase();
-    const channel=(commandInteraction.channel as TextChannel) ;
+        // arguments
+        const commandInteraction = (interaction as CommandInteraction);
+        const normalizedCommandName = commandName.toUpperCase();
+        const channel = (commandInteraction.channel as TextChannel);
 
-    // hang
-    if (normalizedCommandName==='TEST'){
-        await commandInteraction.reply('TEST===TRUE');
+        // hang
+        if (normalizedCommandName === 'TEST') {
+            await commandInteraction.reply('TEST===TRUE');
+        }
+        // flip
+        else if (normalizedCommandName === 'REPLY') {
+            await HELPERFUNCTIONS.interactionReply(commandInteraction, './static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
+        }
+        // coinflip
+        else if (normalizedCommandName === 'COINFLIP') {
+            await FUNCTIONS_BOT.handleCoinFlipInteraction(commandInteraction);
+        }
+        // hangman
+        else if (normalizedCommandName === 'HANGMAN') {
+            await FUNCTIONS_BOT.handleHangmanInteraction(commandInteraction, channel);
+        }
+        else if (normalizedCommandName === 'ATTACK') {
+            await FUNCTIONS_BOT.handleAttackInteraction(commandInteraction);
+        }
+    } catch (error) {
+        console.error('Error handling interaction:', error);
     }
-    // flip
-    else if (normalizedCommandName==='REPLY'){
-        await HELPERFUNCTIONS.interactionReply(commandInteraction,'./static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
-    }
-    // coinflip
-    else if (normalizedCommandName==='COINFLIP'){
-        await FUNCTIONS_BOT.handleCoinFlipInteraction(commandInteraction);
-    } 
-    // hangman
-    else if (normalizedCommandName==='HANGMAN'){
-        await FUNCTIONS_BOT.handleHangmanInteraction(commandInteraction,channel);
-    }
-    else if (normalizedCommandName==='ATTACK'){
-        await FUNCTIONS_BOT.handleAttackInteraction(commandInteraction);
-    }
-
 });
+
 
 // network issue
 client.on('disconnect', async () => {
