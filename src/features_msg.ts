@@ -22,24 +22,35 @@ export const handleSleepCommand = async (message: Message, tracker: Record<strin
         if (Object.keys(tracker).length === 0) {
             return sendEmbed(message.channel as TextChannel, null, 'No Users Tracked', 'No users are currently being tracked.');
         }
-
+    
         const embed = new EmbedBuilder()
             .setColor('#00FF00')
             .setTitle("Tracked Users' Offline Status")
             .setDescription("Here are the statuses of all tracked users:");
-
+    
+        // Check if bot username exists in tracker
         if (botUsername in tracker) {
             const botStartTime = new Date(tracker[botUsername] as string);
-            const { days, hours, minutes, seconds } = calculateTimeDifference(botStartTime, CURRENT_TIME);
-            embed.addFields({
-                name: `**${botUsername}**`,
-                value: `Started: ${botStartTime.toLocaleString()}\nTime difference:${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.`,
-            });
+            
+            // Check if botStartTime is a valid date
+            if (!isNaN(botStartTime.getTime())) {
+                const { days, hours, minutes, seconds } = calculateTimeDifference(botStartTime, CURRENT_TIME);
+                embed.addFields({
+                    name: `**${botUsername}**`,
+                    value: `Started: ${botStartTime.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.`,
+                });
+            }
         }
-
+    
+        // Sort the tracker entries alphabetically by tracker_id
+        const sortedTrackerIds = Object.keys(tracker).sort();
+    
         // Loop through tracker and calculate offline times
-        for (const [tracker_id, offlineTime] of Object.entries(tracker)) {
-            if (tracker_id === botUsername) continue;
+        for (const tracker_id of sortedTrackerIds) {
+            if (tracker_id === botUsername) continue; // Skip bot username
+    
+            const offlineTime = tracker[tracker_id];
+    
             if (offlineTime === null) {
                 // User is online
                 embed.addFields({
@@ -49,8 +60,15 @@ export const handleSleepCommand = async (message: Message, tracker: Record<strin
             } else {
                 // User is offline
                 const OFFLINE_TIME = new Date(offlineTime);
-                const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
     
+                // Check if OFFLINE_TIME is a valid date
+                if (isNaN(OFFLINE_TIME.getTime())) {
+                    console.error('Invalid offline time data for user:', tracker_id);
+                    continue; // Skip invalid offline time data
+                }
+    
+                const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
+        
                 if (Math.abs(OFFLINE_TIME.getTime() - new Date(tracker[botUsername] as string).getTime()) <= TIME_THRESHOLD) {
                     embed.addFields({
                         name: `**${tracker_id}**`,
@@ -64,79 +82,9 @@ export const handleSleepCommand = async (message: Message, tracker: Record<strin
                 }
             }
         }
-
+    
         // Send the embed
         return (message.channel as TextChannel).send({ embeds: [embed] });
-    }
-    // case: did give a string, but it's not a nickname/username/all
-    else if (tracker_id === null) {
-        return sendEmbed((message.channel as TextChannel), null, 'Invalid argument', 'For your string argument, please provide all, a nickname, or a username');
-    }
-    // case: username/nickname was given
-    else if (tracker_id in tracker) {
-        if (tracker[tracker_id] === null) {
-            // User is online
-            const embed = new EmbedBuilder()
-                .setColor('#00FF00')  // Use a different color for online status
-                .setTitle(`${tracker_id}'s Status`)
-                .setDescription(`${tracker_id} is currently online.`);
-
-            const member = message.guild?.members.cache.get(tracker_id);
-            const avatarURL = member?.user.avatarURL();
-            if (avatarURL) {
-                embed.setThumbnail(avatarURL);
-            }
-
-            (message.channel as TextChannel).send({ embeds: [embed] });
-        } 
-        else {
-            // User is offline
-            const OFFLINE_TIME = new Date(tracker[tracker_id]);
-            const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
-
-            const embed = new EmbedBuilder()
-                .setColor('#FF0000')  // Red for offline status
-                .setTitle(`${tracker_id}'s Status`)
-                .setDescription(`Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`);
-
-            const member = message.guild?.members.cache.get(tracker_id);
-            const avatarURL = member?.user.avatarURL();
-            if (avatarURL) {
-                embed.setThumbnail(avatarURL);
-            }
-
-            (message.channel as TextChannel).send({ embeds: [embed] });
-        }
-    }
-    else {
-        // Check if the user is currently online (presence)
-        const guild = message.guild;
-        if (!guild) {
-            return sendEmbed(message.channel as TextChannel, null, 'Error', "Could not find the server.");
-        }
-
-        // Try to find the member by username first
-        let member = guild.members.cache.find((member) => member.user.username === inputArgument);
-
-        // If not found, try searching by nickname
-        if (!member) {
-            member = guild.members.cache.find((member) => member.nickname === inputArgument);
-        }
-
-        if (!member) {
-            // Case: user not found in the server by username or nickname
-            return sendEmbed(message.channel as TextChannel, null, 'User Not Found', `${inputArgument} not found in the server.`);
-        }
-
-        // Case: check if the user is online
-        const presence = member.presence;
-        if (presence && presence.status !== 'offline') {
-            // User is online
-            return sendEmbed(message.channel as TextChannel, null, 'User Status', `${inputArgument} is already online!`);
-        } else {
-            // User is offline
-            return sendEmbed(message.channel as TextChannel, null, 'User Status', `${inputArgument} is not online currently.`);
-        }
     }
 };
 

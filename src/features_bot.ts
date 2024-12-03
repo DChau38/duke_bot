@@ -220,8 +220,11 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
                 description += `**${tracker_id}**\nLast online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.\n\n`;
             }
         }
+        // Alphabetize by name before returning the description
+        const descriptionLines = description.split('\n\n');
+        descriptionLines.sort((a, b) => a.localeCompare(b));
 
-        return interactionReply(interaction, null, "Tracked Users' Offline Status", description.trim());
+        return interactionReply(interaction, null, "Tracked Users' Offline Status", descriptionLines.join('\n\n'));
     }
 
     // Case: Username/Nickname was given
