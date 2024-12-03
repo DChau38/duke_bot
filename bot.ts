@@ -223,7 +223,7 @@ client.on('interactionCreate', async (interaction) => {
 
         // hang
         if (normalizedCommandName === 'TEST') {
-            await commandInteraction.reply('TEST===TRUE');
+            await FUNCTIONS_BOT.testFunction(commandInteraction);
         }
         // flip
         else if (normalizedCommandName === 'REPLY') {
@@ -292,4 +292,6 @@ startBot();
 setInterval(HELPERFUNCTIONS.kill_week_old_entries, 24 * 60 * 60 * 1000); 
 
 setInterval(HELPERFUNCTIONS.sendReminder, Math.floor((Math.random()*12)) * 60 * 60 * 1000);
+
+
 

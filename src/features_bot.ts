@@ -4,6 +4,10 @@ import { interactionReply, selectMemberWithRequiredRoles, selectRandomServerMemb
 import config from './config';
 import { client } from './setup';
 
+export async function testFunction(commandInteraction: CommandInteraction) {
+    await commandInteraction.reply('TEST===TRUE');
+}
+
 export const handleCoinFlipInteraction=async(interaction:CommandInteraction)=>{
     const coinSides = ['Heads', 'Tails'];
     const result = coinSides[Math.floor(Math.random() * coinSides.length)];
