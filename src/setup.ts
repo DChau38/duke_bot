@@ -48,19 +48,13 @@ const commands = [
     },
     {
         name: 'arena',
-        description: 'Roll dice to compete against friends in a voice call! 🎲',
+        description: 'Roll dice to kick out your friends in a voice call! 🎲',
         options: [
             {
-                type: 6,
-                name: 'opponent1',
-                description: 'The first user to compete against.',
+                type: 3, // Type 3 corresponds to a string input
+                name: 'opponents',
+                description: 'The users to compete against, separated by a space.',
                 required: true,
-            },
-            {
-                type: 6,
-                name: 'opponent2',
-                description: 'The second user to compete against (optional).',
-                required: false,
             },
         ],
     },
