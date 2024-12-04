@@ -194,7 +194,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
 
             if (offlineTime === null) {
                 // If the user is invisible (status is null), display them as online
-                description += `**${tracker_id}**\nis currently online\n\n`;
+                description += `**${tracker_id}**\n(ONLINE) is currently online\n\n`;
                 continue;
             }
 
@@ -208,14 +208,51 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
             }
         }
 
-        // If sorting argument is provided as 'a' or 'alphabet', sort the description
+        let descriptionLines = description.split('\n\n');
+        // If sortingArgument is provided as 'a' or 'alphabet', sort alphabetically
         if (sortingArgument === 'a' || sortingArgument === 'alphabet') {
-            const descriptionLines = description.split('\n\n');
-            descriptionLines.sort((a, b) => a.localeCompare(b));
-            description = descriptionLines.join('\n\n');
+            descriptionLines.sort((a, b) => {
+                const aUsername = a.match(/^\*\*(.*?)\*\*/)?.[1];
+                const bUsername = b.match(/^\*\*(.*?)\*\*/)?.[1];
+
+                if (aUsername && bUsername) {
+                    return aUsername.localeCompare(bUsername);
+                }
+
+                return 0;
+            });
+        } else {
+            // Default sorting logic: UNKNOWN first, ONLINE second, then others (offline users)
+            descriptionLines.sort((a, b) => {
+                // Extract the status part (UNKNOWN, ONLINE, or others)
+                const aStatus = a.includes("(UNKNOWN)") ? 0 :
+                    a.includes("(ONLINE)") ? 1 : 2;
+                const bStatus = b.includes("(UNKNOWN)") ? 0 :
+                    b.includes("(ONLINE)") ? 1 : 2;
+
+                // Sort by status first (UNKNOWN > ONLINE > others)
+                if (aStatus !== bStatus) {
+                    return aStatus - bStatus;
+                }
+
+                // If statuses are the same, sort alphabetically by username
+                const aUsername = a.match(/^\*\*(.*?)\*\*/)?.[1]; // Extract the username from **username**
+                const bUsername = b.match(/^\*\*(.*?)\*\*/)?.[1];
+
+                if (aUsername && bUsername) {
+                    return aUsername.localeCompare(bUsername);
+                }
+
+                return 0; // Fallback case if no username found
+            });
         }
 
+        // Join the sorted chunks back together
+        description = descriptionLines.join('\n\n');
+
         return UTILS.interactionReply(interaction, null, "Tracked Users' Offline Status", description);
+
+
     }
 
     // Case: Username/Nickname was given
