@@ -1,4 +1,4 @@
-import { Message, Attachment, TextChannel, ChannelType, VoiceChannel, GuildMember, User, EmbedBuilder, AttachmentBuilder, Guild } from 'discord.js';
+import { Message, Attachment, TextChannel, ChannelType, VoiceChannel, GuildMember, User, EmbedBuilder, AttachmentBuilder, Guild, Collection } from 'discord.js';
 import { calculateTimeDifference, sendEmbed, getNicknameOrUsernameElseNull } from './helperFunctionts';
 import { client } from './setup'
 import config from './config';
@@ -321,9 +321,15 @@ export const handleAttackCommand = async (message: Message) => {
         const guild = await client.guilds.fetch(process.env.SERVER_ID as string)
         const members = await guild.members.fetch();
         // random person from roles
-        const correctMembers = members.filter((member) =>
-            member.roles.cache.some((role) => config.mis.requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
-        );
+        let correctMembers:Collection<string,GuildMember>;
+        if (guild.id===process.env.DISCORD_GUILD_ID){
+            correctMembers = members.filter((member) =>
+                member.roles.cache.some((role) => config.mis.requiredRoles.includes(role.name)) // Check for required roles
+            );
+        }
+        else {
+            correctMembers=members;
+        }
 
         const randomMember = correctMembers.random(); // .random() gives you a random element from a collection
         if (!randomMember) {

@@ -1,4 +1,4 @@
-import {ChannelType, TextChannel,PresenceStatus, CommandInteraction} from 'discord.js';
+import {ChannelType, TextChannel,PresenceStatus, CommandInteraction, Collection, GuildMember} from 'discord.js';
 import {client, tracker, startBot} from './src/setup';
 import * as FUNCTIONS_MSG from './src/features_msg';
 import * as FUNCTIONS_BOT from './src/features_bot';
@@ -8,127 +8,156 @@ import 'dotenv/config';
 
 
 client.once('ready', async () => {
-    // Check if the bot can access the server (guild)
     try {
-        const guild = await client.guilds.fetch(process.env.DISCORD_GUILD_ID as string);
-        if (!guild) {
-            console.error("Guild not found");
-            return;
-        }
-        console.log(`(2) SERVER CONNECTION: SUCCESS - ${guild.name} (${guild.id})`);
+        // Iterate through all guilds (servers) the bot is a part of using a for loop
+        for (const guild of client.guilds.cache.values()) {
+            console.log(`(2) SERVER CONNECTION: SUCCESS - ${guild.name} (${guild.id})`);
 
+            // Initialize a map for this server if it doesn't already exist
+            tracker.set(guild.id, new Map());
 
-        // put itself in tracker
-        const currentTime = new Date().toISOString();
-        tracker["BOT"]=currentTime;
+            // Put itself in tracker (example for the bot itself)
+            const currentTime = new Date().toISOString();
+            tracker.get(guild.id)?.set('BOT', currentTime);  // 'BOT' tracks the bot's status per server
 
-        // put invisible users in the tracker
-        const members = await guild.members.fetch();
-        const correctMembers = members.filter((member) =>
-            member.roles.cache.some((role) => config.mis.requiredRoles.includes(role.name)) // Checks if the member has one of the required roles
-        );
-        correctMembers.forEach(async (member) => {
-            if (!member.presence) {
-                // Get the current time and add the member to the tracker
-                const tracker_id=HELPERFUNCTIONS.getNicknameOrUsernameElseNull(member.guild,member.user.username) as string;
-                const currentTime = new Date().toISOString();
-                tracker[tracker_id] = currentTime;
-                console.log(`${tracker_id} is offline and has been added to the tracker.`);
+            // Get all members of the guild
+            const members = await guild.members.fetch();
+            let correctMembers:Collection<string,GuildMember>;
+            // if it's that server ...
+            if (guild.id===process.env.DISCORD_GUILD_ID){
+                correctMembers = members.filter((member) =>
+                    member.roles.cache.some((role) => config.mis.requiredRoles.includes(role.name)) // Check for required roles
+                );
             }
             else {
-                // there are online, so set their value as null
-                const tracker_id=HELPERFUNCTIONS.getNicknameOrUsernameElseNull(member.guild,member.user.username) as string;
-                tracker[tracker_id]=null;
-                console.log(`${tracker_id} is online and has been added to the tracker.`);
+                correctMembers=members;
             }
-        });
 
-        // Find the first text channel in the specific server
-        if (!guild.channels) {
-            console.error("Guild channels not found");
-            return;
-        }
-        const channel = guild.channels.cache.find(
-            (channel): channel is TextChannel =>
-                channel.type === ChannelType.GuildText
-        );
-        if (channel) {
-            console.log("(3) CHANNEL CONNECTION: SUCCESS");
-        } else {
-            console.log("(3) No channel found to send initial message");
+
+            // Replace `forEach` with a standard for loop
+            for (const [_, member] of correctMembers) {
+                // Check if member.presence exists before accessing properties
+                if (!member.presence) {
+                    // If the member is offline
+                    const tracker_id = HELPERFUNCTIONS.getNicknameOrUsernameElseNull(member.guild, member.user.username) as string;
+                    const currentTime = new Date().toISOString();
+                    tracker.get(guild.id)?.set(tracker_id, currentTime);
+                    console.log(`${tracker_id} is offline and has been added to the tracker for ${guild.name}.`);
+                } else {
+                    // If the member is online
+                    const tracker_id = HELPERFUNCTIONS.getNicknameOrUsernameElseNull(member.guild, member.user.username) as string;
+                    tracker.get(guild.id)?.set(tracker_id, null);
+                    console.log(`${tracker_id} is online and has been added to the tracker for ${guild.name}.`);
+                }
+            }
+
+            // Find the first text channel in the specific server
+            const channel = guild.channels.cache.find(
+                (channel): channel is TextChannel =>
+                    channel.type === ChannelType.GuildText
+            );
+            if (channel) {
+                console.log(`(3) CHANNEL CONNECTION: SUCCESS for ${guild.name}`);
+            } else {
+                console.log(`(3) No channel found to send initial message for ${guild.name}`);
+            }
         }
     } catch (error) {
         console.error(`READY: ${error}`);
     }
 });
 
-const deletion_timers=new Map<string, NodeJS.Timeout>();
-const addition_timers=new Map<string, NodeJS.Timeout>();
+
+// A Map that stores deletion timers for each server, which maps the user ID (tracker_id) to a NodeJS.Timeout
+const deletion_timers: Map<string, Map<string, NodeJS.Timeout>> = new Map();
+
+// A Map that stores addition timers for each server, which maps the user ID (tracker_id) to a NodeJS.Timeout
+const addition_timers: Map<string, Map<string, NodeJS.Timeout>> = new Map();
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
-    if (!newPresence || !newPresence.user) {
-        console.log("No presence update detected.");
+    if (!newPresence || !newPresence.user || !newPresence.guild) {
+        console.log("No presence update detected or missing guild/user information.");
         return;
     }
 
-    // type guard for type narrowing
+    // Type guard for type narrowing
     const isOfflineStatus = (s: string): s is 'offline' => s === 'offline';
 
-    // variables
+    // Variables
     const username = newPresence.user.username;
-    const tracker_id=HELPERFUNCTIONS.getNicknameOrUsernameElseNull(newPresence.guild!,username) as string;
+    const tracker_id = HELPERFUNCTIONS.getNicknameOrUsernameElseNull(newPresence.guild, username) as string;
     const status = newPresence.status;
     const member = newPresence.guild?.members.cache.get(newPresence.user.id);
 
-    // case: skip if member without the right roles
-    if (!member || !member.roles.cache.some(role => config.mis.requiredRoles.includes(role.name))) {
+    // Skip if member is not found
+    if (!member) {
         return;
     }
 
+    // Check roles based on server ID
+    if (newPresence.guild.id === process.env.DISCORD_GUILD_ID) {
+        // If the server ID matches, check for required roles
+        if (!member.roles.cache.some(role => config.mis.requiredRoles.includes(role.name))) {
+            return;
+        }
+    }
+
+    // Ensure there is a map for the server already initialized in the ready event
+    const guildDeletionTimers = deletion_timers.get(newPresence.guild.id);
+    const guildAdditionTimers = addition_timers.get(newPresence.guild.id);
+
     if (isOfflineStatus(status)) {
         const currentTime = new Date().toISOString();
-        // if entry already exists
-        if (tracker[tracker_id]!==null){
-            const oldTime=tracker[tracker_id];
-            const old_date=new Date(oldTime);
-            const new_date=new Date(currentTime);
-            const time_diff=new_date.getTime()-old_date.getTime();
-            // if the difference is over an hour, keep the old one. Else, keep replacing so that you have the freshest start point
-            if (time_diff>(config.times.SLEEPCHECK_CHECK_PERIOD)){
-                return;
-            }
-            else {
-                tracker[tracker_id]=currentTime;
-            }
-        }
-        // if it is null
-        else {
-            tracker[tracker_id]=currentTime;
-        }
-        // handle replacement if we deleted after we went offline
-        if (addition_timers.has(tracker_id)){
-            clearTimeout(addition_timers.get(tracker_id));
-        }
-        const timeout=setTimeout(()=>{
-            if (tracker[tracker_id]!==null)return;
-            tracker[tracker_id]=currentTime;
-            addition_timers.delete(tracker_id);
-        },config.times.SLEEPCHECK_CHECK_PERIOD)
-        addition_timers.set(tracker_id,timeout);
 
+        // Check if entry exists in tracker and handle updating the time
+        const serverTracker = tracker.get(newPresence.guild.id);
+        if (serverTracker?.get(tracker_id) !== null) {
+            const oldTime = serverTracker!.get(tracker_id)!;
+            const old_date = new Date(oldTime);
+            const new_date = new Date(currentTime);
+            const time_diff = new_date.getTime() - old_date.getTime();
+
+            // If the difference is over an hour, keep the old one. Otherwise, update to the newest time
+            if (time_diff > config.times.SLEEPCHECK_CHECK_PERIOD) {
+                return;
+            } else {
+                serverTracker!.set(tracker_id, currentTime);
+            }
+        } else {
+            // If no time is set (entry is null), set the current time
+            serverTracker?.set(tracker_id, currentTime);
+        }
+
+        // Handle case if we had a pending addition timer and the member goes offline
+        if (guildAdditionTimers?.has(tracker_id)) {
+            clearTimeout(guildAdditionTimers.get(tracker_id)!); // Safely clear the timeout
+        }
+
+        // Set a new timeout to ensure tracker gets updated after the specified period
+        const timeout = setTimeout(() => {
+            if (serverTracker?.get(tracker_id) !== null) return;
+            serverTracker?.set(tracker_id, currentTime);
+            guildAdditionTimers?.delete(tracker_id); // Delete after timeout
+        }, config.times.SLEEPCHECK_CHECK_PERIOD);
+
+        guildAdditionTimers?.set(tracker_id, timeout);
 
         console.log(`${tracker_id} has gone offline at ${currentTime}`);
-    } else if (!isOfflineStatus(status) && tracker[tracker_id]) {
-        // if they have been on already, skip
-        if (deletion_timers.has(tracker_id)){
+    } else if (!isOfflineStatus(status) && tracker.get(newPresence.guild.id)?.get(tracker_id)) {
+        // If the member comes online and hasn't already been processed
+        if (guildDeletionTimers?.has(tracker_id)) {
             return;
         }
 
-        // add the timer for them to be knocked out the first time they come online
-        const timeout=setTimeout(()=>{
-            tracker[tracker_id]=null;
-            deletion_timers.delete(tracker_id);
-        }, config.times.SLEEPCHECK_CHECK_PERIOD)
-        deletion_timers.set(tracker_id,timeout);
+        // Set a timeout to mark them as null when they come online
+        const timeout = setTimeout(() => {
+            const serverTracker = tracker.get(newPresence.guild!.id);
+            serverTracker?.set(tracker_id, null); // Set to null
+            guildDeletionTimers?.delete(tracker_id); // Delete after timeout
+        }, config.times.SLEEPCHECK_CHECK_PERIOD);
+
+        guildDeletionTimers?.set(tracker_id, timeout);
+
+        console.log(`${tracker_id} is now online.`);
     }
 });
 
@@ -147,7 +176,7 @@ client.on('messageCreate', async (message) => {
 
         // !sleep <@xyz> (case-insensitive)
         else if (message.content.toUpperCase().startsWith('!SLEEP')) {
-            FUNCTIONS_MSG.handleSleepCommand(message, tracker);
+            //FUNCTIONS_MSG.handleSleepCommand(message, tracker);
         }
 
         // !features (case-insensitive)

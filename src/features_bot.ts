@@ -192,34 +192,41 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
 
     // Case: No input argument (go for all)
     if (!mentionedUser) {
-        if (Object.keys(tracker).length === 0) {
+        const serverTracker = tracker.get(interaction.guild!.id);  // Get the specific server's tracker map
+
+        if (!serverTracker || serverTracker.size === 0) {
             return interactionReply(interaction, null, 'No Users Tracked', 'No users are currently being tracked.');
         }
 
         let description = "Here are the statuses of all tracked users:\n\n";
 
-        if (botUsername in tracker) {
-            const botStartTime = new Date(tracker[botUsername] as string);
+        // Handle the bot user separately
+        if (serverTracker.has(botUsername)) {
+            const botStartTime = new Date(serverTracker.get(botUsername) as string);
             const { days, hours, minutes, seconds } = calculateTimeDifference(botStartTime, CURRENT_TIME);
             description += `**${botUsername}**\nStarted: ${botStartTime.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n\n`;
         }
 
-        for (const [tracker_id, offlineTime] of Object.entries(tracker)) {
-            if (tracker_id === botUsername) continue;
+        // Iterate through the tracked users in the server
+        for (const [tracker_id, offlineTime] of serverTracker) {
+            if (tracker_id === botUsername) continue; // Skip bot user
+
             if (offlineTime === null) {
                 // If the user is invisible (status is null), display them as online
                 description += `**${tracker_id}**\nis currently online\n\n`;
                 continue;
             }
+
             const OFFLINE_TIME = new Date(offlineTime);
             const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
 
-            if (Math.abs(OFFLINE_TIME.getTime() - new Date(tracker[botUsername] as string).getTime()) <= TIME_THRESHOLD) {
+            if (Math.abs(OFFLINE_TIME.getTime() - new Date(serverTracker.get(botUsername) as string).getTime()) <= TIME_THRESHOLD) {
                 description += `**${tracker_id}**\n(UNKNOWN) OFFLINE SINCE BOT STARTED\n\n`;
             } else {
                 description += `**${tracker_id}**\nLast online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.\n\n`;
             }
         }
+
         // Alphabetize by name before returning the description
         const descriptionLines = description.split('\n\n');
         descriptionLines.sort((a, b) => a.localeCompare(b));
@@ -230,9 +237,14 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
     // Case: Username/Nickname was given
     const tracker_id = getNicknameOrUsernameElseNull(interaction.guild as Guild, mentionedUser.username) as string;
 
-    if (tracker_id in tracker) {
+    const serverTracker = tracker.get(interaction.guild!.id); // Get the specific server's tracker map
+    if (!serverTracker) {
+        return interactionReply(interaction, null, 'Error', 'Server tracker not found.');
+    }
+
+    if (tracker_id in serverTracker) {
         // case: null (online)
-        if (tracker[tracker_id] === null) {
+        if (serverTracker.get(tracker_id) === null) {
             return interactionReply(
                 interaction,
                 null,
@@ -240,7 +252,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
                 `${tracker_id} is currently online.`
             );
         }
-        const OFFLINE_TIME = new Date(tracker[tracker_id]);
+        const OFFLINE_TIME = new Date(serverTracker.get(tracker_id) as string);
         const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
 
         return interactionReply(
@@ -265,3 +277,4 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         }
     }
 };
+
