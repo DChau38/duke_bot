@@ -1,6 +1,5 @@
 import {ChannelType, TextChannel,PresenceStatus, CommandInteraction, Collection, GuildMember} from 'discord.js';
 import {client, tracker, startBot} from './src/setup';
-import * as FUNCTIONS_MSG from './src/features_msg';
 import * as FUNCTIONS_BOT from './src/features_bot';
 import * as HELPERFUNCTIONS from './src/helperFunctionts';
 import config from './src/config'
@@ -69,9 +68,8 @@ client.once('ready', async () => {
 
 
 // A Map that stores deletion timers for each server, which maps the user ID (tracker_id) to a NodeJS.Timeout
-const deletion_timers: Map<string, Map<string, NodeJS.Timeout>> = new Map();
-
 // A Map that stores addition timers for each server, which maps the user ID (tracker_id) to a NodeJS.Timeout
+const deletion_timers: Map<string, Map<string, NodeJS.Timeout>> = new Map();
 const addition_timers: Map<string, Map<string, NodeJS.Timeout>> = new Map();
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
     if (!newPresence || !newPresence.user || !newPresence.guild) {
@@ -161,92 +159,6 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
     }
 });
 
-
-
-import {EmbedBuilder} from 'discord.js';
-
-client.on('messageCreate', async (message) => {
-    try {
-        if (message.author.bot) return;
-
-        // !test (case-insensitive)
-        if (message.content.toUpperCase() === '!TEST') {
-            message.channel.send("TEST==TRUE");
-        }
-
-        // !sleep <@xyz> (case-insensitive)
-        else if (message.content.toUpperCase().startsWith('!SLEEP')) {
-            //FUNCTIONS_MSG.handleSleepCommand(message, tracker);
-        }
-
-        // !features (case-insensitive)
-        else if (message.content.toUpperCase() === '!FEATURES') {
-            FUNCTIONS_MSG.handleFeaturesCommand(message);
-        }
-
-        // !arena (case-insensitive)
-        else if (message.content.toUpperCase().startsWith('!ARENA')) {
-            FUNCTIONS_MSG.handleArenaCommand(message);
-        }
-
-        // !joinvc (case-insensitive)
-        else if (message.content.toUpperCase() === '!JOINVC') {
-            FUNCTIONS_MSG.handleJoinVCCommand(message);
-        }
-
-        // !xyz (case-insensitive) with mention
-        else if (message.content.toUpperCase().startsWith('!XYZ')) {
-            const mentionedUser = message.mentions.users.first();
-            
-            if (!mentionedUser) {
-                return message.channel.send('Please mention a user to impersonate!');
-            }
-
-            // Create the impersonation embed
-            const impersonateEmbed = new EmbedBuilder()
-                .setAuthor({
-                    name: `${mentionedUser.username}#${mentionedUser.discriminator}`,
-                    iconURL: mentionedUser.displayAvatarURL()
-                })
-                .setDescription('you give me c')
-                .setColor('#3498db')  // You can choose any color you like
-                .setTimestamp();
-
-            // Send the impersonation message
-            message.channel.send({ embeds: [impersonateEmbed] });
-        }
-
-        // !attack (case-insensitive)
-        else if (message.content.toUpperCase().startsWith('!ATTACK')) {
-            FUNCTIONS_MSG.handleAttackCommand(message);
-        }
-
-        // !flip (case-insensitive)
-        else if (message.content.toUpperCase() === '!FLIP') {
-            FUNCTIONS_MSG.handleCoinFlipCommand(message);
-        }
-
-        // !hangman (case-insensitive)
-        else if (message.content.toUpperCase() === '!HANGMAN') {
-            FUNCTIONS_MSG.handleHangman(message);
-        } 
-
-        // Simulate an error with !error
-        else if (message.content.toUpperCase().startsWith('!ERROR')) {
-            throw new Error("Simulated error");
-        }
-
-        // unknown input
-        else if (message.content.startsWith('!')) {
-            HELPERFUNCTIONS.sendEmbed((message.channel as TextChannel), null, "??", `Unknown input: ${message.content}`);
-        }
-    } catch (error) {
-        console.error('An error occurred:', error);
-        (message.channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        HELPERFUNCTIONS.sendEmbed(message.channel as TextChannel, './static/dead_discord.GIF', "You fucked me", "Uhhhh I got to go. I'll be back soon!");
-    }
-});
-
 client.on('interactionCreate', async (interaction) => {
     try {
         if (!interaction.isCommand()) return; // commands only
@@ -272,10 +184,10 @@ client.on('interactionCreate', async (interaction) => {
         // hangman
         else if (normalizedCommandName === 'HANGMAN') {
             await FUNCTIONS_BOT.handleHangmanInteraction(commandInteraction, channel);
-        }
+        } // attack
         else if (normalizedCommandName === 'ATTACK') {
             await FUNCTIONS_BOT.handleAttackInteraction(commandInteraction);
-        }
+        } // sleep
         else if (normalizedCommandName === 'SLEEP'){
             await FUNCTIONS_BOT.handleSleepInteraction(commandInteraction);
         }
