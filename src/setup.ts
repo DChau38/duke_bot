@@ -44,6 +44,13 @@ const commands = [
                 description: 'The user whose sleep status to check.',
                 required: false,
             },
+            {
+                type: 3, // Type 3 is for a string
+                name: "sorting_argument",
+                description:"Optionally provide an argument for how the list should be sorted",
+                required:false,
+
+            },
         ],
     },
     {
