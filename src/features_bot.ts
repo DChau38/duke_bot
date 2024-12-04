@@ -1,4 +1,4 @@
-import { Interaction, EmbedBuilder, AttachmentBuilder, TextChannel,CommandInteraction, Message, User, VoiceChannel, Guild } from 'discord.js';
+import { Interaction, EmbedBuilder, AttachmentBuilder, TextChannel,CommandInteraction, Message, User, VoiceChannel, Guild, GuildMember, ChannelType } from 'discord.js';
 import {generate} from 'random-words'
 import { calculateTimeDifference, getNicknameOrUsernameElseNull, interactionReply, selectMemberWithRequiredRoles, selectRandomServerMember, sendEmbed } from './helperFunctionts';
 import config from './config';
@@ -157,33 +157,7 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
         await interactionReply(interaction,'./static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `${mentionedUser.username} gets hit!`);
     }
 };
-import { joinVoiceChannel } from '@discordjs/voice';
 
-export const handleJoinVCCommand = async (interaction: CommandInteraction, voiceChannel: VoiceChannel) => {
-    try {
-        joinVoiceChannel({
-            channelId: voiceChannel.id,
-            guildId: interaction.guild!.id,
-            adapterCreator: interaction.guild!.voiceAdapterCreator,
-        });
-
-        await interactionReply(
-            interaction,
-            null, // No image URL
-            'Voice Channel Joined',
-            'I have successfully joined your voice channel!'
-        );
-    } catch (error) {
-        console.error(error);
-
-        await interactionReply(
-            interaction,
-            null, // No image URL
-            'Error Joining Voice Channel',
-            'An error occurred while trying to join your voice channel.'
-        );
-    }
-};
 const TIME_THRESHOLD=1000;
 export const handleSleepInteraction = async (interaction: CommandInteraction) => {
     const mentionedUser = interaction.options.get('target')?.user as User | null;
@@ -278,3 +252,233 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
     }
 };
 
+export const handleArenaInteraction = async (interaction: CommandInteraction) => {
+    const guild = interaction.guild!;
+    const senderMember = interaction.member as GuildMember;
+
+    // Get the argument string from interaction options
+    const argsOption = interaction.options.get('opponents', true); // Ensure the option exists and is required
+    const argsString = argsOption.value as string; // Explicitly cast the value to a string
+
+    if (!argsString) {
+        return interactionReply(
+            interaction,
+            null,
+            'No Users Mentioned',
+            'Please mention at least one user to play roulette with! Usage: /roulette username1 username2'
+        );
+    }
+
+    // Split the string into user IDs or mentions
+    const userIdsOrMentions = argsString.split(' ').filter(Boolean);
+    
+    // Validate each mentioned user using getNicknameOrUsernameElseNull
+    const mentionedUsers = userIdsOrMentions
+        .map(idOrMention => {
+            // Use getNicknameOrUsernameElseNull to validate each mention/username
+            const userIdentifier = getNicknameOrUsernameElseNull(guild, idOrMention);
+            if (userIdentifier) {
+                return guild.members.cache.find(
+                    (member) => member.user.username.toLowerCase() === userIdentifier || (member.nickname && member.nickname.toLowerCase() === userIdentifier)
+                )?.user;
+            }
+            return undefined;
+        })
+        .filter((user): user is GuildMember['user'] => user !== undefined);
+
+    if (mentionedUsers.length === 0) {
+        return interactionReply(
+            interaction,
+            null,
+            'No Valid Users Found',
+            'Could not find any valid users from the provided input.'
+        );
+    }
+
+    // Check if the caller is trying to include themselves
+    if (mentionedUsers.some(user => user.id === interaction.user.id)) {
+        return interactionReply(
+            interaction,
+            null,
+            'Self-Play Not Allowed',
+            'You cannot play roulette with yourself!'
+        );
+    }
+
+    // Get GuildMember objects with proper type handling
+    const defendingMembers = mentionedUsers
+        .map(user => guild.members.cache.get(user.id))
+        .filter((member): member is GuildMember => member !== undefined);
+
+    // Validate members exist and are in voice channels
+    if (!senderMember.voice?.channel) {
+        return interactionReply(
+            interaction,
+            null,
+            'Not in Voice Channel',
+            'You must be in a voice channel to play roulette!'
+        );
+    }
+
+    const senderVoiceChannelId = senderMember.voice.channel.id;
+
+    // Check if all defending members are in the same voice channel
+    const invalidDefenders = defendingMembers.filter(member =>
+        !member.voice?.channel || member.voice.channel.id !== senderVoiceChannelId
+    );
+
+    if (invalidDefenders.length > 0) {
+        return interactionReply(
+            interaction,
+            null,
+            'Voice Channel Mismatch',
+            'All users must be in the SAME voice channel to play roulette!'
+        );
+    }
+
+    // Calculate total participants
+    const allParticipants = [senderMember, ...defendingMembers];
+    const totalParticipants = allParticipants.length;
+
+    // Probability calculation:
+    // 1/x chance ALL get kicked
+    // (x-1)/x chance only original caller gets kicked
+    const randomValue = Math.random();
+    const targetChannel = guild.channels.cache.find(channel =>
+        channel.name === 'Ten Courts of Hell' && channel.isVoiceBased()
+    );
+
+    if (!targetChannel) {
+        return interactionReply(
+            interaction,
+            null,
+            'Channel Not Found',
+            "Could not find the target voice channel 'Ten Courts of Hell'."
+        );
+    }
+
+    try {
+        if (randomValue < 1 / totalParticipants) {
+            // ALL participants get kicked
+            const kickPromises = defendingMembers.map(member =>
+                member.voice.setChannel(targetChannel as VoiceChannel)
+            );
+
+            await Promise.all(kickPromises);
+
+            // If multiple defenders, use plural language
+            const kickMessage = defendingMembers.length > 1 
+                ? `${defendingMembers.length} participants were ALL banished from the voice channel!`
+                : `${defendingMembers[0].user.username} was banished from the voice channel!`;
+
+            return interactionReply(
+                interaction,
+                null,
+                'Roulette Result',
+                `🎲 Roulette Result: ${kickMessage}`
+            );
+        } else {
+            // Original caller gets kicked
+            await senderMember.voice.setChannel(targetChannel as VoiceChannel);
+            return interactionReply(
+                interaction,
+                null,
+                'Roulette Result',
+                `🎲 Roulette Result: ${senderMember.user.username} was banished from the voice channel!`
+            );
+        }
+    } catch (error) {
+        console.error('Error in roulette command:', error);
+
+        let errorMessage = 'Failed to move the user(s) to the voice channel.';
+        if (error instanceof Error) {
+            if (error.message.includes('Missing Permissions')) {
+                errorMessage = "I don't have permission to move users between voice channels.";
+            } else if (error.message.includes('Invalid Voice Channel')) {
+                errorMessage = "The target voice channel doesn't exist or is invalid.";
+            }
+        }
+
+        return interactionReply(interaction, null, 'Error', errorMessage);
+    }
+};
+
+
+import { joinVoiceChannel } from '@discordjs/voice';
+export const handleJoinVCInteraction = async (interaction: CommandInteraction) => {
+    try {
+        // Check if the interaction is from a guild (not a DM)
+        if (!interaction.guild) {
+            await interactionReply(
+                interaction, 
+                null, 
+                'Command Not Available', 
+                'This command can only be used in a server, not in a DM.'
+            );
+            return;
+        }
+        
+        // Try to get the user's current voice channel
+        const member = interaction.guild.members.cache.get(interaction.user.id);
+        if (!member) {
+            await interactionReply(
+                interaction, 
+                null, 
+                'Member Not Found', 
+                'I could not find you in this server.'
+            );
+            return;
+        }
+        
+        const voiceChannel = member.voice.channel;
+        if (!voiceChannel) {
+            await interactionReply(
+                interaction, 
+                null, 
+                'Voice Channel Required', 
+                'You need to be in a voice channel first.'
+            );
+            return;
+        }
+        
+        // Ensure the voice channel is a valid guild voice channel
+        if (voiceChannel.type !== ChannelType.GuildVoice) {
+            await interactionReply(
+                interaction, 
+                null, 
+                'Invalid Channel', 
+                'Please join a valid voice channel.'
+            );
+            return;
+        }
+        
+        // Attempt to join the voice channel
+        const connection = joinVoiceChannel({
+            channelId: voiceChannel.id,
+            guildId: interaction.guild.id,
+            adapterCreator: interaction.guild.voiceAdapterCreator,
+        });
+        
+        // Optional: Add error handling for the connection
+        connection.on('error', (error) => {
+            console.error('Voice connection error:', error);
+        });
+        
+        // Reply to the interaction
+        await interactionReply(
+            interaction, 
+            null, 
+            'Voice Channel Joined', 
+            `Successfully joined the voice channel: ${voiceChannel.name}!`
+        );
+        
+    } catch (error) {
+        console.error('Comprehensive error joining voice channel:', error);
+        await interactionReply(
+            interaction, 
+            null, 
+            'Unexpected Error', 
+            'An unexpected error occurred while trying to join the voice channel.'
+        );
+    }
+};

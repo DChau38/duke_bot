@@ -191,6 +191,12 @@ client.on('interactionCreate', async (interaction) => {
         else if (normalizedCommandName === 'SLEEP'){
             await FUNCTIONS_BOT.handleSleepInteraction(commandInteraction);
         }
+        else if (normalizedCommandName === 'ARENA'){
+            await FUNCTIONS_BOT.handleArenaInteraction(commandInteraction);
+        }
+        else if (normalizedCommandName === 'JOINVC'){
+            await FUNCTIONS_BOT.handleJoinVCInteraction(commandInteraction);
+        }
     } catch (error) {
         console.error('Error handling interaction:', error);
     }

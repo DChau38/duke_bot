@@ -4,24 +4,24 @@ Hey there! 👋 Ready to have some fun and make your server even more awesome? C
 
 ### **✨ Available Commands**
 
-- **!sleep [username]**  
+- **/sleep [username]**  
   Ever wondered how long you've been asleep or how long it's been since you logged on? This command will show you exactly that! 🛌💤  
   Use "all" instead of a specific username to track the status for everyone.
 
-- **!arena @username1 @username2 ...**  
+- **/arena @username1 @username2 ...**  
   Roll the dice and battle it out with your friends in a voice call! Who will be victorious? 🎲🏆  
   Losers get kicked from the voice call. 😱
 
-- **!flip**  
+- **/flip**  
   Feeling lucky? Flip a coin and see if you land heads or tails! 🍀
 
-- **!hangman**  
+- **/hangman**  
   Love word games? Play the classic game of Hangman with your friends and try to guess the word before the man gets hanged! 🎮🔤
 
-- **!joinvc**  
+- **/joinvc**  
   Want the bot to join your voice channel? Just use this command and let's get the party started! 🎧🎶
 
-- **!attack @username**  
+- **/attack @username**  
   Send a fun, friendly attack (aka an image) to another user to spread some joy! 💥🖼️  
   But there's less than a 1% chance for something unexpected to happen... 😱✨
 
