@@ -1,4 +1,4 @@
-import { EmbedBuilder, AttachmentBuilder, TextChannel, ChannelType, CommandInteraction, VoiceChannel, Guild } from 'discord.js';
+import { EmbedBuilder, AttachmentBuilder, TextChannel, ChannelType, CommandInteraction, VoiceChannel, Guild, Collection, GuildMember } from 'discord.js';
 import { client, tracker } from './setup';
 import config from './config';
 
@@ -110,11 +110,15 @@ export const selectMemberWithRequiredRoles = async () => {
         const guild = await client.guilds.fetch(process.env.SERVER_ID as string);
         const members = await guild.members.fetch();
 
-        const correctMembers = members.filter((member) =>
-            member.roles.cache.some((role) =>
-                config.mis.requiredRoles.includes(role.name)
-            )
-        );
+        let correctMembers:Collection<string,GuildMember>;
+        if (guild.id===process.env.DISCORD_GUILD_ID){
+            correctMembers = members.filter((member) =>
+                member.roles.cache.some((role) => config.mis.requiredRoles.includes(role.name)) // Check for required roles
+            );
+        }
+        else {
+            correctMembers=members;
+        }
 
         return correctMembers.random();
     } catch (error) {
