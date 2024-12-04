@@ -105,7 +105,6 @@ async function registerSlashCommands() {
         const CLIENT_ID = process.env.DISCORD_CLIENT_ID as string;
 
         const rest = new REST({ version: '10' }).setToken(TOKEN);  // Initialize REST client
-        console.log('A: start registering commands');
 
         // Register commands globally with Discord
         await rest.put(
@@ -113,8 +112,8 @@ async function registerSlashCommands() {
             { body: commands }  // Body of the request, containing the commands
         );
 
-        console.log('B: successful register of commands');
+        console.log('REGISTER COMMANDS: SUCCESS');
     } catch (error) {
-        console.error('B: failed register of commands', error);  // Handle errors during command registration
+        console.error('REGISTER COMMANDS: FAILURE', error);  // Handle errors during command registration
     }
 }
