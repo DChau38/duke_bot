@@ -66,9 +66,31 @@ const commands = [
         ],
     },
     {
-        name: 'reminders',
-        description: 'Set up periodic reminders for yourself or others.',
+        name: 'timer',
+        description: 'Set a timer to reminder yourself of something',
+        options: [
+            {
+                type: 3, // string
+                name: 'description',
+                description: 'The description for the timer alert',
+                requried:true,
+            },
+            {
+                type: 4, // integer
+                name: 'hours',
+                description: 'The amount of hours you want added to the timer',
+                requried:false,
+            },
+            {
+                type: 4, // integer
+                name: 'minutes',
+                description: 'The amount of minutes you want added to the timer',
+                requried:false,
+            },
+
+        ]
     },
+
 ];
 
 

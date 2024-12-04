@@ -25,6 +25,9 @@ Hey there! 👋 Ready to have some fun and make your server even more awesome? C
   Send a fun, friendly attack (aka an image) to another user to spread some joy! 💥🖼️  
   But there's less than a 1% chance for something unexpected to happen... 😱✨
 
+- **/timer**  
+  Set a timer for any task you need! ⏲️
+
 ![hangman_example](./static/examples/hangman_example.JPG)
 ![flip_example](./static/examples/flip_example.JPG)
 ![sleep_example](./static/examples/sleepcheck_example.JPG)

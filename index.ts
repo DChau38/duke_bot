@@ -196,6 +196,9 @@ client.on('interactionCreate', async (interaction) => {
         else if (normalizedCommandName === 'JOINVC'){
             await BOT_FUNCTIONS.handleJoinVCInteraction(commandInteraction);
         }
+        else if (normalizedCommandName === 'TIMER'){
+            await BOT_FUNCTIONS.handleTimerInteraction(commandInteraction);
+        }
     } catch (error) {
         console.error('Error handling interaction:', error);
     }
@@ -247,7 +250,9 @@ startBot();
 // if they are offline for one week, delete thme
 setInterval(UTILS.kill_week_old_entries, 24 * 60 * 60 * 1000); 
 
-setInterval(UTILS.sendReminder, Math.floor((Math.random()*12)) * 60 * 60 * 1000);
+setInterval(UTILS.reminder_yan, Math.floor((Math.random()*12)) * 60 * 60 * 1000);
+setInterval(UTILS.reminder_duke, 1 * 60 * 60 * 1000);
+
 
 
 
