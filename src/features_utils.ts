@@ -72,7 +72,7 @@ export function kill_week_old_entries() {
     }
 }
 
-export const sendReminder = async () => {
+export const reminder_yan = async () => {
     try {
         const guild = client.guilds.cache.get(process.env.SERVER_ID as string);
         if (guild) {
@@ -83,6 +83,25 @@ export const sendReminder = async () => {
             if (channel) {
                 const member = guild.members.cache.find((mem) => mem.user.username === 'yan240')
                 await channel.send(`<@${member?.user.id}> Reminder to do one's racket :)`);
+            } else {
+                console.log("aaa channel not found");
+            }
+        }
+    } catch (error) {
+        console.error("Error in sendReminder:", error);
+    }
+};
+export const reminder_duke = async () => {
+    try {
+        const guild = client.guilds.cache.get(process.env.SERVER_ID as string);
+        if (guild) {
+            const channel = guild.channels.cache.find(
+                (ch) => ch.type === ChannelType.GuildText && ch.name === 'aaa'
+            ) as TextChannel;
+
+            if (channel) {
+                const member = guild.members.cache.find((mem) => mem.user.username === 'duke9999')
+                await channel.send(`<@${member?.user.id}> It's time to take a break!`);
             } else {
                 console.log("aaa channel not found");
             }

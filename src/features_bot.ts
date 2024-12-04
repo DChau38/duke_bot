@@ -547,3 +547,36 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         );
     }
 };
+export const handleTimerInteraction = async (command: CommandInteraction) => {
+    try {
+        // variables
+        const hours = (command.options.get('hours')?.value || 0) as number;
+        const minutes = (command.options.get('minutes')?.value || 0) as number;
+        const description = command.options.get('description')?.value;
+        const total_ms = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
+
+        // confirmation reply
+        await UTILS.interactionReply(command, null, '⏰ Timer Set!', 
+            `**${hours} hours and ${minutes} minutes**! \n\n\`\`\`*${description}*\`\`\``);
+
+        // Set the reminder after the specified time
+        const startTime = Date.now();  // record the start time
+
+        setTimeout(async () => {
+            // Calculate elapsed time
+            const elapsed_ms = Date.now() - startTime;
+            const elapsed_hours = Math.floor(elapsed_ms / (1000 * 60 * 60));
+            const elapsed_minutes = Math.floor((elapsed_ms % (1000 * 60 * 60)) / (1000 * 60));
+
+            // Send the reminder message after the timer expires
+            await command.followUp({
+                content: `⏰ **Timer finished!** \n\n**${elapsed_hours} hours and ${elapsed_minutes} minutes ago**\n\n\`\`\`*${description}*\`\`\``
+            });
+        }, total_ms);  // Use total_ms as the delay in milliseconds
+    } catch (error) {
+        console.error('Error in handling timer interaction:', error);
+        await command.followUp({
+            content: 'Oops! Something went wrong while setting your timer. Please try again later! 😅'
+        });
+    }
+}
