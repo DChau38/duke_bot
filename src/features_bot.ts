@@ -209,6 +209,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         }
 
         let descriptionLines = description.split('\n\n');
+
         // If sortingArgument is provided as 'a' or 'alphabet', sort alphabetically
         if (sortingArgument === 'a' || sortingArgument === 'alphabet') {
             descriptionLines.sort((a, b) => {
@@ -219,31 +220,47 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
                     return aUsername.localeCompare(bUsername);
                 }
 
-                return 0;
+                return 0; // Fallback case if no username found
             });
         } else {
-            // Default sorting logic: UNKNOWN first, ONLINE second, then others (offline users)
+            // Default sorting logic: UNKNOWN first, ONLINE second, then offline users sorted by last online time
             descriptionLines.sort((a, b) => {
-                // Extract the status part (UNKNOWN, ONLINE, or others)
+                // Check for the statuses (UNKNOWN > ONLINE > offline)
                 const aStatus = a.includes("(UNKNOWN)") ? 0 :
                     a.includes("(ONLINE)") ? 1 : 2;
                 const bStatus = b.includes("(UNKNOWN)") ? 0 :
                     b.includes("(ONLINE)") ? 1 : 2;
 
-                // Sort by status first (UNKNOWN > ONLINE > others)
+                // If statuses are different, prioritize UNKNOWN > ONLINE > offline
                 if (aStatus !== bStatus) {
                     return aStatus - bStatus;
                 }
 
-                // If statuses are the same, sort alphabetically by username
-                const aUsername = a.match(/^\*\*(.*?)\*\*/)?.[1]; // Extract the username from **username**
-                const bUsername = b.match(/^\*\*(.*?)\*\*/)?.[1];
+                // If both are UNKNOWN or ONLINE, sort by username alphabetically
+                if (aStatus === 0 || aStatus === 1) {
+                    const aUsername = a.match(/^\*\*(.*?)\*\*/)?.[1];
+                    const bUsername = b.match(/^\*\*(.*?)\*\*/)?.[1];
 
-                if (aUsername && bUsername) {
-                    return aUsername.localeCompare(bUsername);
+                    if (aUsername && bUsername) {
+                        return aUsername.localeCompare(bUsername);
+                    }
                 }
 
-                return 0; // Fallback case if no username found
+                // If both are offline, sort by last online time
+                if (aStatus === 2) {
+                    const aOfflineTime = a.match(/Last online: (.*?)\n/);
+                    const bOfflineTime = b.match(/Last online: (.*?)\n/);
+
+                    if (aOfflineTime && bOfflineTime) {
+                        const aDate = new Date(aOfflineTime[1]);
+                        const bDate = new Date(bOfflineTime[1]);
+
+                        // Sorting offline users by the most recent offline time (earliest first)
+                        return aDate.getTime() - bDate.getTime();
+                    }
+                }
+
+                return 0; // Default case for rare edge cases
             });
         }
 
@@ -251,6 +268,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         description = descriptionLines.join('\n\n');
 
         return UTILS.interactionReply(interaction, null, "Tracked Users' Offline Status", description);
+
 
 
     }
