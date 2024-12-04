@@ -1,8 +1,11 @@
 import { Interaction, EmbedBuilder, AttachmentBuilder, TextChannel,CommandInteraction, Message, User, VoiceChannel, Guild, GuildMember, ChannelType } from 'discord.js';
 import {generate} from 'random-words'
-import { calculateTimeDifference, getNicknameOrUsernameElseNull, interactionReply, selectMemberWithRequiredRoles, selectRandomServerMember, sendEmbed } from './helperFunctionts';
+import * as HELPERS from './features_helpers';
+import * as UTILS from './features_utils';
 import config from './config';
 import { client, tracker } from './setup';
+
+
 
 export async function testFunction(commandInteraction: CommandInteraction) {
 
@@ -43,9 +46,9 @@ export const handleHangmanInteraction = async (interaction:CommandInteraction, c
     let tries = 5;
     let guessedLetters: string[] = [];
 
-    // Send a welcome message using sendEmbed, including the number of letters to guess
+    // Send a welcome message using UTILS.sendEmbed, including the number of letters to guess
     const spacedHiddenWord = '`' + hiddenWord.split('').join(' ') + '`'; // Wrap the spaced hidden word in backticks
-    sendEmbed(channel, null, 'Hangman Game Started', `The word has ${word.length} letters: ${spacedHiddenWord}`);
+    UTILS.sendEmbed(channel, null, 'Hangman Game Started', `The word has ${word.length} letters: ${spacedHiddenWord}`);
 
     // Start the message collector without filtering for a specific user
     const filter = (response: Message) => response.content.length === 1 && /^[a-z]$/i.test(response.content); // Only accept valid letter guesses
@@ -56,7 +59,7 @@ export const handleHangmanInteraction = async (interaction:CommandInteraction, c
 
         // CHECK: already guessed
         if (guessedLetters.includes(guess)) {
-            sendEmbed(channel, null, 'Duplicate Guess', `You already guessed the letter "${guess}".\nHere are the letters you've guessed so far: \n\`${guessedLetters.join(', ')}\`\nYou have ${tries} attempts remaining`);
+            UTILS.sendEmbed(channel, null, 'Duplicate Guess', `You already guessed the letter "${guess}".\nHere are the letters you've guessed so far: \n\`${guessedLetters.join(', ')}\`\nYou have ${tries} attempts remaining`);
             return; // Skip the rest of the code if the letter has been guessed already
         }
 
@@ -112,15 +115,15 @@ export const handleHangmanInteraction = async (interaction:CommandInteraction, c
         }
 
         // Send the embed with updated information
-        sendEmbed(channel, embedImage, embedTitle, embedDescription);
+        UTILS.sendEmbed(channel, embedImage, embedTitle, embedDescription);
     });
 
     // When the collector stops (time runs out or game is won), inform the players
     collector.on('end', () => {
         if (hiddenWord !== word && tries === 0) {
-            sendEmbed(channel, './static/hangman_dead.JPG', 'Game Over', `You're out of guesses! The correct word was: ${word}`);
+            UTILS.sendEmbed(channel, './static/hangman_dead.JPG', 'Game Over', `You're out of guesses! The correct word was: ${word}`);
         } else if (hiddenWord !== word && tries > 0) {
-            sendEmbed(channel, './static/hangman_dead.JPG', 'Game Over', `Time's up! The correct word was: ${word}`);
+            UTILS.sendEmbed(channel, './static/hangman_dead.JPG', 'Game Over', `Time's up! The correct word was: ${word}`);
         }
     });
 };
@@ -129,7 +132,7 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
     // Validate mentioned user
     const mentionedUser = interaction.options.get('target')!.user as User;
     if (!mentionedUser) {
-        await interactionReply(interaction, null, 'Missing User', 'Please mention a user for this feature');
+        await UTILS.interactionReply(interaction, null, 'Missing User', 'Please mention a user for this feature');
         return;
     }
 
@@ -138,23 +141,23 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
 
     if (less_than_one_percent_chance === 1) {
         // 1% chance: Random member with required roles
-        const randomMemberOfRightRole = await selectMemberWithRequiredRoles();
+        const randomMemberOfRightRole = await HELPERS.selectMemberWithRequiredRoles();
         if (!randomMemberOfRightRole) {
-            await interactionReply(interaction, null, 'Error', 'Failed to select a random member.');
+            await UTILS.interactionReply(interaction, null, 'Error', 'Failed to select a random member.');
             return;
         }
-        await interactionReply(interaction,'./static/Zhu.webp', `${randomMemberOfRightRole.user.username}#${randomMemberOfRightRole.user.discriminator}`, 'you give me c');
+        await UTILS.interactionReply(interaction,'./static/Zhu.webp', `${randomMemberOfRightRole.user.username}#${randomMemberOfRightRole.user.discriminator}`, 'you give me c');
     } else if (less_than_one_percent_chance === 0) {
         // 0% chance: Literally random person in server
-        const randomMember = await selectRandomServerMember();
+        const randomMember = await HELPERS.selectRandomServerMember();
         if (!randomMember) {
-            await interactionReply(interaction, null, 'Error', 'Failed to select a random member.');
+            await UTILS.interactionReply(interaction, null, 'Error', 'Failed to select a random member.');
             return;
         }
-        await interactionReply(interaction,'./static/Zhu.webp', `${randomMember.user.username}#${randomMember.user.discriminator}`, 'you give me c');
+        await UTILS.interactionReply(interaction,'./static/Zhu.webp', `${randomMember.user.username}#${randomMember.user.discriminator}`, 'you give me c');
     } else {
         // Regular hit on mentioned user
-        await interactionReply(interaction,'./static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `${mentionedUser.username} gets hit!`);
+        await UTILS.interactionReply(interaction,'./static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `${mentionedUser.username} gets hit!`);
     }
 };
 
@@ -169,7 +172,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         const serverTracker = tracker.get(interaction.guild!.id);  // Get the specific server's tracker map
 
         if (!serverTracker || serverTracker.size === 0) {
-            return interactionReply(interaction, null, 'No Users Tracked', 'No users are currently being tracked.');
+            return UTILS.interactionReply(interaction, null, 'No Users Tracked', 'No users are currently being tracked.');
         }
 
         let description = "Here are the statuses of all tracked users:\n\n";
@@ -177,7 +180,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         // Handle the bot user separately
         if (serverTracker.has(botUsername)) {
             const botStartTime = new Date(serverTracker.get(botUsername) as string);
-            const { days, hours, minutes, seconds } = calculateTimeDifference(botStartTime, CURRENT_TIME);
+            const { days, hours, minutes, seconds } = HELPERS.calculateTimeDifference(botStartTime, CURRENT_TIME);
             description += `**${botUsername}**\nStarted: ${botStartTime.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n\n`;
         }
 
@@ -192,7 +195,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
             }
 
             const OFFLINE_TIME = new Date(offlineTime);
-            const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
+            const { days, hours, minutes, seconds } = HELPERS.calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
 
             if (Math.abs(OFFLINE_TIME.getTime() - new Date(serverTracker.get(botUsername) as string).getTime()) <= TIME_THRESHOLD) {
                 description += `**${tracker_id}**\n(UNKNOWN) OFFLINE SINCE BOT STARTED\n\n`;
@@ -205,21 +208,21 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         const descriptionLines = description.split('\n\n');
         descriptionLines.sort((a, b) => a.localeCompare(b));
 
-        return interactionReply(interaction, null, "Tracked Users' Offline Status", descriptionLines.join('\n\n'));
+        return UTILS.interactionReply(interaction, null, "Tracked Users' Offline Status", descriptionLines.join('\n\n'));
     }
 
     // Case: Username/Nickname was given
-    const tracker_id = getNicknameOrUsernameElseNull(interaction.guild as Guild, mentionedUser.username) as string;
+    const tracker_id = UTILS.getNicknameOrUsernameElseNull(interaction.guild as Guild, mentionedUser.username) as string;
 
     const serverTracker = tracker.get(interaction.guild!.id); // Get the specific server's tracker map
     if (!serverTracker) {
-        return interactionReply(interaction, null, 'Error', 'Server tracker not found.');
+        return UTILS.interactionReply(interaction, null, 'Error', 'Server tracker not found.');
     }
 
     if (tracker_id in serverTracker) {
         // case: null (online)
         if (serverTracker.get(tracker_id) === null) {
-            return interactionReply(
+            return UTILS.interactionReply(
                 interaction,
                 null,
                 `${tracker_id}'s Status`,
@@ -227,9 +230,9 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
             );
         }
         const OFFLINE_TIME = new Date(serverTracker.get(tracker_id) as string);
-        const { days, hours, minutes, seconds } = calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
+        const { days, hours, minutes, seconds } = HELPERS.calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
 
-        return interactionReply(
+        return UTILS.interactionReply(
             interaction,
             null,
             `${tracker_id}'s Status`,
@@ -238,16 +241,16 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
     } else {
         const guild = interaction.guild;
         if (!guild) {
-            return interactionReply(interaction, null, 'Error', "Could not find the server.");
+            return UTILS.interactionReply(interaction, null, 'Error', "Could not find the server.");
         }
 
         const username = mentionedUser.username;
         const member = guild.members.cache.find((m) => m.user.username === username);
 
         if (member?.presence && member.presence.status !== 'offline') {
-            return interactionReply(interaction, null, 'User Status', `${username} is already online!`);
+            return UTILS.interactionReply(interaction, null, 'User Status', `${username} is already online!`);
         } else {
-            return interactionReply(interaction, null, 'User Status', `${username} is not part of the club.`);
+            return UTILS.interactionReply(interaction, null, 'User Status', `${username} is not part of the club.`);
         }
     }
 };
@@ -261,7 +264,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     const argsString = argsOption.value as string; // Explicitly cast the value to a string
 
     if (!argsString) {
-        return interactionReply(
+        return UTILS.interactionReply(
             interaction,
             null,
             'No Users Mentioned',
@@ -272,11 +275,11 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     // Split the string into user IDs or mentions
     const userIdsOrMentions = argsString.split(' ').filter(Boolean);
     
-    // Validate each mentioned user using getNicknameOrUsernameElseNull
+    // Validate each mentioned user using UTILS.getNicknameOrUsernameElseNull
     const mentionedUsers = userIdsOrMentions
         .map(idOrMention => {
-            // Use getNicknameOrUsernameElseNull to validate each mention/username
-            const userIdentifier = getNicknameOrUsernameElseNull(guild, idOrMention);
+            // Use UTILS.getNicknameOrUsernameElseNull to validate each mention/username
+            const userIdentifier = UTILS.getNicknameOrUsernameElseNull(guild, idOrMention);
             if (userIdentifier) {
                 return guild.members.cache.find(
                     (member) => member.user.username.toLowerCase() === userIdentifier || (member.nickname && member.nickname.toLowerCase() === userIdentifier)
@@ -287,7 +290,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
         .filter((user): user is GuildMember['user'] => user !== undefined);
 
     if (mentionedUsers.length === 0) {
-        return interactionReply(
+        return UTILS.interactionReply(
             interaction,
             null,
             'No Valid Users Found',
@@ -297,7 +300,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
 
     // Check if the caller is trying to include themselves
     if (mentionedUsers.some(user => user.id === interaction.user.id)) {
-        return interactionReply(
+        return UTILS.interactionReply(
             interaction,
             null,
             'Self-Play Not Allowed',
@@ -312,7 +315,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
 
     // Validate members exist and are in voice channels
     if (!senderMember.voice?.channel) {
-        return interactionReply(
+        return UTILS.interactionReply(
             interaction,
             null,
             'Not in Voice Channel',
@@ -328,7 +331,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     );
 
     if (invalidDefenders.length > 0) {
-        return interactionReply(
+        return UTILS.interactionReply(
             interaction,
             null,
             'Voice Channel Mismatch',
@@ -349,7 +352,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     );
 
     if (!targetChannel) {
-        return interactionReply(
+        return UTILS.interactionReply(
             interaction,
             null,
             'Channel Not Found',
@@ -371,7 +374,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
                 ? `${defendingMembers.length} participants were ALL banished from the voice channel!`
                 : `${defendingMembers[0].user.username} was banished from the voice channel!`;
 
-            return interactionReply(
+            return UTILS.interactionReply(
                 interaction,
                 null,
                 'Roulette Result',
@@ -380,7 +383,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
         } else {
             // Original caller gets kicked
             await senderMember.voice.setChannel(targetChannel as VoiceChannel);
-            return interactionReply(
+            return UTILS.interactionReply(
                 interaction,
                 null,
                 'Roulette Result',
@@ -399,7 +402,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
             }
         }
 
-        return interactionReply(interaction, null, 'Error', errorMessage);
+        return UTILS.interactionReply(interaction, null, 'Error', errorMessage);
     }
 };
 
@@ -409,7 +412,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
     try {
         // Check if the interaction is from a guild (not a DM)
         if (!interaction.guild) {
-            await interactionReply(
+            await UTILS.interactionReply(
                 interaction, 
                 null, 
                 'Command Not Available', 
@@ -421,7 +424,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         // Try to get the user's current voice channel
         const member = interaction.guild.members.cache.get(interaction.user.id);
         if (!member) {
-            await interactionReply(
+            await UTILS.interactionReply(
                 interaction, 
                 null, 
                 'Member Not Found', 
@@ -432,7 +435,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         
         const voiceChannel = member.voice.channel;
         if (!voiceChannel) {
-            await interactionReply(
+            await UTILS.interactionReply(
                 interaction, 
                 null, 
                 'Voice Channel Required', 
@@ -443,7 +446,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         
         // Ensure the voice channel is a valid guild voice channel
         if (voiceChannel.type !== ChannelType.GuildVoice) {
-            await interactionReply(
+            await UTILS.interactionReply(
                 interaction, 
                 null, 
                 'Invalid Channel', 
@@ -465,7 +468,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         });
         
         // Reply to the interaction
-        await interactionReply(
+        await UTILS.interactionReply(
             interaction, 
             null, 
             'Voice Channel Joined', 
@@ -474,7 +477,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         
     } catch (error) {
         console.error('Comprehensive error joining voice channel:', error);
-        await interactionReply(
+        await UTILS.interactionReply(
             interaction, 
             null, 
             'Unexpected Error', 

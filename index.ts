@@ -1,7 +1,8 @@
 import {ChannelType, TextChannel,PresenceStatus, CommandInteraction, Collection, GuildMember} from 'discord.js';
 import {client, tracker, startBot} from './src/setup';
-import * as FUNCTIONS_BOT from './src/features_bot';
-import * as HELPERFUNCTIONS from './src/helperFunctionts';
+import * as BOT_FUNCTIONS from './src/features_bot';
+import * as HELPERS from './src/features_helpers';
+import * as UTILS from './src/features_utils';
 import config from './src/config'
 import 'dotenv/config';
 
@@ -38,15 +39,13 @@ client.once('ready', async () => {
                 // Check if member.presence exists before accessing properties
                 if (!member.presence) {
                     // If the member is offline
-                    const tracker_id = HELPERFUNCTIONS.getNicknameOrUsernameElseNull(member.guild, member.user.username) as string;
+                    const tracker_id = UTILS.getNicknameOrUsernameElseNull(member.guild, member.user.username) as string;
                     const currentTime = new Date().toISOString();
                     tracker.get(guild.id)?.set(tracker_id, currentTime);
-                    console.log(`${tracker_id} is offline and has been added to the tracker for ${guild.name}.`);
                 } else {
                     // If the member is online
-                    const tracker_id = HELPERFUNCTIONS.getNicknameOrUsernameElseNull(member.guild, member.user.username) as string;
+                    const tracker_id = UTILS.getNicknameOrUsernameElseNull(member.guild, member.user.username) as string;
                     tracker.get(guild.id)?.set(tracker_id, null);
-                    console.log(`${tracker_id} is online and has been added to the tracker for ${guild.name}.`);
                 }
             }
 
@@ -82,7 +81,7 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 
     // Variables
     const username = newPresence.user.username;
-    const tracker_id = HELPERFUNCTIONS.getNicknameOrUsernameElseNull(newPresence.guild, username) as string;
+    const tracker_id = UTILS.getNicknameOrUsernameElseNull(newPresence.guild, username) as string;
     const status = newPresence.status;
     const member = newPresence.guild?.members.cache.get(newPresence.user.id);
 
@@ -171,31 +170,31 @@ client.on('interactionCreate', async (interaction) => {
 
         // hang
         if (normalizedCommandName === 'TEST') {
-            await FUNCTIONS_BOT.testFunction(commandInteraction);
+            await BOT_FUNCTIONS.testFunction(commandInteraction);
         }
         // flip
         else if (normalizedCommandName === 'REPLY') {
-            await HELPERFUNCTIONS.interactionReply(commandInteraction, './static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
+            await UTILS.interactionReply(commandInteraction, './static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
         }
         // coinflip
         else if (normalizedCommandName === 'COINFLIP') {
-            await FUNCTIONS_BOT.handleCoinFlipInteraction(commandInteraction);
+            await BOT_FUNCTIONS.handleCoinFlipInteraction(commandInteraction);
         }
         // hangman
         else if (normalizedCommandName === 'HANGMAN') {
-            await FUNCTIONS_BOT.handleHangmanInteraction(commandInteraction, channel);
+            await BOT_FUNCTIONS.handleHangmanInteraction(commandInteraction, channel);
         } // attack
         else if (normalizedCommandName === 'ATTACK') {
-            await FUNCTIONS_BOT.handleAttackInteraction(commandInteraction);
+            await BOT_FUNCTIONS.handleAttackInteraction(commandInteraction);
         } // sleep
         else if (normalizedCommandName === 'SLEEP'){
-            await FUNCTIONS_BOT.handleSleepInteraction(commandInteraction);
+            await BOT_FUNCTIONS.handleSleepInteraction(commandInteraction);
         }
         else if (normalizedCommandName === 'ARENA'){
-            await FUNCTIONS_BOT.handleArenaInteraction(commandInteraction);
+            await BOT_FUNCTIONS.handleArenaInteraction(commandInteraction);
         }
         else if (normalizedCommandName === 'JOINVC'){
-            await FUNCTIONS_BOT.handleJoinVCInteraction(commandInteraction);
+            await BOT_FUNCTIONS.handleJoinVCInteraction(commandInteraction);
         }
     } catch (error) {
         console.error('Error handling interaction:', error);
@@ -211,7 +210,7 @@ client.on('disconnect', async () => {
     const channel = client.channels.cache.get(config.ids.BIGBROTHER);  // Replace with your actual channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        await HELPERFUNCTIONS.sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon!");
+        await UTILS.sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon!");
     }
 });
 
@@ -222,7 +221,7 @@ process.on('uncaughtException', (error) => {
     const channel = client.channels.cache.get(config.ids.BIGBROTHER); // Replace with your channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        HELPERFUNCTIONS.sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
+        UTILS.sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
     }
 
     process.exit(1);  // Optional: terminate the bot after handling the error
@@ -235,7 +234,7 @@ process.on('unhandledRejection', (reason, promise) => {
     const channel = client.channels.cache.get(config.ids.BIGBROTHER); // Replace with your channel ID
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        HELPERFUNCTIONS.sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
+        UTILS.sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
     }
 
     process.exit(1);  // Optional: terminate the bot after handling the rejection
@@ -246,9 +245,9 @@ process.on('unhandledRejection', (reason, promise) => {
 startBot();
 
 // if they are offline for one week, delete thme
-setInterval(HELPERFUNCTIONS.kill_week_old_entries, 24 * 60 * 60 * 1000); 
+setInterval(UTILS.kill_week_old_entries, 24 * 60 * 60 * 1000); 
 
-setInterval(HELPERFUNCTIONS.sendReminder, Math.floor((Math.random()*12)) * 60 * 60 * 1000);
+setInterval(UTILS.sendReminder, Math.floor((Math.random()*12)) * 60 * 60 * 1000);
 
 
 
