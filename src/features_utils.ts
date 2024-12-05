@@ -22,15 +22,29 @@ export const sendEmbed = async (channel: TextChannel, URL: string | null, title:
     }
 };
 
-export const interactionReply= async (interaction: CommandInteraction, URL: string | null, title: string, description: string) => {
+export const interactionReply = async (
+    interaction: CommandInteraction,
+    localUrl: boolean | null,
+    URL: string | null,
+    title: string,
+    description: string
+) => {
     try {
         // Define embed object directly without using EmbedBuilder
         const embed: any = {
             color: parseInt('#FF0000', 16),  // Convert hex color to int
             title: title,
             description: description,
-            image: URL ? { url: 'attachment://' + URL.match(/[^/]+$/)?.[0] } : undefined
+            image: undefined // Default to undefined
         };
+
+        // If 'localUrl' is true, use the attachment URL scheme (local file path)
+        if (localUrl && URL) {
+            embed.image = { url: 'attachment://' + URL.match(/[^/]+$/)?.[0] }; // Use local attachment
+        } else if (URL) {
+            // If 'localUrl' is false, use the provided full URL
+            embed.image = { url: URL }; // Use the full URL
+        }
 
         // Prepare the reply options
         const replyOptions: any = {
@@ -38,17 +52,20 @@ export const interactionReply= async (interaction: CommandInteraction, URL: stri
             // ephemeral: true    // Make the message ephemeral
         };
 
-        // If URL is provided, add the file to the reply
-        if (URL) {
-            replyOptions.files = [new AttachmentBuilder(URL)];
+        // If URL is provided and 'localUrl' is true, add the file to the reply (attachment)
+        if (localUrl && URL) {
+            replyOptions.files = [new AttachmentBuilder(URL)]; // Attach the file if it's a local URL
         }
 
         // Send the reply with the prepared options
-        await interaction.reply({ content: `<@${interaction.user.id}>` });        await interaction.followUp(replyOptions);
+        await interaction.reply({ content: `<@${interaction.user.id}>` });
+        await interaction.followUp(replyOptions);
     } catch (error) {
         console.error('Error sending reply:', error);
     }
 };
+
+
 
 export function kill_week_old_entries() {
     const oneWeek = 7 * 24 * 60 * 60 * 1000;  // One week in milliseconds
