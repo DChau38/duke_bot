@@ -1,25 +1,24 @@
 {
-  "name": "cs.tracker",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "tsx index.ts",
-    "start_p" : "nohup npx tsx index.ts>bot.log 2>bot.err &",
-    "old": "nohup npx tsx index.ts > bot.log 2>1& &",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@discordjs/voice": "^0.18.0",
-    "@types/node": "^22.10.1",
-    "discord.js": "^14.16.3",
-    "dotenv": "^16.4.5",
-    "random-words": "^2.0.1",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
-  }
+    "name": "cs.tracker",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "tsx index.ts",
+        "start_p": "echo 'Starting background process...'; npx tsx index.ts > bot.log 2> bot.err",
+        "go": "echo 'Running git pull...'; git pull origin main && echo 'Running git reset...'; git reset --hard origin/main && echo 'Starting background process...'; npx tsx index.ts > bot.log 2> bot.err &"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@discordjs/voice": "^0.18.0",
+        "@types/node": "^22.10.1",
+        "discord.js": "^14.16.3",
+        "dotenv": "^16.4.5",
+        "random-words": "^2.0.1",
+        "ts-node": "^10.9.2",
+        "tsx": "^4.19.2",
+        "typescript": "^5.7.2"
+    }
 }
