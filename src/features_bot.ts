@@ -161,8 +161,8 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
     }
 };
 
-const TIME_THRESHOLD = 1000;
 export const handleSleepInteraction = async (interaction: CommandInteraction) => {
+    const TIME_THRESHOLD = 1000;
     const mentionedUser = interaction.options.get('target')?.user as User | null;
     const CURRENT_TIME = new Date();
     const botUsername = "BOT";
@@ -282,12 +282,13 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
     }
 
     if (serverTracker.has(tracker_id)) {
+        const avatarAbsolutePath = mentionedUser.displayAvatarURL({ dynamic: true, size: 128 });
         // case: null (online)
         if (serverTracker.get(tracker_id) === null) {
             return UTILS.interactionReply(
                 interaction,
-                null,
-                null,
+                false,
+                avatarAbsolutePath,
                 `${tracker_id}'s Status`,
                 `${tracker_id} is currently online.`
             );
@@ -297,8 +298,8 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
 
         return UTILS.interactionReply(
             interaction,
-            null,
-            null,
+            false,
+            avatarAbsolutePath,
             `${tracker_id}'s Status`,
             `Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`
         );
