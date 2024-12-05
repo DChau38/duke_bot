@@ -174,7 +174,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         // flip
         else if (normalizedCommandName === 'REPLY') {
-            await UTILS.interactionReply(commandInteraction, './static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
+            await UTILS.interactionReply(commandInteraction,true,'./static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
         }
         // coinflip
         else if (normalizedCommandName === 'COINFLIP') {

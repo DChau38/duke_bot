@@ -132,7 +132,7 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
     // Validate mentioned user
     const mentionedUser = interaction.options.get('target')!.user as User;
     if (!mentionedUser) {
-        await UTILS.interactionReply(interaction, null, 'Missing User', 'Please mention a user for this feature');
+        await UTILS.interactionReply(interaction, null,null, 'Missing User', 'Please mention a user for this feature');
         return;
     }
 
@@ -143,21 +143,21 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
         // 1% chance: Random member with required roles
         const randomMemberOfRightRole = await HELPERS.selectMemberWithRequiredRoles();
         if (!randomMemberOfRightRole) {
-            await UTILS.interactionReply(interaction, null, 'Error', 'Failed to select a random member.');
+            await UTILS.interactionReply(interaction, null,null, 'Error', 'Failed to select a random member.');
             return;
         }
-        await UTILS.interactionReply(interaction, './static/Zhu.webp', `${randomMemberOfRightRole.user.username}#${randomMemberOfRightRole.user.discriminator}`, 'you give me c');
+        await UTILS.interactionReply(interaction, true,'./static/Zhu.webp', `${randomMemberOfRightRole.user.username}#${randomMemberOfRightRole.user.discriminator}`, 'you give me c');
     } else if (less_than_one_percent_chance === 0) {
         // 0% chance: Literally random person in server
         const randomMember = await HELPERS.selectRandomServerMember();
         if (!randomMember) {
-            await UTILS.interactionReply(interaction, null, 'Error', 'Failed to select a random member.');
+            await UTILS.interactionReply(interaction, null,null, 'Error', 'Failed to select a random member.');
             return;
         }
-        await UTILS.interactionReply(interaction, './static/Zhu.webp', `${randomMember.user.username}#${randomMember.user.discriminator}`, 'you give me c');
+        await UTILS.interactionReply(interaction,true,'./static/Zhu.webp', `${randomMember.user.username}#${randomMember.user.discriminator}`, 'you give me c');
     } else {
         // Regular hit on mentioned user
-        await UTILS.interactionReply(interaction, './static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `${mentionedUser.username} gets hit!`);
+        await UTILS.interactionReply(interaction, true,'./static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `${mentionedUser.username} gets hit!`);
     }
 };
 
@@ -176,7 +176,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         const serverTracker = tracker.get(interaction.guild!.id);  // Get the specific server's tracker map
 
         if (!serverTracker || serverTracker.size === 0) {
-            return UTILS.interactionReply(interaction, null, 'No Users Tracked', 'No users are currently being tracked.');
+            return UTILS.interactionReply(interaction, null,null, 'No Users Tracked', 'No users are currently being tracked.');
         }
 
         let description = "Here are the statuses of all tracked users:\n\n";
@@ -267,7 +267,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         // Join the sorted chunks back together
         description = descriptionLines.join('\n\n');
 
-        return UTILS.interactionReply(interaction, null, "Tracked Users' Offline Status", description);
+        return UTILS.interactionReply(interaction, null, null, "Tracked Users' Offline Status", description);
 
 
 
@@ -278,14 +278,15 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
 
     const serverTracker = tracker.get(interaction.guild!.id); // Get the specific server's tracker map
     if (!serverTracker) {
-        return UTILS.interactionReply(interaction, null, 'Error', 'Server tracker not found.');
+        return UTILS.interactionReply(interaction,null, null, 'Error', 'Server tracker not found.');
     }
 
-    if (tracker_id in serverTracker) {
+    if (serverTracker.has(tracker_id)) {
         // case: null (online)
         if (serverTracker.get(tracker_id) === null) {
             return UTILS.interactionReply(
                 interaction,
+                null,
                 null,
                 `${tracker_id}'s Status`,
                 `${tracker_id} is currently online.`
@@ -297,22 +298,23 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         return UTILS.interactionReply(
             interaction,
             null,
+            null,
             `${tracker_id}'s Status`,
             `Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`
         );
     } else {
         const guild = interaction.guild;
         if (!guild) {
-            return UTILS.interactionReply(interaction, null, 'Error', "Could not find the server.");
+            return UTILS.interactionReply(interaction, null,null, 'Error', "Could not find the server.");
         }
 
         const username = mentionedUser.username;
         const member = guild.members.cache.find((m) => m.user.username === username);
 
         if (member?.presence && member.presence.status !== 'offline') {
-            return UTILS.interactionReply(interaction, null, 'User Status', `${username} is already online!`);
+            return UTILS.interactionReply(interaction, null,null, 'User Status', `${username} is already online!`);
         } else {
-            return UTILS.interactionReply(interaction, null, 'User Status', `${username} is not part of the club.`);
+            return UTILS.interactionReply(interaction,null, null, 'User Status', `${username} is not part of the club.`);
         }
     }
 };
@@ -328,6 +330,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     if (!argsString) {
         return UTILS.interactionReply(
             interaction,
+            null,
             null,
             'No Users Mentioned',
             'Please mention at least one user to play roulette with! Usage: /roulette username1 username2'
@@ -355,6 +358,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
         return UTILS.interactionReply(
             interaction,
             null,
+            null,
             'No Valid Users Found',
             'Could not find any valid users from the provided input.'
         );
@@ -364,6 +368,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     if (mentionedUsers.some(user => user.id === interaction.user.id)) {
         return UTILS.interactionReply(
             interaction,
+            null,
             null,
             'Self-Play Not Allowed',
             'You cannot play roulette with yourself!'
@@ -380,6 +385,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
         return UTILS.interactionReply(
             interaction,
             null,
+            null,
             'Not in Voice Channel',
             'You must be in a voice channel to play roulette!'
         );
@@ -395,6 +401,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     if (invalidDefenders.length > 0) {
         return UTILS.interactionReply(
             interaction,
+            null,
             null,
             'Voice Channel Mismatch',
             'All users must be in the SAME voice channel to play roulette!'
@@ -416,6 +423,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     if (!targetChannel) {
         return UTILS.interactionReply(
             interaction,
+            null,
             null,
             'Channel Not Found',
             "Could not find the target voice channel 'Ten Courts of Hell'."
@@ -439,6 +447,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
             return UTILS.interactionReply(
                 interaction,
                 null,
+                null,
                 'Roulette Result',
                 `🎲 Roulette Result: ${kickMessage}`
             );
@@ -447,6 +456,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
             await senderMember.voice.setChannel(targetChannel as VoiceChannel);
             return UTILS.interactionReply(
                 interaction,
+                null,
                 null,
                 'Roulette Result',
                 `🎲 Roulette Result: ${senderMember.user.username} was banished from the voice channel!`
@@ -464,7 +474,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
             }
         }
 
-        return UTILS.interactionReply(interaction, null, 'Error', errorMessage);
+        return UTILS.interactionReply(interaction, null,null, 'Error', errorMessage);
     }
 };
 
@@ -476,6 +486,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         if (!interaction.guild) {
             await UTILS.interactionReply(
                 interaction,
+                null,
                 null,
                 'Command Not Available',
                 'This command can only be used in a server, not in a DM.'
@@ -489,6 +500,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
             await UTILS.interactionReply(
                 interaction,
                 null,
+                null,
                 'Member Not Found',
                 'I could not find you in this server.'
             );
@@ -500,6 +512,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
             await UTILS.interactionReply(
                 interaction,
                 null,
+                null,
                 'Voice Channel Required',
                 'You need to be in a voice channel first.'
             );
@@ -510,6 +523,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         if (voiceChannel.type !== ChannelType.GuildVoice) {
             await UTILS.interactionReply(
                 interaction,
+                null,
                 null,
                 'Invalid Channel',
                 'Please join a valid voice channel.'
@@ -533,6 +547,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         await UTILS.interactionReply(
             interaction,
             null,
+            null,
             'Voice Channel Joined',
             `Successfully joined the voice channel: ${voiceChannel.name}!`
         );
@@ -541,6 +556,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         console.error('Comprehensive error joining voice channel:', error);
         await UTILS.interactionReply(
             interaction,
+            null,
             null,
             'Unexpected Error',
             'An unexpected error occurred while trying to join the voice channel.'
@@ -556,7 +572,7 @@ export const handleTimerInteraction = async (command: CommandInteraction) => {
         const total_ms = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
 
         // confirmation reply
-        await UTILS.interactionReply(command, null, '⏰ Timer Set!', 
+        await UTILS.interactionReply(command, null,null, '⏰ Timer Set!', 
             `**${hours} hours and ${minutes} minutes**! \n\n\`\`\`*${description}*\`\`\``);
 
         // Set the reminder after the specified time
