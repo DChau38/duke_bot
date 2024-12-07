@@ -185,7 +185,10 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         if (serverTracker.has(botUsername)) {
             const botStartTime = new Date(serverTracker.get(botUsername) as string);
             const { days, hours, minutes, seconds } = HELPERS.calculateTimeDifference(botStartTime, CURRENT_TIME);
-            description += `**${botUsername}**\nStarted: ${botStartTime.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n\n`;
+            const OFFLINE_TIME_EST = botStartTime.toLocaleString('en-US', {
+                timeZone: 'America/New_York',
+            });
+            description += `**${botUsername}**\nStarted: ${OFFLINE_TIME_EST}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n\n`;
         }
 
         // Iterate through the tracked users in the server
@@ -204,7 +207,10 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
             if (Math.abs(OFFLINE_TIME.getTime() - new Date(serverTracker.get(botUsername) as string).getTime()) <= TIME_THRESHOLD) {
                 description += `**${tracker_id}**\n(UNKNOWN) OFFLINE SINCE BOT STARTED\n\n`;
             } else {
-                description += `**${tracker_id}**\nLast online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.\n\n`;
+                const OFFLINE_TIME_EST = OFFLINE_TIME.toLocaleString('en-US', {
+                    timeZone: 'America/New_York',
+                });
+                description += `**${tracker_id}**\nLast online: ${OFFLINE_TIME_EST}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.\n\n`;
             }
         }
 
@@ -295,13 +301,15 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         }
         const OFFLINE_TIME = new Date(serverTracker.get(tracker_id) as string);
         const { days, hours, minutes, seconds } = HELPERS.calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
-
+        const OFFLINE_TIME_EST = OFFLINE_TIME.toLocaleString('en-US', {
+            timeZone: 'America/New_York',
+        });
         return UTILS.interactionReply(
             interaction,
             false,
             avatarAbsolutePath,
             `${tracker_id}'s Status`,
-            `Last online: ${OFFLINE_TIME.toLocaleString()}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`
+            `Last online: ${OFFLINE_TIME_EST}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`
         );
     } else {
         const guild = interaction.guild;
