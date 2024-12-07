@@ -188,7 +188,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
             const OFFLINE_TIME_EST = botStartTime.toLocaleString('en-US', {
                 timeZone: 'America/New_York',
             });
-            description += `**${botUsername}**\nStarted: ${OFFLINE_TIME_EST}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n\n`;
+            description += `**${botUsername}**\nStarted: ${OFFLINE_TIME_EST} EST\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n\n`;
         }
 
         // Iterate through the tracked users in the server
@@ -210,7 +210,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
                 const OFFLINE_TIME_EST = OFFLINE_TIME.toLocaleString('en-US', {
                     timeZone: 'America/New_York',
                 });
-                description += `**${tracker_id}**\nLast online: ${OFFLINE_TIME_EST}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.\n\n`;
+                description += `**${tracker_id}**\nLast online: ${OFFLINE_TIME_EST} EST\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.\n\n`;
             }
         }
 
@@ -309,7 +309,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
             false,
             avatarAbsolutePath,
             `${tracker_id}'s Status`,
-            `Last online: ${OFFLINE_TIME_EST}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`
+            `Last online: ${OFFLINE_TIME_EST} EST\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`
         );
     } else {
         const guild = interaction.guild;
