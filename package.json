@@ -6,7 +6,7 @@
     "scripts": {
         "start": "tsx index.ts",
         "start_p": "echo 'Starting background process...'; npx tsx index.ts > bot.log 2> bot.err",
-        "go": "echo 'Running git pull...'; git pull origin main && echo 'Running git reset...'; git reset --hard origin/main && echo 'Starting background process...'; npx tsx index.ts > bot.log 2> bot.err &"
+        "go": "pkill -f tsx && echo 'Running git pull...'; git pull origin main && echo 'Running git reset...'; git reset --hard origin/main && echo 'Starting background process...'; npx tsx index.ts > bot.log 2> bot.err &"
     },
     "keywords": [],
     "author": "",
