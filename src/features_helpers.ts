@@ -69,3 +69,48 @@ export function validateVoiceChannel(interaction: CommandInteraction): VoiceChan
 }
 
 
+export const timeZoneMap = {
+    // North American Time Zones
+    EST: 'America/New_York',         // Eastern Standard Time
+    EDT: 'America/New_York',         // Eastern Daylight Time
+    CST: 'America/Chicago',          // Central Standard Time
+    CDT: 'America/Chicago',          // Central Daylight Time
+    MST: 'America/Denver',           // Mountain Standard Time
+    MDT: 'America/Denver',           // Mountain Daylight Time
+    PST: 'America/Los_Angeles',      // Pacific Standard Time
+    PDT: 'America/Los_Angeles',      // Pacific Daylight Time
+    AKST: 'America/Anchorage',       // Alaska Standard Time
+    AKDT: 'America/Anchorage',       // Alaska Daylight Time
+    HST: 'Pacific/Honolulu',         // Hawaii Standard Time
+    UTC: 'UTC',                      // Coordinated Universal Time
+    GMT: 'Etc/GMT',                  // Greenwich Mean Time
+
+    // European Time Zones
+    BST: 'Europe/London',            // British Summer Time
+    CET: 'Europe/Paris',             // Central European Time
+    CEST: 'Europe/Paris',            // Central European Summer Time
+    EET: 'Europe/Athens',            // Eastern European Time
+    EEST: 'Europe/Athens',           // Eastern European Summer Time
+
+    // Asian Time Zones
+    IST: 'Asia/Kolkata',             // India Standard Time
+    PKT: 'Asia/Karachi',             // Pakistan Standard Time
+    CST_Asia: 'Asia/Shanghai',       // China Standard Time
+    JST: 'Asia/Tokyo',               // Japan Standard Time
+    KST: 'Asia/Seoul',               // Korea Standard Time
+
+    // Australian Time Zones
+    AEST: 'Australia/Sydney',        // Australian Eastern Standard Time
+    AEDT: 'Australia/Sydney',        // Australian Eastern Daylight Time
+    ACST: 'Australia/Adelaide',      // Australian Central Standard Time
+    ACDT: 'Australia/Adelaide',      // Australian Central Daylight Time
+    AWST: 'Australia/Perth',         // Australian Western Standard Time
+
+    // Others
+    NZST: 'Pacific/Auckland',        // New Zealand Standard Time
+    NZDT: 'Pacific/Auckland',        // New Zealand Daylight Time
+    WET: 'Europe/Lisbon',            // Western European Time
+    WEST: 'Europe/Lisbon',           // Western European Summer Time
+    AST: 'America/Halifax',          // Atlantic Standard Time
+    ADT: 'America/Halifax',          // Atlantic Daylight Time
+};
