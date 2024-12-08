@@ -293,7 +293,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
 
     // if valid Username/Nickname
     if (serverTracker.has(tracker_id)) {
-        const avatarAbsolutePath = mentionedUser.displayAvatarURL({ dynamic: true, size: 128 });
+        const avatarAbsolutePath = mentionedUser.displayAvatarURL();
         // case: null (online). Technically, since there is the 15m grace period it will be a bit "late"
         if (serverTracker.get(tracker_id) === null) {
             return UTILS.interactionReply(
