@@ -98,14 +98,17 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
         }
     }
 
-    // Ensure there is a map for the server already initialized in the ready event
+
+    // handles delayed deletions of tracker entries (so that they can continue to view after getting online)
+    // handles delayed additions to tracker entries (so that we can fix delayed deletion after they get off but the delay doesn't complete till after)
     const guildDeletionTimers = deletion_timers.get(newPresence.guild.id);
     const guildAdditionTimers = addition_timers.get(newPresence.guild.id);
 
+    // When: they go offline
     if (isOfflineStatus(status)) {
         const currentTime = new Date().toISOString();
 
-        // Check if entry exists in tracker and handle updating the time
+        // case: if they have a valid time entry already (non-null)
         const serverTracker = tracker.get(newPresence.guild.id);
         if (serverTracker?.get(tracker_id) !== null) {
             const oldTime = serverTracker!.get(tracker_id)!;
@@ -113,47 +116,48 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
             const new_date = new Date(currentTime);
             const time_diff = new_date.getTime() - old_date.getTime();
 
+            // (given new vs old offline_entries, which one should be kept?)
             // If the difference is over an hour, keep the old one. Otherwise, update to the newest time
+            // This allows us to keep viewing the "real" entry if they keep switching between on and off 
             if (time_diff > config.times.SLEEPCHECK_CHECK_PERIOD) {
                 return;
             } else {
                 serverTracker!.set(tracker_id, currentTime);
             }
         } else {
-            // If no time is set (entry is null), set the current time
-            serverTracker?.set(tracker_id, currentTime);
+            // case: if they just got offline for the first time, add the entry
+            serverTracker!.set(tracker_id, currentTime);
         }
 
-        // Handle case if we had a pending addition timer and the member goes offline
+        // (below adds another delayed addition) - if there is a pre-existing one, then the pre-existing one is obselete (not as updated)
         if (guildAdditionTimers?.has(tracker_id)) {
-            clearTimeout(guildAdditionTimers.get(tracker_id)!); // Safely clear the timeout
+            clearTimeout(guildAdditionTimers.get(tracker_id)!); 
         }
 
-        // Set a new timeout to ensure tracker gets updated after the specified period
+        // (accounts for case on-off, where the delay for deleting the entry completes after they get off)
+        // add a delayed function that re-adds the entry if it's been deleted. But if there is an entry there already just return
         const timeout = setTimeout(() => {
             if (serverTracker?.get(tracker_id) !== null) return;
             serverTracker?.set(tracker_id, currentTime);
-            guildAdditionTimers?.delete(tracker_id); // Delete after timeout
+            guildAdditionTimers?.delete(tracker_id); 
         }, config.times.SLEEPCHECK_CHECK_PERIOD);
-
-        guildAdditionTimers?.set(tracker_id, timeout);
-
+        guildAdditionTimers!.set(tracker_id, timeout);
         console.log(`${tracker_id} has gone offline at ${currentTime}`);
     } else if (!isOfflineStatus(status) && tracker.get(newPresence.guild.id)?.get(tracker_id)) {
-        // If the member comes online and hasn't already been processed
+
+        // (below adds another delayed deletion) - if there is a pre-existing one, then the previous one should be kept
+        // This prevents them from swapping between on-off to never delete any entries
         if (guildDeletionTimers?.has(tracker_id)) {
             return;
         }
 
-        // Set a timeout to mark them as null when they come online
+        // adds delayed function to delete offline_entry (so they have time to view it)
         const timeout = setTimeout(() => {
             const serverTracker = tracker.get(newPresence.guild!.id);
             serverTracker?.set(tracker_id, null); // Set to null
             guildDeletionTimers?.delete(tracker_id); // Delete after timeout
         }, config.times.SLEEPCHECK_CHECK_PERIOD);
-
-        guildDeletionTimers?.set(tracker_id, timeout);
-
+        guildDeletionTimers!.set(tracker_id, timeout);
         console.log(`${tracker_id} is now online.`);
     }
 });
