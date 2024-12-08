@@ -51,6 +51,12 @@ const commands = [
                 required:false,
 
             },
+            {
+                type: 3,
+                name: 'timezone',
+                description: "Examples: EST,PDF,UTC...",
+                required:false,
+            }
         ],
     },
     {

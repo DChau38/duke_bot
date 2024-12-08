@@ -162,14 +162,18 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
 };
 
 export const handleSleepInteraction = async (interaction: CommandInteraction) => {
+    // Options: retrieve timezone
+    const retrieved_timezone=(interaction.options.get('timezone')?.value as string | null) || 'EST' // EST by default
+    const current_timezone=HELPERS.timeZoneMap[retrieved_timezone];
+
+    // Options: retrieve sorting argument
+    const sortingArgument = interaction.options.get('sorting_argument')?.value as string | null;
+
+    // user + time variables
     const TIME_THRESHOLD = 1000;
     const mentionedUser = interaction.options.get('target')?.user as User | null;
     const CURRENT_TIME = new Date();
     const botUsername = "BOT";
-
-    // Get the sorting argument from the options
-    const sortingArgument = interaction.options.get('sorting_argument')?.value as string | null;
-
 
     // Case: No input argument (go for all)
     if (!mentionedUser) {
@@ -185,10 +189,10 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         if (serverTracker.has(botUsername)) {
             const botStartTime = new Date(serverTracker.get(botUsername) as string);
             const { days, hours, minutes, seconds } = HELPERS.calculateTimeDifference(botStartTime, CURRENT_TIME);
-            const OFFLINE_TIME_EST = botStartTime.toLocaleString('en-US', {
-                timeZone: 'America/New_York',
+            const OFFLINE_TIME_TIMEZONE = botStartTime.toLocaleString('en-US', {
+                timeZone: current_timezone,
             });
-            description += `**${botUsername}**\nStarted: ${OFFLINE_TIME_EST} EST\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n\n`;
+            description += `**${botUsername}**\nStarted: ${OFFLINE_TIME_TIMEZONE} ${retrieved_timezone}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago.\n\n`;
         }
 
         // Iterate through the tracked users in the server
@@ -207,10 +211,10 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
             if (Math.abs(OFFLINE_TIME.getTime() - new Date(serverTracker.get(botUsername) as string).getTime()) <= TIME_THRESHOLD) {
                 description += `**${tracker_id}**\n(UNKNOWN) OFFLINE SINCE BOT STARTED\n\n`;
             } else {
-                const OFFLINE_TIME_EST = OFFLINE_TIME.toLocaleString('en-US', {
-                    timeZone: 'America/New_York',
+                const OFFLINE_TIME_TIMEZONE = OFFLINE_TIME.toLocaleString('en-US', {
+                    timeZone: current_timezone,
                 });
-                description += `**${tracker_id}**\nLast online: ${OFFLINE_TIME_EST} EST\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.\n\n`;
+                description += `**${tracker_id}**\nLast online: ${OFFLINE_TIME_TIMEZONE} ${retrieved_timezone}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.\n\n`;
             }
         }
 
@@ -301,15 +305,15 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         }
         const OFFLINE_TIME = new Date(serverTracker.get(tracker_id) as string);
         const { days, hours, minutes, seconds } = HELPERS.calculateTimeDifference(OFFLINE_TIME, CURRENT_TIME);
-        const OFFLINE_TIME_EST = OFFLINE_TIME.toLocaleString('en-US', {
-            timeZone: 'America/New_York',
+        const OFFLINE_TIME_TIMEZONE = OFFLINE_TIME.toLocaleString('en-US', {
+            timeZone: current_timezone
         });
         return UTILS.interactionReply(
             interaction,
             false,
             avatarAbsolutePath,
             `${tracker_id}'s Status`,
-            `Last online: ${OFFLINE_TIME_EST} EST\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`
+            `Last online: ${OFFLINE_TIME_TIMEZONE} ${retrieved_timezone}\nTime difference: ${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`
         );
     } else {
         const guild = interaction.guild;
