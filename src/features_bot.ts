@@ -132,7 +132,7 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
     // Validate mentioned user
     const mentionedUser = interaction.options.get('target')!.user as User;
     if (!mentionedUser) {
-        await UTILS.interactionReply(interaction, null,null, 'Missing User', 'Please mention a user for this feature');
+        await UTILS.interactionReply(interaction, true, './static/wumpus/crying_discord.gif', 'Missing User', 'Please mention a user for this feature');
         return;
     }
 
@@ -143,28 +143,28 @@ export const handleAttackInteraction = async (interaction: CommandInteraction): 
         // 1% chance: Random member with required roles
         const randomMemberOfRightRole = await HELPERS.selectMemberWithRequiredRoles();
         if (!randomMemberOfRightRole) {
-            await UTILS.interactionReply(interaction, null,null, 'Error', 'Failed to select a random member.');
+            await UTILS.interactionReply(interaction, true, './static/wumpus/dead_discord.gif', 'Error', 'Failed to select a random member.');
             return;
         }
-        await UTILS.interactionReply(interaction, true,'./static/Zhu.webp', `${randomMemberOfRightRole.user.username}#${randomMemberOfRightRole.user.discriminator}`, 'you give me c');
+        await UTILS.interactionReply(interaction, true, './static/Zhu.webp', `${randomMemberOfRightRole.user.username}#${randomMemberOfRightRole.user.discriminator}`, 'you give me c');
     } else if (less_than_one_percent_chance === 0) {
         // 0% chance: Literally random person in server
         const randomMember = await HELPERS.selectRandomServerMember();
         if (!randomMember) {
-            await UTILS.interactionReply(interaction, null,null, 'Error', 'Failed to select a random member.');
+            await UTILS.interactionReply(interaction, true, './static/wumpus/dead_discord.gif', 'Error', 'Failed to select a random member.');
             return;
         }
-        await UTILS.interactionReply(interaction,true,'./static/Zhu.webp', `${randomMember.user.username}#${randomMember.user.discriminator}`, 'you give me c');
+        await UTILS.interactionReply(interaction, true, './static/Zhu.webp', `${randomMember.user.username}#${randomMember.user.discriminator}`, 'you give me c');
     } else {
         // Regular hit on mentioned user
-        await UTILS.interactionReply(interaction, true,'./static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `${mentionedUser.username} gets hit!`);
+        await UTILS.interactionReply(interaction, true, './static/Zhu.webp', `${mentionedUser.username}#${mentionedUser.discriminator}`, `${mentionedUser.username} gets hit!`);
     }
 };
 
 export const handleSleepInteraction = async (interaction: CommandInteraction) => {
     // Options: retrieve timezone
-    const retrieved_timezone=(interaction.options.get('timezone')?.value as string | null) || 'EST' // EST by default
-    const current_timezone=HELPERS.timeZoneMap[retrieved_timezone];
+    const retrieved_timezone = (interaction.options.get('timezone')?.value as string | null) || 'EST' // EST by default
+    const current_timezone = HELPERS.timeZoneMap[retrieved_timezone];
 
     // Options: retrieve sorting argument
     const sortingArgument = interaction.options.get('sorting_argument')?.value as string | null;
@@ -180,7 +180,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         const serverTracker = tracker.get(interaction.guild!.id);  // Get the specific server's tracker map
 
         if (!serverTracker || serverTracker.size === 0) {
-            return UTILS.interactionReply(interaction, null,null, 'No Users Tracked', 'No users are currently being tracked.');
+            return UTILS.interactionReply(interaction, true, './static/wumpus/dead_discord.gif', 'No Users Tracked', 'No users are currently being tracked.');
         }
 
         let description = "Here are the statuses of all tracked users:\n\n";
@@ -277,7 +277,7 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
         // Join the sorted chunks back together
         description = descriptionLines.join('\n\n');
 
-        return UTILS.interactionReply(interaction, null, null, "Tracked Users' Offline Status", description);
+        return UTILS.interactionReply(interaction, true, './static/wumpus_happy', "Tracked Users' Offline Status", description);
 
 
 
@@ -288,12 +288,13 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
 
     const serverTracker = tracker.get(interaction.guild!.id); // Get the specific server's tracker map
     if (!serverTracker) {
-        return UTILS.interactionReply(interaction,null, null, 'Error', 'Server tracker not found.');
+        return UTILS.interactionReply(interaction, true, './static/wumpus/dead_discord.gif', 'Error', 'Server tracker not found.');
     }
 
+    // if valid Username/Nickname
     if (serverTracker.has(tracker_id)) {
         const avatarAbsolutePath = mentionedUser.displayAvatarURL({ dynamic: true, size: 128 });
-        // case: null (online)
+        // case: null (online). Technically, since there is the 15m grace period it will be a bit "late"
         if (serverTracker.get(tracker_id) === null) {
             return UTILS.interactionReply(
                 interaction,
@@ -318,16 +319,16 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
     } else {
         const guild = interaction.guild;
         if (!guild) {
-            return UTILS.interactionReply(interaction, null,null, 'Error', "Could not find the server.");
+            return UTILS.interactionReply(interaction, true, './static/wumpus/dead_discord.gif', 'Error', "Could not find the server.");
         }
 
         const username = mentionedUser.username;
         const member = guild.members.cache.find((m) => m.user.username === username);
 
         if (member?.presence && member.presence.status !== 'offline') {
-            return UTILS.interactionReply(interaction, null,null, 'User Status', `${username} is already online!`);
+            return UTILS.interactionReply(interaction, true, './static/wumpus/crying_discord.gif', 'User Status', `${username} is already online!`);
         } else {
-            return UTILS.interactionReply(interaction,null, null, 'User Status', `${username} is not part of the club.`);
+            return UTILS.interactionReply(interaction, true, './static/wumpus/crying_discord.gif', 'User Status', `${username} is not part of the club.`);
         }
     }
 };
@@ -343,8 +344,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     if (!argsString) {
         return UTILS.interactionReply(
             interaction,
-            null,
-            null,
+            true, './static/wumpus/crying_discord.gif',
             'No Users Mentioned',
             'Please mention at least one user to play roulette with! Usage: /roulette username1 username2'
         );
@@ -370,8 +370,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     if (mentionedUsers.length === 0) {
         return UTILS.interactionReply(
             interaction,
-            null,
-            null,
+            true, './static/wumpus/crying_discord.gif',
             'No Valid Users Found',
             'Could not find any valid users from the provided input.'
         );
@@ -381,8 +380,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     if (mentionedUsers.some(user => user.id === interaction.user.id)) {
         return UTILS.interactionReply(
             interaction,
-            null,
-            null,
+            true, './static/wumpus/crying_discord.gif',
             'Self-Play Not Allowed',
             'You cannot play roulette with yourself!'
         );
@@ -397,8 +395,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     if (!senderMember.voice?.channel) {
         return UTILS.interactionReply(
             interaction,
-            null,
-            null,
+            true, './static/wumpus/crying_discord.gif',
             'Not in Voice Channel',
             'You must be in a voice channel to play roulette!'
         );
@@ -414,8 +411,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     if (invalidDefenders.length > 0) {
         return UTILS.interactionReply(
             interaction,
-            null,
-            null,
+            true, './static/wumpus/crying_discord.gif',
             'Voice Channel Mismatch',
             'All users must be in the SAME voice channel to play roulette!'
         );
@@ -436,8 +432,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
     if (!targetChannel) {
         return UTILS.interactionReply(
             interaction,
-            null,
-            null,
+            true, './static/wumpus/dead_discord.gif',
             'Channel Not Found',
             "Could not find the target voice channel 'Ten Courts of Hell'."
         );
@@ -487,7 +482,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
             }
         }
 
-        return UTILS.interactionReply(interaction, null,null, 'Error', errorMessage);
+        return UTILS.interactionReply(interaction, true, './static/wumpus/dead_discord.gif', 'Error', errorMessage);
     }
 };
 
@@ -559,8 +554,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         // Reply to the interaction
         await UTILS.interactionReply(
             interaction,
-            null,
-            null,
+            true, './static/wumpus_happy',
             'Voice Channel Joined',
             `Successfully joined the voice channel: ${voiceChannel.name}!`
         );
@@ -569,8 +563,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         console.error('Comprehensive error joining voice channel:', error);
         await UTILS.interactionReply(
             interaction,
-            null,
-            null,
+            true, './static/wumpus/dead_discord.gif',
             'Unexpected Error',
             'An unexpected error occurred while trying to join the voice channel.'
         );
@@ -585,7 +578,7 @@ export const handleTimerInteraction = async (command: CommandInteraction) => {
         const total_ms = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
 
         // confirmation reply
-        await UTILS.interactionReply(command, null,null, '⏰ Timer Set!', 
+        await UTILS.interactionReply(command, true, './static/wumpus_happy.gif', '⏰ Timer Set!',
             `**${hours} hours and ${minutes} minutes**! \n\n\`\`\`*${description}*\`\`\``);
 
         // Set the reminder after the specified time
