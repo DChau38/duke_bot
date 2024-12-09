@@ -17,8 +17,8 @@ export const handleCoinFlipInteraction = async (interaction: CommandInteraction)
     const result = coinSides[Math.floor(Math.random() * coinSides.length)];
 
     // Decide the images based on the result (Heads = Win, Tails = Lose)
-    const heads_image = new AttachmentBuilder('./static/heads.JPG');  // Local path
-    const tails_image = new AttachmentBuilder('./static/tails.JPG');  // Local path
+    const heads_image = new AttachmentBuilder('./static/flip/heads.JPG');  // Local path
+    const tails_image = new AttachmentBuilder('./static/flip/tails.JPG');  // Local path
 
     // Select the image based on the coin flip result
     const resultImage = result === 'Heads' ? heads_image : tails_image;
@@ -97,21 +97,21 @@ export const handleHangmanInteraction = async (interaction: CommandInteraction, 
         if (tries === 0) {
             embedTitle = 'Game Over';
             embedDescription = `Poor wife and kids... You're out of guesses! The correct word was: \n${word}`;
-            embedImage = './static/hangman_dead.JPG';
+            embedImage = './static/hangman/hangman_dead.JPG';
             collector.stop();
         }
         // CHECK: IF SUCCESS
         else if (hiddenWord === word) {
             embedTitle = 'Congratulations!';
             embedDescription = `You guessed the word: ${word} in ${attempts} attempts! Well Done!`;
-            embedImage = './static/hangman_alive.JPG';
+            embedImage = './static/hangman/hangman_alive.JPG';
             collector.stop(); // Stop the game if the word is guessed
         } else {
             // CONTINUE
             const spacedHiddenWord = '`' + hiddenWord.split('').join(' ') + '`'; // Format hidden word with spaces and wrap in backticks
             embedDescription += `\n\nThere are ${remainingLetters} letters left to guess: \n${spacedHiddenWord}\nYou have ${tries} attempts remaining`;
             const invertedTries = 6 - tries;
-            embedImage = `./static/hangman_${invertedTries}.JPG`;
+            embedImage = `./static/hangman/hangman_${invertedTries}.JPG`;
         }
 
         // Send the embed with updated information
@@ -121,9 +121,9 @@ export const handleHangmanInteraction = async (interaction: CommandInteraction, 
     // When the collector stops (time runs out or game is won), inform the players
     collector.on('end', () => {
         if (hiddenWord !== word && tries === 0) {
-            UTILS.sendEmbed(channel, './static/hangman_dead.JPG', 'Game Over', `You're out of guesses! The correct word was: ${word}`);
+            UTILS.sendEmbed(channel, './static/hangman/hangman_dead.JPG', 'Game Over', `You're out of guesses! The correct word was: ${word}`);
         } else if (hiddenWord !== word && tries > 0) {
-            UTILS.sendEmbed(channel, './static/hangman_dead.JPG', 'Game Over', `Time's up! The correct word was: ${word}`);
+            UTILS.sendEmbed(channel, './static/hangman/hangman_dead.JPG', 'Game Over', `Time's up! The correct word was: ${word}`);
         }
     });
 };
