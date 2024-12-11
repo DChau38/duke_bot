@@ -8,7 +8,8 @@ const config = {
         GAME_HANGMAN_GAMETIME: 15 * 60 * 100,
     },
     ids: {
-        BIGBROTHER: "1263997983637114880"
+        BIGBROTHER: "1263997983637114880",
+        AAA:"1312367693634076672"
     }
 };
 
