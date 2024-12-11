@@ -221,16 +221,21 @@ client.on('disconnect', async () => {
 });
 
 // Global error handling for uncaught exceptions
-process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
+process.on('uncaughtException', async (error) => {
+    // stderr - error
+    console.error('UNCAUGHT ERROR:', error);
 
-    const channel = client.channels.cache.get(config.ids.BIGBROTHER); // Replace with your channel ID
+    // AAA - error
+    const channel = client.channels.cache.get(config.ids.AAA); 
     if (channel) {
-        (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`)
-        UTILS.sendEmbed(channel as TextChannel, null, "...", "Something went wrong! I'll be back soon.");
+        // tag
+        await (channel as TextChannel).send(`<@${process.env.DISCORD_ACCOUNT_ID}>`)
+        // error stack message
+        await UTILS.sendEmbed(channel as TextChannel, null, "Uncaught error", `${error.stack}`);
     }
 
-    process.exit(1);  // Optional: terminate the bot after handling the error
+    // kill process after 10s
+    process.exit(1);  
 });
 
 // Global error handling for unhandled promise rejections
