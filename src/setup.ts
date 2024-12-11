@@ -121,6 +121,10 @@ export const client = new Client({
 
 // Tracker structure: Maps server ID to a map of users and their associated time
 export const tracker: Map<string, Map<string, string | null>> = new Map();
+// A Map that stores deletion timers for each server, which maps the user ID (tracker_id) to a NodeJS.Timeout
+// A Map that stores addition timers for each server, which maps the user ID (tracker_id) to a NodeJS.Timeout
+export const deletion_timers: Map<string, Map<string, NodeJS.Timeout>> = new Map();
+export const addition_timers: Map<string, Map<string, NodeJS.Timeout>> = new Map();
 
 // Async function for login with error handling
 export async function startBot() {
