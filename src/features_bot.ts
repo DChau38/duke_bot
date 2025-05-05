@@ -611,8 +611,10 @@ export const handleTimerInteraction = async (command: CommandInteraction) => {
             const elapsed_minutes = Math.floor((elapsed_ms % (1000 * 60 * 60)) / (1000 * 60));
 
             // Send the reminder message after the timer expires
-            await command.followUp({
-                content: `⏰ **Timer finished!** \n\n**${elapsed_hours} hours and ${elapsed_minutes} minutes ago**\n\n\`\`\`*${description}*\`\`\``
+            const userMention = `<@${command.user.id}>`;
+            const channel = command.channel as TextChannel
+            await channel?.send({
+                content: `⏰ ${userMention} **Timer finished!** \n\n**${elapsed_hours} hours and ${elapsed_minutes} minutes ago**\n\n\`\`\`*${description}*\`\`\``
             });
         }, total_ms);  // Use total_ms as the delay in milliseconds
     } catch (error) {

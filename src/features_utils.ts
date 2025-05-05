@@ -145,3 +145,11 @@ export const getNicknameOrUsernameElseNull = (guild: Guild, identifier: string):
     // If no member was found, return null
     return null;
 };
+
+export function returnCommandTimes(command : CommandInteraction) {
+    const hours = (command.options.get('hours')?.value || 0) as number;
+    const minutes = (command.options.get('minutes')?.value || 0) as number;
+    const description = command.options.get('description')?.value;
+    const total_ms = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
+    return { hours, minutes, description, total_ms };
+}
