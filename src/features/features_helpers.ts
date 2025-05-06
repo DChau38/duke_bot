@@ -1,6 +1,6 @@
 import { EmbedBuilder, AttachmentBuilder, TextChannel, ChannelType, CommandInteraction, VoiceChannel, Guild, Collection, GuildMember } from 'discord.js';
-import { client, tracker } from './setup';
-import config from './config';
+import config from '../config/config';
+import { client } from '../index_setup/client';
 
 export const calculateTimeDifference = (startTime: Date, endTime: Date) => {
     const timeDiff = endTime.getTime() - startTime.getTime();

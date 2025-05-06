@@ -1,7 +1,4 @@
-import { Client, GatewayIntentBits, TextChannel, ChannelType } from 'discord.js'
-import { REST, Routes } from 'discord.js';
-import 'dotenv/config';
-const commands = [
+export const OUR_COMMANDS = [
     {
         name: 'test',
         description: 'Test if the API is working.',
@@ -49,6 +46,7 @@ const commands = [
                 name: "sorting_argument",
                 description: "Optional: Examples: a/alphabetize",
                 required: false,
+
 
             },
             {
@@ -100,65 +98,9 @@ const commands = [
                 requried: false,
             },
 
+
         ]
     },
 
+
 ];
-
-
-
-export const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildPresences,
-        GatewayIntentBits.GuildVoiceStates,
-
-    ]
-});
-
-// Tracker structure: Maps server ID to a map of users and their associated time
-export const tracker: Map<string, Map<string, string | null>> = new Map();
-// A Map that stores deletion timers for each server, which maps the user ID (tracker_id) to a NodeJS.Timeout
-// A Map that stores addition timers for each server, which maps the user ID (tracker_id) to a NodeJS.Timeout
-export const deletion_timers: Map<string, Map<string, NodeJS.Timeout>> = new Map();
-export const addition_timers: Map<string, Map<string, NodeJS.Timeout>> = new Map();
-
-// Async function for login with error handling
-export async function startBot() {
-    try {
-        if (!process.env.DISCORD_BOT_TOKEN) {
-            throw new Error('Bot token is not defined in environment variables');
-        }
-
-        await client.login(process.env.DISCORD_BOT_TOKEN);
-        console.log('(1) LOGIN: SUCCESS');
-
-        await registerSlashCommands();
-    } catch (error) {
-        console.error('(1) LOGIN: FAIL-', error);
-    }
-}
-
-
-async function registerSlashCommands() {
-    try {
-        // get variables (commands above)
-        const TOKEN = process.env.DISCORD_BOT_TOKEN as string;
-        const CLIENT_ID = process.env.DISCORD_CLIENT_ID as string;
-
-        const rest = new REST({ version: '10' }).setToken(TOKEN);  // Initialize REST client
-
-        // Register commands globally with Discord
-        await rest.put(
-            Routes.applicationCommands(CLIENT_ID),  // This registers the commands globally
-            { body: commands }  // Body of the request, containing the commands
-        );
-
-        console.log('REGISTER COMMANDS: SUCCESS');
-    } catch (error) {
-        console.error('REGISTER COMMANDS: FAILURE', error);  // Handle errors during command registration
-    }
-}

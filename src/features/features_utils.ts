@@ -1,5 +1,6 @@
 import { TextChannel, EmbedBuilder, AttachmentBuilder, CommandInteraction, ChannelType, Guild } from "discord.js";
-import { tracker, client } from "./setup";
+import { client } from "../index_setup/index_helpers";
+import { tracker } from "../index_setup/index_helpers_2";
 
 export const sendEmbed = async (channel: TextChannel, URL: string | null, title: string, description: string) => {
     const embed = new EmbedBuilder()
