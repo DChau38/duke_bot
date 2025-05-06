@@ -2,8 +2,8 @@ import { Interaction, EmbedBuilder, AttachmentBuilder, TextChannel, CommandInter
 import { generate } from 'random-words'
 import * as HELPERS from './features_helpers';
 import * as UTILS from './features_utils';
-import config from './config';
-import { client, tracker } from './setup';
+import config from '../config/config';
+
 
 
 
@@ -508,6 +508,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
 
 
 import { joinVoiceChannel } from '@discordjs/voice';
+import { tracker } from '../index_setup/index_helpers_2';
 export const handleJoinVCInteraction = async (interaction: CommandInteraction) => {
     try {
         // Check if the interaction is from a guild (not a DM)

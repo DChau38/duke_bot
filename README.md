@@ -1,8 +1,6 @@
-# Welcome to Tang Sanzhang Discord Bot! 🎉
+# Welcome to My Discord Utility Bot! 🎉
 
-Hey there! 👋 Ready to have some fun and make your server even more awesome? Check out the exciting features that Tang Sanzhang has to offer! 😎✨
-
-### **✨ Available Commands**
+### **✨ Available Features and Commands to Our Users**
 
 - **/sleep [username]**  
   Ever wondered how long you've been asleep or how long it's been since you logged on? This command will show you exactly that! 🛌💤  
@@ -34,47 +32,7 @@ Hey there! 👋 Ready to have some fun and make your server even more awesome? C
 
 ---
 
-## **Requirements**
-
-Before getting started, make sure you have everything you need to run **Tang Sanzhang Bot**:
-
-1. **Node.js** (version 16.x or higher)
-2. **Npm** (Node Package Manager)
-3. **Discord Bot Token**:  
-   You'll need to create a bot on Discord's Developer Portal to obtain your bot token. Follow the [official guide](https://discord.com/developers/docs/intro) to set it up.
-4. **.env File**:  
-   For security, store sensitive information (like your bot token and server ID) in a `.env` file located in the root directory of your project.
-
----
-
-## **Installation Guide**
-
-Follow these simple steps to get **Tang Sanzhang Bot** up and running on your server:
-
-1. **Invite the bot** to your server using the private invite link.
-2. **Clone the repository** to your local machine:
-
-    ```bash
-    git clone https://github.com/DChau38/duke-bot.git
-    ```
-
-3. **Install required packages**:
-
-    ```bash
-    npm install
-    ```
-
-4. **Start the bot**:
-
-    ```bash
-    npm run start
-    ```
-
-   The bot will authenticate with Discord's servers and begin listening for events.
-
----
-
-## **License**
+### **✨ License**
 
 This project is licensed under the **GNU General Public License (GPL)**.  
 For full details, refer to the `GNU GPL License.txt` file in the repository.
@@ -83,7 +41,7 @@ You can learn more about the GNU GPL license by visiting the [official website](
 
 ---
 
-## **Contributing**
+### **✨ Contributing**
 
 We'd love for you to contribute to **Tang Sanzhang Bot**! Whether you're fixing bugs, adding new features, or improving documentation, your contributions will help make the bot better for everyone. 😊
 
@@ -135,8 +93,48 @@ We'd love for you to contribute to **Tang Sanzhang Bot**! Whether you're fixing 
 
 ---
 
+### **✨ Requirements to Deploy This Codebase With Your Own Bot**
+
+Before getting started, make sure you have everything you need to run **Tang Sanzhang Bot**:
+
+1. **Node.js** (version 16.x or higher)
+2. **Npm** (Node Package Manager)
+3. **Discord Bot Token**:  
+   You'll need to create a bot on Discord's Developer Portal to obtain your bot token. Follow the [official guide](https://discord.com/developers/docs/intro) to set it up.
+4. **.env File**:  
+   For security, store sensitive information (like your bot token and server ID) in a `.env` file located in the root directory of your project.
+
+---
+
+### **✨ Guide to Deploy This Codebase With Your Own Bot**
+
+Follow these simple steps to get **Tang Sanzhang Bot** up and running on your server:
+
+1. **Invite the bot** to your server using the private invite link.
+2. **Clone the repository** to your local machine:
+
+    ```bash
+    git clone https://github.com/DChau38/duke-bot.git
+    ```
+
+3. **Install required packages**:
+
+    ```bash
+    npm install
+    ```
+
+4. **Start the bot**:
+
+    ```bash
+    npm run start
+    ```
+
+   The bot will authenticate with Discord's servers and begin listening for events.
+
+---
+
 *Created by Duke 😁*
 
 For any support or questions, feel free to ask — I'm always here to help!
 
-Thank you for helping improve **Tang Sanzhang Bot**! 🎉
+Thank you for helping improve our bot! 🎉
