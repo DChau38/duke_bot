@@ -13,7 +13,7 @@ process.on('uncaughtException', async (error) => {
     console.error('UNCAUGHT ERROR:', error);
 
     // Step 2: Send to log channel if it is defined
-    const channel = client.channels.cache.get(config.ids.AAA);
+    const channel = client.channels.cache.get(config.ids.BOT_LOG_CHANNEL);
     if (channel) {
         await (channel as TextChannel).send(`<@${process.env.DISCORD_ACCOUNT_ID}>`);
         await UTILS.sendEmbed(channel as TextChannel, null, "UNCAUGHT ERROR", `${error.stack}`);

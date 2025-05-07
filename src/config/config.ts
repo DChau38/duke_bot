@@ -9,7 +9,7 @@ const config = {
     },
     ids: {
         BIGBROTHER: "1263997983637114880",
-        AAA:"1312367693634076672"
+        BOT_LOG_CHANNEL:"1312367693634076672"
     }
 };
 
