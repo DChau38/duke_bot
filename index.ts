@@ -13,11 +13,9 @@ process.on('uncaughtException', async (error) => {
     console.error('UNCAUGHT ERROR:', error);
 
     // Step 2: Send to log channel if it is defined
-    const channel = client.channels.cache.get(config.ids.BOT_LOG_CHANNEL);
-    if (channel) {
-        await (channel as TextChannel).send(`<@${process.env.DISCORD_ACCOUNT_ID}>`);
-        await UTILS.sendEmbed(channel as TextChannel, null, "UNCAUGHT ERROR", `${error.stack}`);
-    }
+    const atUser = process.env.DISCORD_ACCOUNT_ID!
+    await HELPERS.notifyBotError(atUser,"UNCAUGHT ERROR", error.stack || String(error)
+    );
 
 });
 initializeBot();
@@ -27,20 +25,19 @@ async function initializeBot() {
     try {
         // Step 1: Error handling
         INDEX_HELPERS.handleInitializationErrors();
-
-        // Step 2: Login to Discord
-        await INDEX_HELPERS.loginToDiscord();
-
-        // Step 3: Register slash commands
-        await INDEX_HELPERS.registerSlashCommands();
-
-        // Step 4: Attach event handlesr
+        // Step 2: Attach event handlers
         await INDEX_HELPERS.attachEventHandlers()
+        // Step 3: Login to Discord
+        await INDEX_HELPERS.loginToDiscord();
+        // Step 4: Register slash commands
+        await INDEX_HELPERS.registerSlashCommands();
         // Step 5: Schedule recurring tasks
         await INDEX_HELPERS.scheduleRecurringTasks();
-        console.log('(4/4) BOT INTITIALIZATION: SUCCESS');
+        console.log('(6/6) BOT INTITIALIZATION: SUCCESS');
     } catch (error) {
-        console.error('(4/4) BOT INTITIALIZATION: FAILED', error);
+        console.error('(6/6) BOT INTITIALIZATION: FAILED', error);
+        const atUser = process.env.DISCORD_ACCOUNT_ID!
+        await HELPERS.notifyBotError(atUser,"(6/6) BOT INTITIALIZATION: FAILED", error.stack || String(error))
     }
 }
 

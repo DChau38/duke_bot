@@ -1,6 +1,20 @@
 import { EmbedBuilder, AttachmentBuilder, TextChannel, ChannelType, CommandInteraction, VoiceChannel, Guild, Collection, GuildMember } from 'discord.js';
 import config from '../config/config';
 import { client } from '../index_setup/client';
+import * as UTILS from './features_utils'
+
+export async function notifyBotError(accountId: string, title: string, error: string) {
+    // Step 1: Find Bot Log Channel
+    const channel = client.channels.cache.get(config.ids.BOT_LOG_CHANNEL);
+    if (!channel) {
+        console.error(`[notifyBotError] BOT_LOG_CHANNEL (${config.ids.BOT_LOG_CHANNEL}) not found.`);
+        return;
+    }
+
+    // Step 2: Send message
+    await (channel as TextChannel).send(`<@${accountId}>`);
+    await UTILS.sendEmbed(channel as TextChannel, null, title, error);
+}
 
 export const calculateTimeDifference = (startTime: Date, endTime: Date) => {
     const timeDiff = endTime.getTime() - startTime.getTime();

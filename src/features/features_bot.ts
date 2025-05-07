@@ -180,21 +180,21 @@ export const handleSleepInteraction = async (interaction: CommandInteraction) =>
 
 
     // case: postpone until they wake up
-    if (postpone!==null && postpone==='yes'){
+    if (postpone !== null && postpone === 'yes') {
         // if they did not attach a user
-        if (!mentionedUser){
-            return UTILS.interactionReply(interaction,true,'./static/wumpus/wumpus_crying.gif','Missing user','You need to tag a user to have their entry\'s deletion postponed');
+        if (!mentionedUser) {
+            return UTILS.interactionReply(interaction, true, './static/wumpus/wumpus_crying.gif', 'Missing user', 'You need to tag a user to have their entry\'s deletion postponed');
         }
-        const current_time=new Date().toISOString();
+        const current_time = new Date().toISOString();
         const serverTracker = tracker.get(interaction.guild!.id);  // Get the specific server's tracker map
         // interaction.user.username = who started the interaction 
-        const tracker_id=UTILS.getNicknameOrUsernameElseNull(interaction.guild!,mentionedUser.username);
-        const fiften_minutes=15*60*1000;
-        setTimeout(()=>{
-            serverTracker?.set(tracker_id as string,current_time);
+        const tracker_id = UTILS.getNicknameOrUsernameElseNull(interaction.guild!, mentionedUser.username);
+        const fiften_minutes = 15 * 60 * 1000;
+        setTimeout(() => {
+            serverTracker?.set(tracker_id as string, current_time);
         }, fiften_minutes);
-        return UTILS.interactionReply(interaction,true,'./static/wumpus/wumpus_happy.gif','Postpone submitted', '15m later it will be replaced with the current offline time (you can go back to sleep :) )');
-    } 
+        return UTILS.interactionReply(interaction, true, './static/wumpus/wumpus_happy.gif', 'Postpone submitted', '15m later it will be replaced with the current offline time (you can go back to sleep :) )');
+    }
     // Case: No input argument (go for all)
     else if (!mentionedUser) {
         const serverTracker = tracker.get(interaction.guild!.id);  // Get the specific server's tracker map
@@ -592,19 +592,18 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
 };
 export const handleTimerInteraction = async (command: CommandInteraction) => {
     try {
-        // variables
+        // Step 1: Get variables
         const hours = (command.options.get('hours')?.value || 0) as number;
         const minutes = (command.options.get('minutes')?.value || 0) as number;
-        const description = command.options.get('description')?.value;
+        const description = command.options.get('description')?.value || "<NO GIVEN DESCRIPTION>";
         const total_ms = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
 
-        // confirmation reply
-        await UTILS.interactionReply(command, true, './static/wumpus/wumpus_happy.gif', '⏰ Timer Set!',
-            `**${hours} hours and ${minutes} minutes**! \n\n\`\`\`*${description}*\`\`\``);
+        // Step 2: Send reply to confirm (lef talone sends but causes errors, commneted but sends with no errors)
+        /*await UTILS.interactionReply(command, true, './static/wumpus/wumpus_happy.gif', '⏰ Timer Set!',
+            `**I will ring in ${hours} hours and ${minutes} minutes**! \n\n\`\`\`*${description}*\`\`\``);*/
 
-        // Set the reminder after the specified time
-        const startTime = Date.now();  // record the start time
-
+        // Step 3: Start the timer
+        const startTime = Date.now();
         setTimeout(async () => {
             // Calculate elapsed time
             const elapsed_ms = Date.now() - startTime;
@@ -615,8 +614,15 @@ export const handleTimerInteraction = async (command: CommandInteraction) => {
             const userMention = `<@${command.user.id}>`;
             const channel = command.channel as TextChannel
             await channel?.send({
-                content: `⏰ ${userMention} **Timer finished!** \n\n**${elapsed_hours} hours and ${elapsed_minutes} minutes ago**\n\n\`\`\`*${description}*\`\`\``
+                content: `⏰ ${userMention} **Timer finished!**\n\n**This timer was started ${elapsed_hours} hours and ${elapsed_minutes} minutes ago**\n\n\`\`\`${description}\`\`\``
             });
+
+            UTILS.sendEmbed(
+                channel,
+                './static/timer/animeGirl_Marin_bashful.gif',
+                'Timer’s up!',
+                `This timer was started ${elapsed_hours} hours and ${elapsed_minutes} minutes ago\n\n\`\`\`${description}\`\`\``
+            );
         }, total_ms);  // Use total_ms as the delay in milliseconds
     } catch (error) {
         console.error('Error in handling timer interaction:', error);

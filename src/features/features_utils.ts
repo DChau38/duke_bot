@@ -1,6 +1,7 @@
 import { TextChannel, EmbedBuilder, AttachmentBuilder, CommandInteraction, ChannelType, Guild } from "discord.js";
-import { client } from "../index_setup/index_helpers";
 import { tracker } from "../index_setup/index_helpers_2";
+import { client } from "../index_setup/client";
+
 
 export const sendEmbed = async (channel: TextChannel, URL: string | null, title: string, description: string) => {
     const embed = new EmbedBuilder()
@@ -95,14 +96,14 @@ export const reminder_yan = async () => {
         const guild = client.guilds.cache.get(process.env.SERVER_ID as string);
         if (guild) {
             const channel = guild.channels.cache.find(
-                (ch) => ch.type === ChannelType.GuildText && ch.name === 'aaa'
+                (ch) => ch.type === ChannelType.GuildText && ch.name === 'config.ids.BOT_LOG_CHANNEL'
             ) as TextChannel;
 
             if (channel) {
                 const member = guild.members.cache.find((mem) => mem.user.username === 'yan240')
                 await channel.send(`<@${member?.user.id}> Reminder to do one's racket :)`);
             } else {
-                console.log("aaa channel not found");
+                console.log("config.ids.BOT_LOG_CHANNEL channel not found");
             }
         }
     } catch (error) {
@@ -114,14 +115,14 @@ export const reminder_duke = async () => {
         const guild = client.guilds.cache.get(process.env.SERVER_ID as string);
         if (guild) {
             const channel = guild.channels.cache.find(
-                (ch) => ch.type === ChannelType.GuildText && ch.name === 'aaa'
+                (ch) => ch.type === ChannelType.GuildText && ch.name === 'config.ids.BOT_LOG_CHANNEL'
             ) as TextChannel;
 
             if (channel) {
                 const member = guild.members.cache.find((mem) => mem.user.username === 'duke9999')
                 await channel.send(`<@${member?.user.id}> It's time to take a break!`);
             } else {
-                console.log("aaa channel not found");
+                console.log("config.ids.BOT_LOG_CHANNEL channel not found");
             }
         }
     } catch (error) {

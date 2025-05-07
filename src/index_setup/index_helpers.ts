@@ -24,9 +24,9 @@ export function handleInitializationErrors() {
             }
             process.exit(1);
         }
-
-
+        console.log("(1/6) HANDLE ERRORS: SUCCESS")
     } catch (error) {
+        console.error("(1/6) HANDLE ERRORS: FAILED")
 
     }
 }
@@ -37,9 +37,9 @@ export async function loginToDiscord() {
 
         // Step 2: Login to Discord
         await client.login(process.env.DISCORD_BOT_TOKEN);
-        console.log('(1) LOGIN: SUCCESS');
+        console.log('(3/6) LOGIN: SUCCESS');
     } catch (error) {
-        console.error('(1) LOGIN: FAIL-', error);
+        console.error('(3/6) LOGIN: FAIL', error);
     }
 }
 export async function registerSlashCommands() {
@@ -56,19 +56,28 @@ export async function registerSlashCommands() {
         );
 
 
-        console.log('REGISTER COMMANDS: SUCCESS');
+        console.log('(4/6) REGISTER COMMANDS: SUCCESS');
     } catch (error) {
-        console.error('REGISTER COMMANDS: FAILURE', error);
+        console.error('(4/6) REGISTER COMMANDS: FAILURE', error);
     }
 }
 export async function attachEventHandlers() {
-    client.once('ready', () => INDEX_HELPERS_2.handleTrackerInitialization());
-    client.on('presenceUpdate', (oldPresence, newPresence) => INDEX_HELPERS_2.handlePresenceUpdate(oldPresence, newPresence));
-    client.on('interactionCreate', (interaction) => INDEX_HELPERS_2.handleInteraction(interaction));
-    client.on('disconnect', () => INDEX_HELPERS_2.handleDisconnect());
+    try {
+        client.on('ready', () => INDEX_HELPERS_2.handleTrackerInitialization());
+        client.on('presenceUpdate',  (oldPresence, newPresence) => INDEX_HELPERS_2.handlePresenceUpdate(oldPresence, newPresence));
+        client.on('interactionCreate', (interaction) => INDEX_HELPERS_2.handleInteraction(interaction));
+        client.on('disconnect', () => INDEX_HELPERS_2.handleDisconnect());
+        console.log('(2/6) ATTACH EVENT HANDLERS: SUCCESS');
+    } catch (error) {
+        console.error('(2/6) ATTACH EVENT HANDLERS: FAIL');
+    }
+
 }
 export async function scheduleRecurringTasks() {
+    try {
 
+        console.log('(5/6) SCHEDULE RECURRING TASKS: SUCCESS');
+    } catch (error) {
+        console.error('(5/6) SCHEDULE RECURRING TASKS: FAIL');
+    }
 }
-
-export { client };

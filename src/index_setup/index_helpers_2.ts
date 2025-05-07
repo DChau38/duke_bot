@@ -53,7 +53,7 @@ export async function handleTrackerInitialization() {
 
         // Step 2: Iterate through guilds, add servers, add members
         for (const guild of BOT_GUILDS) {
-            console.log(`(2) SERVER CONNECTION: SUCCESS - ${guild.name} (${guild.id})`);
+            console.log(`(...) SERVER CONNECTION: SUCCESS - ${guild.name} (${guild.id})`);
 
             // Add guild to tracker, additionTimer, deletionTimer
             tracker.set(guild.id, new Map());
@@ -109,6 +109,7 @@ export async function handlePresenceUpdate(oldPresence: Presence | null, newPres
             guild,
             serverTracker,
         } = data;
+        
         const presenceUpdateToOffline = (status: string): boolean => status === 'offline';
         // If presenceUpdate's guild == filteredGuild && roles aren't aligned with requiredRoles, then exit
         if (!isValidPresenceUpdate(newPresence!, member)) return;
@@ -183,9 +184,10 @@ export async function handlePresenceUpdate(oldPresence: Presence | null, newPres
         const guildDeletionTimers = deletion_timers.get(newPresence.guild.id);
         const guildAdditionTimers = addition_timers.get(newPresence.guild.id);
         const guild = newPresence.guild;
+        if (!guild) {
+            throw new Error('Guild is undefined in presence update.');
+        }
         const serverTracker = tracker.get(guild.id);
-
-
         return {
             newPresence,
             tracker_id,
