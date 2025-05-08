@@ -4,6 +4,7 @@ import config from '../config/config';
 import * as BOT_FUNCTIONS from '../features/features_bot'
 import * as UTILS from '../features/features_utils'
 import * as HELPERS from '../features/features_helpers'
+import { interactionReply, centralErrorHandler, sendEmbed } from '../utils/utils_structuring';
 
 /*
 Presence Tracker System Documentation
@@ -64,7 +65,9 @@ export async function handleTrackerInitialization() {
             await populateTrackers(guild, filteredGuild);
         }
     } catch (error) {
-        console.error(`READY: ${error}`);
+        const atUser = process.env.DISCORD_ACCOUNT_ID!
+        await centralErrorHandler(atUser, "handleTrackerInitialization()", error.stack || String(error))
+
     }
 
 
@@ -86,7 +89,7 @@ export async function handleTrackerInitialization() {
 
         // Add Trackers to tracker
         for (const [, member] of correctMembers) {
-            const tracker_id = UTILS.getNicknameOrUsernameElseNull(member.guild, member.user.username) as string;
+            const tracker_id = HELPERS.getNicknameOrUsernameElseNull(member.guild, member.user.username) as string;
             if (!member.presence) {
                 tracker.get(guild.id)!.set(tracker_id, currentTime);
             } else {
@@ -163,7 +166,8 @@ export async function handlePresenceUpdate(oldPresence: Presence | null, newPres
 
         }
     } catch (error) {
-        console.error("Error in presence update:", error);
+        const atUser = process.env.DISCORD_ACCOUNT_ID!
+        await centralErrorHandler(atUser, "presenceUpdate()", error.stack || String(error))
     }
 
     // Extracts presence data and checks for essential fields
@@ -173,7 +177,7 @@ export async function handlePresenceUpdate(oldPresence: Presence | null, newPres
         }
 
         const username = newPresence.user.username;
-        const tracker_id = UTILS.getNicknameOrUsernameElseNull(newPresence.guild, username) as string;
+        const tracker_id = HELPERS.getNicknameOrUsernameElseNull(newPresence.guild, username) as string;
         const status = newPresence.status;
         const member = newPresence.guild.members.cache.get(newPresence.user.id);
 
@@ -244,7 +248,8 @@ export async function handleInteraction(interaction: Interaction) {
                 await BOT_FUNCTIONS.testFunction(interaction);
                 break;
             case 'REPLY':
-                await UTILS.interactionReply(interaction, true, './static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
+                await 
+                interactionReply(interaction, true, './static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
                 break;
             case 'COINFLIP':
                 await BOT_FUNCTIONS.handleCoinFlipInteraction(interaction);
@@ -272,7 +277,8 @@ export async function handleInteraction(interaction: Interaction) {
                 break;
         }
     } catch (error) {
-        console.error('Error handling interaction:', error);
+        const atUser = process.env.DISCORD_ACCOUNT_ID!
+        await centralErrorHandler(atUser, "handleInteraction()", error.stack || String(error))
     }
 }
 
@@ -281,6 +287,6 @@ export async function handleDisconnect() {
     const channel = client.channels.cache.get(config.ids.BIGBROTHER);
     if (channel) {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`);
-        await UTILS.sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon! (@DEVELOPER - this is suppose to be brokennnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
+        await sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon! (@DEVELOPER - this is suppose to be brokennnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
     }
 }

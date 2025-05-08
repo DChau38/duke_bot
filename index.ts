@@ -6,16 +6,12 @@ import config from './src/config/config'
 import 'dotenv/config';
 import * as INDEX_HELPERS from './src/index_setup/index_helpers'
 import { client } from './src/index_setup/client';
+import { centralErrorHandler } from './src/utils/utils_structuring';
 
 // Place before initializeBot() to handle early setup or loading dependencies as well
 process.on('uncaughtException', async (error) => {
-    // Step 1: Print to stderr
-    console.error('UNCAUGHT ERROR:', error);
-
-    // Step 2: Send to log channel if it is defined
     const atUser = process.env.DISCORD_ACCOUNT_ID!
-    await HELPERS.notifyBotError(atUser,"UNCAUGHT ERROR", error.stack || String(error)
-    );
+    await centralErrorHandler(atUser,"UNCAUGHT ERROR", error.stack || String(error))
 
 });
 initializeBot();
@@ -35,9 +31,8 @@ async function initializeBot() {
         await INDEX_HELPERS.scheduleRecurringTasks();
         console.log('(6/6) BOT INTITIALIZATION: SUCCESS');
     } catch (error) {
-        console.error('(6/6) BOT INTITIALIZATION: FAILED', error);
         const atUser = process.env.DISCORD_ACCOUNT_ID!
-        await HELPERS.notifyBotError(atUser,"(6/6) BOT INTITIALIZATION: FAILED", error.stack || String(error))
+        await centralErrorHandler(atUser,"(6/6) BOT INTITIALIZATION: FAILED", error.stack || String(error))
     }
 }
 

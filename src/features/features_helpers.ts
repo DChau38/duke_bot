@@ -2,30 +2,40 @@ import { EmbedBuilder, AttachmentBuilder, TextChannel, ChannelType, CommandInter
 import config from '../config/config';
 import { client } from '../index_setup/client';
 import * as UTILS from './features_utils'
+import { centralErrorHandler } from '../utils/utils_structuring';
 
-export async function notifyBotError(accountId: string, title: string, error: string) {
-    // Step 1: Find Bot Log Channel
-    const channel = client.channels.cache.get(config.ids.BOT_LOG_CHANNEL);
-    if (!channel) {
-        console.error(`[notifyBotError] BOT_LOG_CHANNEL (${config.ids.BOT_LOG_CHANNEL}) not found.`);
-        return;
+export const selectRandomServerMember = async () => {
+    try {
+        const guild = await client.guilds.fetch(process.env.SERVER_ID as string);
+        const members = await guild.members.fetch();
+
+        return members.random();
+    } catch (error) {
+
+        const atUser = process.env.DISCORD_ACCOUNT_ID!
+        await centralErrorHandler(atUser, "selectRandomServerMember()", error.stack || String(error))
+        return null;
+    }
+};
+
+export const getNicknameOrUsernameElseNull = (guild: Guild, identifier: string): string | null => {
+    // Convert the identifier to lowercase for case-insensitive comparison
+    const lowerCaseIdentifier = identifier.toLowerCase();
+
+    // Find the member using the identifier (either username or nickname)
+    const member = guild.members.cache.find(
+        (m) => m.user.username.toLowerCase() === lowerCaseIdentifier || (m.nickname && m.nickname.toLowerCase() === lowerCaseIdentifier)
+    );
+
+    if (member) {
+        // If member is found, prioritize nickname if it exists, otherwise return the username
+        return (member.nickname ? member.nickname : member.user.username).toLowerCase();
     }
 
-    // Step 2: Send message
-    await (channel as TextChannel).send(`<@${accountId}>`);
-    await UTILS.sendEmbed(channel as TextChannel, null, title, error);
-}
-
-export const calculateTimeDifference = (startTime: Date, endTime: Date) => {
-    const timeDiff = endTime.getTime() - startTime.getTime();
-
-    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-
-    return { days, hours, minutes, seconds };
+    // If no member was found, return null
+    return null;
 };
+
 
 export const selectMemberWithRequiredRoles = async () => {
     try {
@@ -44,23 +54,11 @@ export const selectMemberWithRequiredRoles = async () => {
 
         return correctMembers.random();
     } catch (error) {
-        console.error('Error selecting member with required roles:', error);
-        return null;
+
+        const atUser = process.env.DISCORD_ACCOUNT_ID!
+        await centralErrorHandler(atUser, "selectMemberWithRequiredRoles()", error.stack || String(error))
     }
 };
-
-export const selectRandomServerMember = async () => {
-    try {
-        const guild = await client.guilds.fetch(process.env.SERVER_ID as string);
-        const members = await guild.members.fetch();
-
-        return members.random();
-    } catch (error) {
-        console.error('Error selecting random server member:', error);
-        return null;
-    }
-};
-
 
 export function validateVoiceChannel(interaction: CommandInteraction): VoiceChannel {
     if (!interaction.guild) {
@@ -82,6 +80,13 @@ export function validateVoiceChannel(interaction: CommandInteraction): VoiceChan
     throw new Error("You must be in a regular voice channel, not a stage channel.");
 }
 
+export function returnCommandTimes(command : CommandInteraction) {
+    const hours = (command.options.get('hours')?.value || 0) as number;
+    const minutes = (command.options.get('minutes')?.value || 0) as number;
+    const description = command.options.get('description')?.value;
+    const total_ms = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
+    return { hours, minutes, description, total_ms };
+}
 
 export const timeZoneMap = {
     // North American Time Zones
