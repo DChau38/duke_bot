@@ -1,4 +1,5 @@
 import { Client, GatewayIntentBits, TextChannel, ChannelType, } from 'discord.js'
+import cron from 'node-cron';
 import { REST, Routes } from 'discord.js';
 import 'dotenv/config';
 import { OUR_COMMANDS } from './commandList';
@@ -82,22 +83,21 @@ export async function attachEventHandlers() {
 export async function scheduleRecurringTasks() {
     try {
 
-        // My Daily Reminder
-        const intervalOf24Hrs = 24 * 60 * 60 * 1000;
-        const messageDuke = "<inspirationalQuote"
-        const setDukeReminder = async () => {
-            await setReminderInBotChannel("duke", messageDuke, intervalOf24Hrs);
-        }
-        setDukeReminder();
-        setInterval(setDukeReminder, intervalOf24Hrs);
+        // My Daily Reminder — at 7:00 AM EST every day
+        const messageDuke = "<inspirationalQuote>";
+        cron.schedule('0 7 * * *', async () => {
+            await sendReminderInBotChannel("duke", messageDuke);
+        }, {
+            timezone: "America/New_York",
+        });
 
-        // Yan's daily reminder
-        const messageYan = "did you apply yet you bonobo"
-        const setYanReminder = async () => {
-            await setReminderInBotChannel("yan240", messageYan, intervalOf24Hrs);
-        }
-        setYanReminder();
-        setInterval(setYanReminder, intervalOf24Hrs);
+        // Yan's Daily Reminder — at 7:00 AM EST every day
+        const messageYan = "did you apply yet you bonobo";
+        cron.schedule('0 7 * * *', async () => {
+            await sendReminderInBotChannel("yan240", messageYan);
+        }, {
+            timezone: "America/New_York",
+        });
 
 
         // Log
@@ -106,8 +106,8 @@ export async function scheduleRecurringTasks() {
         const atUser = process.env.DISCORD_ACCOUNT_ID!
         await HELPERS.centralErrorHandler(atUser, "(5/6) SCHEDULE RECURRING TASKS: FAIL", error.stack || String(error))
     }
-    // setReminderInBotChannel(username, message, time) => sets a reminder in the bot channel
-    async function setReminderInBotChannel(username: string, message: string, time: number) {
+    // sendReminderInBotChannel(username, message) => send a reminder in the bot channel
+    async function sendReminderInBotChannel(username: string, message: string) {
         try {
             // Step 1: Get variables (guild, botChannel, userId)
             const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID as string);
@@ -119,36 +119,30 @@ export async function scheduleRecurringTasks() {
             const userIds = [userId];
 
             // Step 2: Set Reminder
-            setReminder(botChannel, userIds, message, time);
+            sendReminder(botChannel, userIds, message);
         } catch (error) {
             const atUser = process.env.DISCORD_ACCOUNT_ID!;
             await HELPERS.centralErrorHandler(atUser, "setMyScheduledReminder()", error.stack || String(error));
 
         }
     }
-    // setReminder(guild, userIds, message, time) => sets a reminder
-    async function setReminder(channel: TextChannel, userIds: number[], message: string, time: number): Promise<void> {
+    // sendReminder(guild, userIds, message) => sends a reminder
+    async function sendReminder(channel: TextChannel, userIds: number[], message: string): Promise<void> {
         try {
-            // Step 2: Set timeout for sending reminder
-            setTimeout(async () => {
-                try {
-                    // Ping users
-                    if (userIds.length > 0) {
-                        const mentions = userIds.map(id => `<@${id}>`).join(' ');
-                        await channel.send(`${mentions}`);
-                    }
-                    // Send Reminder Embed
-                    await HELPERS.sendEmbed(channel, null, '⏰ Reminder', message);
-                } catch (error) {
-                    const atUser = process.env.DISCORD_ACCOUNT_ID!;
-                    await HELPERS.centralErrorHandler(atUser, "reminderFunction()", error.stack || String(error));
-                }
-            }, time);
-
+            // Ping users
+            if (userIds.length > 0) {
+                const mentions = userIds.map(id => `<@${id}>`).join(' ');
+                await channel.send(`${mentions}`);
+            }
+            // Send Reminder Embed
+            await HELPERS.sendEmbed(channel, null, '⏰ Reminder', message);
         } catch (error) {
             const atUser = process.env.DISCORD_ACCOUNT_ID!;
             await HELPERS.centralErrorHandler(atUser, "reminderFunction()", error.stack || String(error));
         }
     }
 
+
 }
+
+
