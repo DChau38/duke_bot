@@ -37,6 +37,16 @@ export const getNicknameOrUsernameElseNull = (guild: Guild, identifier: string):
 };
 
 
+export function getMemberIdByUsername(guild: Guild, username: string): number {
+    for (const member of guild.members.cache.values()) {
+        if (getNicknameOrUsernameElseNull(guild, member.user.username) === username) {
+            return Number(member.user.id);
+        }
+    }
+
+    throw new Error(`getMemberIdByUsername(): No member found with username "${username}"`);
+}
+
 export const selectMemberWithRequiredRoles = async () => {
     try {
         const guild = await client.guilds.fetch(process.env.SERVER_ID as string);

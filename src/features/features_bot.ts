@@ -8,7 +8,23 @@ import config from '../config/config';
 
 
 export async function testFunction(commandInteraction: CommandInteraction) {
-
+    const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID!);
+    if (guild) {
+        guild.channels.cache.forEach((channel) => {
+            console.log(`Channel Name: ${channel.name}, Channel Type: ${ChannelType[channel.type]}`);
+        });
+    } else {
+        console.log("Guild not found");
+    }
+    const channel = guild?.channels.cache.find(
+        (ch) => ch.type === ChannelType.GuildText && ch.name === 'aaa'
+    ) as TextChannel;
+    await sendEmbed(
+        channel,
+        'http://localhost:3000/static/timer/animeGirl_Marin_bashful.gif', // global URL
+        'Reminder',
+        'Don’t forget to do your racket :)'
+    );
     await commandInteraction.reply('TEST===TRUE');
 }
 
@@ -510,6 +526,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
 import { joinVoiceChannel } from '@discordjs/voice';
 import { tracker } from '../index_setup/index_helpers_2';
 import { interactionReply, centralErrorHandler, sendEmbed } from '../utils/utils_structuring';
+import { client } from '../index_setup/client';
 export const handleJoinVCInteraction = async (interaction: CommandInteraction) => {
     try {
         // Check if the interaction is from a guild (not a DM)

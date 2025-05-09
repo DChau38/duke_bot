@@ -1,4 +1,4 @@
-import { TextChannel, ChannelType, Interaction, GuildMember, Presence, Collection } from 'discord.js';
+import { TextChannel, ChannelType, Interaction, GuildMember, Presence, Collection, Guild } from 'discord.js';
 import { client } from './client';
 import config from '../config/config';
 import * as BOT_FUNCTIONS from '../features/features_bot'
@@ -289,4 +289,21 @@ export async function handleDisconnect() {
         (channel as TextChannel).send(`Halp me <@${process.env.ACCOUNT_ID}>`);
         await sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon! (@DEVELOPER - this is suppose to be brokennnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
     }
+}
+export async function returnBotLogChannel(guild: Guild) {
+    const channel = guild.channels.cache.find(
+        (ch) => ch.type === ChannelType.GuildText && ch.name === 'aaa'
+    ) as TextChannel;
+    if (!channel) {
+        throw new Error ("returnBotLog() - No Bot Log Channel Found");
+    }
+    return channel;
+}
+export function findMemberByUsername(guild: Guild, username: string): GuildMember | null {
+    for (const member of guild.members.cache.values()) {
+        if (member.user.username === username) {
+            return member;
+        }
+    }
+    return null;
 }

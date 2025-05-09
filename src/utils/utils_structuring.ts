@@ -26,7 +26,7 @@ export const sendEmbed = async (channel: TextChannel, URL: string | null, title:
         .setColor('#FF0000')
         .setTitle(title)
         .setDescription(description);
-    let attachment
+    let attachment;
     if (URL) {
         // Use regular expression to find the part after the last slash
         const fileName = URL.match(/[^/]+$/)?.[0]; // This will capture everything after the last slash

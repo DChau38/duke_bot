@@ -5,6 +5,7 @@ import { OUR_COMMANDS } from './commandList';
 import { client } from './client';
 import * as INDEX_HELPERS_2 from './index_helpers_2'
 import * as HELPERS from '../utils/utils_structuring'
+import { getMemberIdByUsername } from '../features/features_helpers';
 
 export async function handleInitializationErrors() {
     try {
@@ -81,76 +82,73 @@ export async function attachEventHandlers() {
 export async function scheduleRecurringTasks() {
     try {
 
+        // My Daily Reminder
+        const intervalOf24Hrs = 24 * 60 * 60 * 1000;
+        const messageDuke = "<inspirationalQuote"
+        const setDukeReminder = async () => {
+            await setReminderInBotChannel("duke", messageDuke, intervalOf24Hrs);
+        }
+        setDukeReminder();
+        setInterval(setDukeReminder, intervalOf24Hrs);
+
+        // Yan's daily reminder
+        const messageYan = "did you apply yet you bonobo"
+        const setYanReminder = async () => {
+            await setReminderInBotChannel("yan240", messageYan, intervalOf24Hrs);
+        }
+        setYanReminder();
+        setInterval(setYanReminder, intervalOf24Hrs);
+
+
+        // Log
         console.log('(5/6) SCHEDULE RECURRING TASKS: SUCCESS');
     } catch (error) {
         const atUser = process.env.DISCORD_ACCOUNT_ID!
         await HELPERS.centralErrorHandler(atUser, "(5/6) SCHEDULE RECURRING TASKS: FAIL", error.stack || String(error))
     }
-    async function killWeekOldEntries() {
+    // setReminderInBotChannel(username, message, time) => sets a reminder in the bot channel
+    async function setReminderInBotChannel(username: string, message: string, time: number) {
         try {
-            const oneWeek = 7 * 24 * 60 * 60 * 1000;  // One week in milliseconds
-
-            // Loop through each userIdentifier and their last offline timestamp
-            for (const [userIdentifier, lastOfflineTime] of Object.entries(INDEX_HELPERS_2.tracker)) {
-                // Skip users who are currently online (whose value is null)
-                if (lastOfflineTime === null) {
-                    continue;
-                }
-
-                // Convert the last offline timestamp (string) into a Date object
-                const offlineTime = new Date(lastOfflineTime);
-                const timeDiff = new Date().getTime() - offlineTime.getTime();
-
-                // If the user has been offline for more than a week, remove them from the tracker
-                if (timeDiff > oneWeek) {
-                    INDEX_HELPERS_2.tracker[userIdentifier] = null;
-                    console.log(`${userIdentifier} has been removed from the tracker as they were offline for over a week.`);
-                }
+            // Step 1: Get variables (guild, botChannel, userId)
+            const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID as string);
+            if (!guild) {
+                throw new Error("Main Guild Not Found");
             }
-        } catch (error) {
-            const atUser = process.env.DISCORD_ACCOUNT_ID!
-            await HELPERS.centralErrorHandler(atUser, "killWeekOldEntries()", error.stack || String(error))
-        }
+            const botChannel = await INDEX_HELPERS_2.returnBotLogChannel(guild);
+            const userId = getMemberIdByUsername(guild, username);
+            const userIds = [userId];
 
+            // Step 2: Set Reminder
+            setReminder(botChannel, userIds, message, time);
+        } catch (error) {
+            const atUser = process.env.DISCORD_ACCOUNT_ID!;
+            await HELPERS.centralErrorHandler(atUser, "setMyScheduledReminder()", error.stack || String(error));
+
+        }
     }
-    const reminder_yan = async () => {
+    // setReminder(guild, userIds, message, time) => sets a reminder
+    async function setReminder(channel: TextChannel, userIds: number[], message: string, time: number): Promise<void> {
         try {
-            const guild = client.guilds.cache.get(process.env.SERVER_ID as string);
-            if (guild) {
-                const channel = guild.channels.cache.find(
-                    (ch) => ch.type === ChannelType.GuildText && ch.name === 'config.ids.BOT_LOG_CHANNEL'
-                ) as TextChannel;
-
-                if (channel) {
-                    const member = guild.members.cache.find((mem) => mem.user.username === 'yan240')
-                    await channel.send(`<@${member?.user.id}> Reminder to do one's racket :)`);
-                } else {
-                    console.log("config.ids.BOT_LOG_CHANNEL channel not found");
+            // Step 2: Set timeout for sending reminder
+            setTimeout(async () => {
+                try {
+                    // Ping users
+                    if (userIds.length > 0) {
+                        const mentions = userIds.map(id => `<@${id}>`).join(' ');
+                        await channel.send(`${mentions}`);
+                    }
+                    // Send Reminder Embed
+                    await HELPERS.sendEmbed(channel, null, '⏰ Reminder', message);
+                } catch (error) {
+                    const atUser = process.env.DISCORD_ACCOUNT_ID!;
+                    await HELPERS.centralErrorHandler(atUser, "reminderFunction()", error.stack || String(error));
                 }
-            }
-        } catch (error) {
-            const atUser = process.env.DISCORD_ACCOUNT_ID!
-            await HELPERS.centralErrorHandler(atUser, "reminderYan()", error.stack || String(error))
-        }
-    };
-    const reminderDuke = async () => {
-        try {
-            const guild = client.guilds.cache.get(process.env.SERVER_ID as string);
-            if (guild) {
-                const channel = guild.channels.cache.find(
-                    (ch) => ch.type === ChannelType.GuildText && ch.name === 'config.ids.BOT_LOG_CHANNEL'
-                ) as TextChannel;
+            }, time);
 
-                if (channel) {
-                    const member = guild.members.cache.find((mem) => mem.user.username === 'duke9999')
-                    await channel.send(`<@${member?.user.id}> It's time to take a break!`);
-                } else {
-                    console.log("config.ids.BOT_LOG_CHANNEL channel not found");
-                }
-            }
         } catch (error) {
-            const atUser = process.env.DISCORD_ACCOUNT_ID!
-            await HELPERS.centralErrorHandler(atUser, "reminderDuke()", error.stack || String(error))
+            const atUser = process.env.DISCORD_ACCOUNT_ID!;
+            await HELPERS.centralErrorHandler(atUser, "reminderFunction()", error.stack || String(error));
         }
-    };
+    }
+
 }
