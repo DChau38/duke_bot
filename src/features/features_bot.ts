@@ -33,8 +33,8 @@ export const handleCoinFlipInteraction = async (interaction: CommandInteraction)
     const result = coinSides[Math.floor(Math.random() * coinSides.length)];
 
     // Decide the images based on the result (Heads = Win, Tails = Lose)
-    const heads_image = new AttachmentBuilder('./static/flip/heads.JPG');  // Local path
-    const tails_image = new AttachmentBuilder('./static/flip/tails.JPG');  // Local path
+    const heads_image = new AttachmentBuilder('./static/flip/heads.JPG');  
+    const tails_image = new AttachmentBuilder('./static/flip/tails.JPG');  
 
     // Select the image based on the coin flip result
     const resultImage = result === 'Heads' ? heads_image : tails_image;

@@ -21,26 +21,34 @@ export async function centralErrorHandler(accountId: string, title: string, erro
     }
 }
 
-export const sendEmbed = async (channel: TextChannel, URL: string | null, title: string, description: string) => {
-    const embed = new EmbedBuilder()
-        .setColor('#FF0000')
-        .setTitle(title)
-        .setDescription(description);
-    let attachment;
-    if (URL) {
-        // Use regular expression to find the part after the last slash
-        const fileName = URL.match(/[^/]+$/)?.[0]; // This will capture everything after the last slash
-        attachment = new AttachmentBuilder(URL);
-        embed.setImage('attachment://' + fileName);
-
-    }
+export const sendEmbed = async (channel: TextChannel, urlToImage: string | null, title: string, description: string) => {
     try {
-        if (URL) await channel.send({ embeds: [embed], files: [attachment] });
-        else await channel.send({ embeds: [embed] });
+        // Step 1: Make embed
+        const embed = new EmbedBuilder()
+            .setColor('#FF0000')
+            .setTitle(title)
+            .setDescription(description);
+
+        // urlToImage is from working directory (root directory where index.ts is)
+        // example: ('./static/flip/heads.JPG')
+        if (urlToImage) {
+            // Use regular expression to find the part after the last slash
+            const fileName = urlToImage.match(/[^/]+$/)?.[0]; // This will capture everything after the last slash
+            const attachment = new AttachmentBuilder(urlToImage);
+            embed.setImage('attachment://' + fileName);
+            await channel.send({ embeds: [embed], files: [attachment] });
+        } else {
+            const urlToImage = './static/anime/animeGirl_Mio_delighted.gif'
+            const fileName = urlToImage.match(/[^/]+$/)?.[0]; // This will capture everything after the last slash
+            const attachment = new AttachmentBuilder(urlToImage);
+            embed.setImage('attachment://' + fileName);
+            await channel.send({ embeds: [embed], files: [attachment] });
+        }
     } catch (error) {
         // Part of error logging
         console.error('sendEmbed()', error.stack);
     }
+
 };
 
 export const interactionReply = async (
