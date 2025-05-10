@@ -33,8 +33,8 @@ export const handleCoinFlipInteraction = async (interaction: CommandInteraction)
     const result = coinSides[Math.floor(Math.random() * coinSides.length)];
 
     // Decide the images based on the result (Heads = Win, Tails = Lose)
-    const heads_image = new AttachmentBuilder('./static/flip/heads.JPG');  
-    const tails_image = new AttachmentBuilder('./static/flip/tails.JPG');  
+    const heads_image = new AttachmentBuilder('./static/flip/heads.JPG');
+    const tails_image = new AttachmentBuilder('./static/flip/tails.JPG');
 
     // Select the image based on the coin flip result
     const resultImage = result === 'Heads' ? heads_image : tails_image;
@@ -524,7 +524,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
 
 
 import { joinVoiceChannel } from '@discordjs/voice';
-import { tracker } from '../index_setup/index_helpers_2';
+import { sendReminder, tracker } from '../index_setup/index_helpers_2';
 import { interactionReply, centralErrorHandler, sendEmbed } from '../utils/utils_structuring';
 import { client } from '../index_setup/client';
 export const handleJoinVCInteraction = async (interaction: CommandInteraction) => {
@@ -600,7 +600,7 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
 
     } catch (error) {
         console.error('Comprehensive error joining voice channel:', error);
-        await  interactionReply(
+        await interactionReply(
             interaction,
             true, './static/wumpus/wumpus_dead.gif',
             'Unexpected Error',
@@ -616,9 +616,9 @@ export const handleTimerInteraction = async (command: CommandInteraction) => {
         const description = command.options.get('description')?.value || "<NO GIVEN DESCRIPTION>";
         const total_ms = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
 
-        // Step 2: Send reply to confirm (lef talone sends but causes errors, commneted but sends with no errors)
-        /*await UTILS.interactionReply(command, true, './static/wumpus/wumpus_happy.gif', '⏰ Timer Set!',
-            `**I will ring in ${hours} hours and ${minutes} minutes**! \n\n\`\`\`*${description}*\`\`\``);*/
+        // Step 2: Send confirmation
+        await interactionReply(command, true, './static/wumpus/wumpus_happy.gif', '⏰ Timer Set!',
+            `**I will ring in ${hours} hours and ${minutes} minutes**! \n\n\`\`\`${description}\`\`\``);
 
         // Step 3: Start the timer
         const startTime = Date.now();
@@ -628,19 +628,15 @@ export const handleTimerInteraction = async (command: CommandInteraction) => {
             const elapsed_hours = Math.floor(elapsed_ms / (1000 * 60 * 60));
             const elapsed_minutes = Math.floor((elapsed_ms % (1000 * 60 * 60)) / (1000 * 60));
 
-            // Send the reminder message after the timer expires
-            const userMention = `<@${command.user.id}>`;
+            // Find other variables
             const channel = command.channel as TextChannel
-            await channel?.send({
-                content: `⏰ ${userMention} **Timer finished!**\n\n**This timer was started ${elapsed_hours} hours and ${elapsed_minutes} minutes ago**\n\n\`\`\`${description}\`\`\``
-            });
+            const userMention = command.user.id;
+            const userIds = [userMention];
 
-            sendEmbed(
-                channel,
-                './static/timer/animeGirl_Marin_bashful.gif',
-                'Timer’s up!',
-                `This timer was started ${elapsed_hours} hours and ${elapsed_minutes} minutes ago\n\n\`\`\`${description}\`\`\``
-            );
+            const combinedDescription =
+                `${description}\n` +
+                `Timer was started ${elapsed_hours} hours and ${elapsed_minutes} minutes ago`;
+            sendReminder(channel, userIds, combinedDescription)
         }, total_ms);  // Use total_ms as the delay in milliseconds
     } catch (error) {
         const atUser = process.env.DISCORD_ACCOUNT_ID!

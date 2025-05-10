@@ -6,7 +6,7 @@ import { OUR_COMMANDS } from './commandList';
 import { client } from './client';
 import * as INDEX_HELPERS_2 from './index_helpers_2'
 import * as HELPERS from '../utils/utils_structuring'
-import { getMemberIdByUsername } from '../features/features_helpers';
+import { getMemberIdStringByUsername } from '../features/features_helpers';
 
 export async function handleInitializationErrors() {
     try {
@@ -86,7 +86,7 @@ export async function scheduleRecurringTasks() {
         // My Daily Reminder — at 7:00 AM EST every day
         const messageDuke = "<inspirationalQuote>";
         cron.schedule('0 7 * * *', async () => {
-            await sendReminderInBotChannel("duke", messageDuke);
+            await INDEX_HELPERS_2.sendReminderInBotChannel("duke", messageDuke);
         }, {
             timezone: "America/New_York",
         });
@@ -94,7 +94,7 @@ export async function scheduleRecurringTasks() {
         // Yan's Daily Reminder — at 7:00 AM EST every day
         const messageYan = "did you apply yet you bonobo";
         cron.schedule('0 7 * * *', async () => {
-            await sendReminderInBotChannel("yan240", messageYan);
+            await INDEX_HELPERS_2.sendReminderInBotChannel("yan240", messageYan);
         }, {
             timezone: "America/New_York",
         });
@@ -106,43 +106,7 @@ export async function scheduleRecurringTasks() {
         const atUser = process.env.DISCORD_ACCOUNT_ID!
         await HELPERS.centralErrorHandler(atUser, "(5/6) SCHEDULE RECURRING TASKS: FAIL", error.stack || String(error))
     }
-    // sendReminderInBotChannel(username, message) => send a reminder in the bot channel
-    async function sendReminderInBotChannel(username: string, message: string) {
-        try {
-            // Step 1: Get variables (guild, botChannel, userId)
-            const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID as string);
-            if (!guild) {
-                throw new Error("Main Guild Not Found");
-            }
-            const botChannel = await INDEX_HELPERS_2.returnBotLogChannel(guild);
-            const userId = getMemberIdByUsername(guild, username);
-            const userIds = [userId];
-
-            // Step 2: Set Reminder
-            sendReminder(botChannel, userIds, message);
-        } catch (error) {
-            const atUser = process.env.DISCORD_ACCOUNT_ID!;
-            await HELPERS.centralErrorHandler(atUser, "setMyScheduledReminder()", error.stack || String(error));
-
-        }
-    }
-    // sendReminder(guild, userIds, message) => sends a reminder
-    async function sendReminder(channel: TextChannel, userIds: number[], message: string): Promise<void> {
-        try {
-            // Ping users
-            if (userIds.length > 0) {
-                const mentions = userIds.map(id => `<@${id}>`).join(' ');
-                await channel.send(`${mentions}`);
-            }
-            // Send Reminder Embed
-            await HELPERS.sendEmbed(channel, null, '⏰ Reminder', message);
-        } catch (error) {
-            const atUser = process.env.DISCORD_ACCOUNT_ID!;
-            await HELPERS.centralErrorHandler(atUser, "reminderFunction()", error.stack || String(error));
-        }
-    }
-
-
+    
 }
 
 

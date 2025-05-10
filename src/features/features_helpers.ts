@@ -37,10 +37,10 @@ export const getNicknameOrUsernameElseNull = (guild: Guild, identifier: string):
 };
 
 
-export function getMemberIdByUsername(guild: Guild, username: string): number {
+export function getMemberIdStringByUsername(guild: Guild, username: string): string {
     for (const member of guild.members.cache.values()) {
         if (getNicknameOrUsernameElseNull(guild, member.user.username) === username) {
-            return Number(member.user.id);
+            return member.user.id
         }
     }
 
