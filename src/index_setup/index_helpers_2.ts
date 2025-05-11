@@ -5,7 +5,7 @@ import * as BOT_FUNCTIONS from '../features/features_bot'
 import * as UTILS from '../features/features_utils'
 import * as HELPERS from '../features/features_helpers'
 import { interactionReply, centralErrorHandler, sendEmbed } from '../utils/utils_structuring';
-import { addition_timers, deletion_timers, tracker } from './globalData';
+import { activeTimers, addition_timers, deletion_timers, TimerInfo, tracker } from './globalData';
 
 export async function handleTrackerInitialization() {
     try {
@@ -73,7 +73,7 @@ export async function handlePresenceUpdate(oldPresence: Presence | null, newPres
             guild,
             serverTracker,
         } = data;
-        
+
         const presenceUpdateToOffline = (status: string): boolean => status === 'offline';
         // If presenceUpdate's guild == filteredGuild && roles aren't aligned with requiredRoles, then exit
         if (!isValidPresenceUpdate(newPresence!, member)) return;
@@ -85,7 +85,7 @@ export async function handlePresenceUpdate(oldPresence: Presence | null, newPres
 
         if (presenceUpdateToOffline(status)) {
             if (offlineAndInTracker && weShouldNotUpdate(serverTracker!, tracker_id, currentTime)) {
-                return; 
+                return;
             }
             // If we reach here, this means that it's either (outOfTracker) || (inTracker && weShouldUpdate)
             serverTracker!.set(tracker_id, currentTime);
@@ -94,7 +94,7 @@ export async function handlePresenceUpdate(oldPresence: Presence | null, newPres
             if (guildAdditionTimers!.has(tracker_id)) {
                 clearTimeout(guildAdditionTimers!.get(tracker_id)!);
             }
-            
+
             // Add a timer to re-add
             const timeout = setTimeout(() => {
                 // If already offline when the timer goes off, retain neweset offline. This is the case where they keep bouncing on and off. The timers is always SLEEPCHECK_CHECK_PERIOD, so it won't wipe supremely long periods
@@ -108,7 +108,7 @@ export async function handlePresenceUpdate(oldPresence: Presence | null, newPres
             guildAdditionTimers!.set(tracker_id, timeout);
             console.log(`${tracker_id} has gone offline at ${currentTime}`);
 
-        } 
+        }
         // Step 3 : Handle online updates && they have a record
         // (purely going online when they already have a record means nothing )
         if (!presenceUpdateToOffline(status) && serverTracker!.get(tracker_id)) {
@@ -164,7 +164,7 @@ export async function handlePresenceUpdate(oldPresence: Presence | null, newPres
             serverTracker,
         };
 
-        
+
     }
 
     // Validates if the presence update is from the filteredGuild and if the member has the required role
@@ -181,13 +181,13 @@ export async function handlePresenceUpdate(oldPresence: Presence | null, newPres
     // This allows us to keep viewing the "real" entry if they keep switching between on and off 
     // In terms of deletion + addition, that will be handled on onlineUpdate
     function weShouldNotUpdate(
-        serverTracker: Map<string, string | null >, 
-        tracker_id: string, 
+        serverTracker: Map<string, string | null>,
+        tracker_id: string,
         currentTime: string
     ): boolean {
         const oldTime = serverTracker.get(tracker_id)!;
         const time_diff = new Date(currentTime).getTime() - new Date(oldTime).getTime();
-    
+
         // Return true if it's too late to update — we don't want to overwrite with a newer time
         return time_diff > config.times.SLEEPCHECK_CHECK_PERIOD;
     }
@@ -209,8 +209,8 @@ export async function handleInteraction(interaction: Interaction) {
                 await BOT_FUNCTIONS.testFunction(interaction);
                 break;
             case 'REPLY':
-                await 
-                interactionReply(interaction, true, './static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
+                await
+                    interactionReply(interaction, true, './static/Zhu.webp', 'Attack Result', 'Bang! <@target> gets hit!');
                 break;
             case 'COINFLIP':
                 await BOT_FUNCTIONS.handleCoinFlipInteraction(interaction);
@@ -230,8 +230,11 @@ export async function handleInteraction(interaction: Interaction) {
             case 'JOINVC':
                 await BOT_FUNCTIONS.handleJoinVCInteraction(interaction);
                 break;
-            case 'TIMER':
-                await BOT_FUNCTIONS.handleTimerInteraction(interaction);
+            case 'TIMERSET':
+                await BOT_FUNCTIONS.handleTimerSetInteraction(interaction);
+                break;
+            case 'TIMERSSHOW':
+                await BOT_FUNCTIONS.handleShowServerTimersInteraction(interaction);
                 break;
             default:
                 console.warn(`Unknown command: ${commandName.toUpperCase()}`);
@@ -256,7 +259,7 @@ export async function returnBotLogChannel(guild: Guild) {
         (ch) => ch.type === ChannelType.GuildText && ch.name === 'aaa'
     ) as TextChannel;
     if (!channel) {
-        throw new Error ("returnBotLog() - No Bot Log Channel Found");
+        throw new Error("returnBotLog() - No Bot Log Channel Found");
     }
     return channel;
 }
@@ -293,16 +296,32 @@ export async function sendReminderInBotChannel(username: string, message: string
 export async function sendReminder(channel: TextChannel, userIds: string[], message: string): Promise<void> {
     try {
         // Ping users
-        if (userIds.length > 0) {``
+        if (userIds.length > 0) {
+            ``
             const mentions = userIds.map(id => `<@${id}>`).join(' ');
             await channel.send(`${mentions}`);
         }
         // Send Reminder Embed
-        const formattedMessage = 
-            `\`\`\`${message}\`\`\`\n`; 
+        const formattedMessage =
+            `\`\`\`${message}\`\`\`\n`;
         await sendEmbed(channel, null, '⏰ Reminder', formattedMessage);
     } catch (error) {
         const atUser = process.env.DISCORD_ACCOUNT_ID!;
         await centralErrorHandler(atUser, "reminderFunction()", error.stack || String(error));
+    }
+}
+export async function addToActiveTimers(serverId: string, timer: TimerInfo) {
+    try {
+
+        // Check to see if serverId is included in activeTimers
+        if (!activeTimers.has(serverId)) {
+            activeTimers.set(serverId, []);
+        }
+        // Push timerInfo to serverId => timerInfo
+        activeTimers.get(serverId)!.push(timer);
+
+    } catch (error) {
+        const atUser = process.env.DISCORD_ACCOUNT_ID!;
+        await centralErrorHandler(atUser, "addToActiveTimers()", error.stack || String(error));
     }
 }

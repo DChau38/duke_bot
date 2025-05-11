@@ -76,7 +76,7 @@ export const OUR_COMMANDS = [
         ],
     },
     {
-        name: 'timer',
+        name: 'timerset',
         description: 'Set a timer to reminder yourself of something',
         options: [
             {
@@ -101,6 +101,17 @@ export const OUR_COMMANDS = [
 
         ]
     },
-
+    {
+        name: 'timersshow',
+        description: 'Display all active server timers with optional sorting. ⏱️',
+        options: [
+            {
+                type: 3, // Type 3 is for string input
+                name: 'sortingArgument',
+                description: '(alphabetical, finishingTime)',
+                required: false,
+            },
+        ],
+    },
 
 ];

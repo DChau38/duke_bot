@@ -1,5 +1,4 @@
 import { TextChannel, EmbedBuilder, AttachmentBuilder, CommandInteraction, ChannelType, Guild } from "discord.js";
-import { tracker } from "../index_setup/index_helpers_2";
 import { client } from "../index_setup/client";
 
 export const calculateTimeDifference = (startTime: Date, endTime: Date) => {

@@ -3,6 +3,7 @@ import config from '../config/config';
 import { client } from '../index_setup/client';
 import * as UTILS from './features_utils'
 import { centralErrorHandler } from '../utils/utils_structuring';
+import { activeTimers, TimerInfo } from '../index_setup/globalData';
 
 export const selectRandomServerMember = async () => {
     try {
@@ -98,6 +99,45 @@ export function returnCommandTimes(command : CommandInteraction) {
     return { hours, minutes, description, total_ms };
 }
 
+// Higher-order function to create comparison functions for TimerInfo sorting
+export const strategyFunctionForTimersSort = (sortByArgument?: string) => {
+    switch (sortByArgument?.toLowerCase()) {
+        case 'alphabetical':
+            return (a: TimerInfo, b: TimerInfo) => a.description.localeCompare(b.description);
+        case 'finishingTime':
+        default: // Default to sorting by finishing time
+            return (a: TimerInfo, b: TimerInfo) => (a.startTime + a.duration) - (b.startTime + b.duration);
+    }
+};
+
+export const seedTestTimers = (serverId: string, userId: string) => {
+    const now = Date.now();
+
+    const timers: TimerInfo[] = [
+        {
+            userId,
+            startTime: now,
+            duration: 5 * 60 * 1000, // 5 minutes
+            description: "Test Timer 1 - Quick",
+            timeout: setTimeout(() => {}, 5 * 60 * 1000),
+        },
+        {
+            userId,
+            startTime: now,
+            duration: 15 * 60 * 1000, // 15 minutes
+            description: "Test Timer 2 - Medium",
+            timeout: setTimeout(() => {}, 15 * 60 * 1000),
+        },
+        {
+            userId,
+            startTime: now,
+            duration: 30 * 60 * 1000, // 30 minutes
+            description: "Test Timer 3 - Long",
+            timeout: setTimeout(() => {}, 30 * 60 * 1000),
+        },
+    ];
+    activeTimers.set(serverId, timers);
+};
 export const timeZoneMap = {
     // North American Time Zones
     EST: 'America/New_York',         // Eastern Standard Time

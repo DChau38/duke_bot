@@ -25,7 +25,7 @@ USE CASES SUMMARY ------------------------------------
 - If a user goes offline, a timeout that deletes their status is added
     - If the time difference between current and old record is huge, return (they are truly offline don't overwrite the true record or add a timeout)
     - If they were online || timeDiffIsSmall, then overwrite the record + add a timer for deletion
-    - (In the timer) - if they are offline, just keep the newest offline (the case where they keep bouncing on and off). If they are online when the timer goes off, then add it to this offlineTime
+    - (In the timer) - if they are offline, just keep the newest offline (the case where they keep bouncing on and off). If they are online when the timer goes off, then add it to this offlineTimex
 
 - If a user comes online, their last offline time is retained for 15 minutes
   before removal.
@@ -37,3 +37,14 @@ USE CASES SUMMARY ------------------------------------
 export const tracker: Map<string, Map<string, string | null>> = new Map();
 export const deletion_timers: Map<string, Map<string, NodeJS.Timeout>> = new Map();
 export const addition_timers: Map<string, Map<string, NodeJS.Timeout>> = new Map();
+
+// When you add a new timer for someone, push the timeout to the list for that user in that server. If no list exists, then createi ti
+export type TimerInfo = {
+  userId: string;
+  startTime: number;        // Date.now()
+  duration: number;         // in ms
+  description: string;
+  timeout: NodeJS.Timeout;  // Optional, just for cleanup
+};
+
+export const activeTimers = new Map<string, TimerInfo[]>(); // Map<serverId, TimerInfo[]>

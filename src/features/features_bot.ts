@@ -524,10 +524,10 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
 
 
 import { joinVoiceChannel } from '@discordjs/voice';
-import { sendReminder} from '../index_setup/index_helpers_2';
+import { addToActiveTimers, sendReminder} from '../index_setup/index_helpers_2';
 import { interactionReply, centralErrorHandler, sendEmbed } from '../utils/utils_structuring';
 import { client } from '../index_setup/client';
-import { tracker } from '../index_setup/globalData';
+import { activeTimers, TimerInfo, tracker } from '../index_setup/globalData';
 export const handleJoinVCInteraction = async (interaction: CommandInteraction) => {
     try {
         // Check if the interaction is from a guild (not a DM)
@@ -609,12 +609,12 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
         );
     }
 };
-export const handleTimerInteraction = async (command: CommandInteraction) => {
+export const handleTimerSetInteraction = async (command: CommandInteraction) => {
     try {
         // Step 1: Get variables
         const hours = (command.options.get('hours')?.value || 0) as number;
         const minutes = (command.options.get('minutes')?.value || 0) as number;
-        const description = command.options.get('description')?.value || "<NO GIVEN DESCRIPTION>";
+        const description = command.options.get('description')?.value as string|| "<NO GIVEN DESCRIPTION>";
         const total_ms = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
 
         // Step 2: Send confirmation
@@ -623,7 +623,7 @@ export const handleTimerInteraction = async (command: CommandInteraction) => {
 
         // Step 3: Start the timer
         const startTime = Date.now();
-        setTimeout(async () => {
+        const timeout = setTimeout(async () => {
             // Calculate elapsed time
             const elapsed_ms = Date.now() - startTime;
             const elapsed_hours = Math.floor(elapsed_ms / (1000 * 60 * 60));
@@ -634,13 +634,82 @@ export const handleTimerInteraction = async (command: CommandInteraction) => {
             const userMention = command.user.id;
             const userIds = [userMention];
 
+            // Send reminder 
             const combinedDescription =
                 `${description}\n` +
                 `Timer was started ${elapsed_hours} hours and ${elapsed_minutes} minutes ago`;
             sendReminder(channel, userIds, combinedDescription)
         }, total_ms);  // Use total_ms as the delay in milliseconds
+
+        // Step 4: Track the timeout
+        const serverId = command.guildId!;
+        const userId = command.user.id;
+        const endTime = startTime + total_ms;
+        const timerInfo: TimerInfo = {
+            userId: userId,
+            startTime,
+            duration: total_ms,
+            description,
+            timeout
+        };
+
+        await addToActiveTimers(serverId, timerInfo);
+
     } catch (error) {
         const atUser = process.env.DISCORD_ACCOUNT_ID!
         await centralErrorHandler(atUser, "handleTimerInteraction()", error.stack || String(error))
     }
 }
+
+
+
+export const handleShowServerTimersInteraction = async (command: CommandInteraction) => {
+    try {
+        // Testing seeding
+        HELPERS.seedTestTimers("1031183444014792705", "233713166096269313");
+        // Step 1: Get Variables
+        const serverId = command.guildId!;
+        const sortBy = (command.options.get('sort')?.value as string | undefined)?.toLowerCase();
+        const timers = activeTimers.get(serverId);
+
+        // Step 2: Handle Case of no timers
+        if (!timers || timers.length === 0) {
+            await interactionReply(command, true, '', '⏱️ No Active Timers', 'There are no active timers for this server.');
+            return;
+        }
+
+        // Step 3: Handle Case with timers
+        let sortedTimers = [...timers]; 
+        const comparisonFunction = HELPERS.strategyFunctionForTimersSort(sortBy);
+        sortedTimers.sort(comparisonFunction);
+
+        // Print output (title)
+        let response = '⏱️ **Active Timers for this Server (Sorted by Finishing Time):**\n'; // Default message
+        if (sortBy === 'alphabetical') {
+            response = '⏱️ **Active Timers for this Server (Sorted Alphabetically by Description):**\n';
+        }
+
+        // Print output (iterate through timers)
+        for (const timer of sortedTimers) {
+            const endTime = timer.startTime + timer.duration;
+            const remainingTimeMs = endTime - Date.now();
+
+            const remainingHours = Math.floor(remainingTimeMs / (1000 * 60 * 60));
+            const remainingMinutes = Math.floor((remainingTimeMs % (1000 * 60 * 60)) / (1000 * 60));
+            const remainingSeconds = Math.floor((remainingTimeMs % (1000 * 60)) / 1000);
+
+            response += `- User ID: <@${timer.userId}>\n`;
+            response += `  - Description: ${timer.description}\n`;
+            response += `  - Remaining Time: ${remainingHours}h ${remainingMinutes}m ${remainingSeconds}s\n`;
+            response += `  - Ends At: <t:${Math.floor(endTime / 1000)}:R>\n`; // Format timestamp for Discord
+            response += '\n';
+        }
+
+        await interactionReply(command, false, '', '⏱️ Active Timers', response);
+
+    } catch (error) {
+        const atUser = process.env.DISCORD_ACCOUNT_ID!;
+        await centralErrorHandler(atUser, "showServerTimers()", error.stack || String(error));
+    }
+};
+
