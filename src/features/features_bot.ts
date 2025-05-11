@@ -21,7 +21,7 @@ export async function testFunction(commandInteraction: CommandInteraction) {
     ) as TextChannel;
     await sendEmbed(
         channel,
-        'http://localhost:3000/static/timer/animeGirl_Marin_bashful.gif', // global URL
+        'static/anime/animeGirl_Marin_bashful.gif',
         'Reminder',
         'Don’t forget to do your racket :)'
     );
@@ -524,9 +524,10 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
 
 
 import { joinVoiceChannel } from '@discordjs/voice';
-import { sendReminder, tracker } from '../index_setup/index_helpers_2';
+import { sendReminder} from '../index_setup/index_helpers_2';
 import { interactionReply, centralErrorHandler, sendEmbed } from '../utils/utils_structuring';
 import { client } from '../index_setup/client';
+import { tracker } from '../index_setup/globalData';
 export const handleJoinVCInteraction = async (interaction: CommandInteraction) => {
     try {
         // Check if the interaction is from a guild (not a DM)
