@@ -83,19 +83,19 @@ export const OUR_COMMANDS = [
                 type: 3, // string
                 name: 'description',
                 description: 'The description for the timer alert',
-                requried: true,
+                required: true,
             },
             {
                 type: 4, // integer
                 name: 'hours',
                 description: 'The amount of hours you want added to the timer',
-                requried: false,
+                required: false,
             },
             {
                 type: 4, // integer
                 name: 'minutes',
                 description: 'The amount of minutes you want added to the timer',
-                requried: false,
+                required: false,
             },
 
 
@@ -107,7 +107,7 @@ export const OUR_COMMANDS = [
         options: [
             {
                 type: 3, // Type 3 is for string input
-                name: 'sortingArgument',
+                name: 'sorting_argument',
                 description: '(alphabetical, finishingTime)',
                 required: false,
             },
