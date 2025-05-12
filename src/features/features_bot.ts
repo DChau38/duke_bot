@@ -524,7 +524,7 @@ export const handleArenaInteraction = async (interaction: CommandInteraction) =>
 
 
 import { joinVoiceChannel } from '@discordjs/voice';
-import { addToActiveTimers, sendReminder} from '../index_setup/index_helpers_2';
+import { addToActiveTimers, sendReminder } from '../index_setup/index_helpers_2';
 import { interactionReply, centralErrorHandler, sendEmbed } from '../utils/utils_structuring';
 import { client } from '../index_setup/client';
 import { activeTimers, TimerInfo, tracker } from '../index_setup/globalData';
@@ -614,7 +614,7 @@ export const handleTimerSetInteraction = async (command: CommandInteraction) => 
         // Step 1: Get variables
         const hours = (command.options.get('hours')?.value || 0) as number;
         const minutes = (command.options.get('minutes')?.value || 0) as number;
-        const description = command.options.get('description')?.value as string|| "<NO GIVEN DESCRIPTION>";
+        const description = command.options.get('description')?.value as string || "<NO GIVEN DESCRIPTION>";
         const total_ms = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
 
         // Step 2: Send confirmation
@@ -666,7 +666,7 @@ export const handleTimerSetInteraction = async (command: CommandInteraction) => 
 export const handleShowServerTimersInteraction = async (command: CommandInteraction) => {
     try {
         // Testing seeding
-        HELPERS.seedTestTimers("1031183444014792705", "233713166096269313");
+        //HELPERS.seedTestTimers("1031183444014792705", "233713166096269313");
         // Step 1: Get Variables
         const serverId = command.guildId!;
         const sortBy = (command.options.get('sort')?.value as string | undefined)?.toLowerCase();
@@ -679,7 +679,7 @@ export const handleShowServerTimersInteraction = async (command: CommandInteract
         }
 
         // Step 3: Handle Case with timers
-        let sortedTimers = [...timers]; 
+        let sortedTimers = [...timers];
         const comparisonFunction = HELPERS.strategyFunctionForTimersSort(sortBy);
         sortedTimers.sort(comparisonFunction);
 
@@ -697,11 +697,23 @@ export const handleShowServerTimersInteraction = async (command: CommandInteract
             const remainingHours = Math.floor(remainingTimeMs / (1000 * 60 * 60));
             const remainingMinutes = Math.floor((remainingTimeMs % (1000 * 60 * 60)) / (1000 * 60));
             const remainingSeconds = Math.floor((remainingTimeMs % (1000 * 60)) / 1000);
+            const startDate = new Date(timer.startTime);
+            const formattedStart = startDate.toLocaleString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true,
+            });
 
             response += `- User ID: <@${timer.userId}>\n`;
             response += `  - Description: ${timer.description}\n`;
             response += `  - Remaining Time: ${remainingHours}h ${remainingMinutes}m ${remainingSeconds}s\n`;
-            response += `  - Ends At: <t:${Math.floor(endTime / 1000)}:R>\n`; // Format timestamp for Discord
+            response += `  - Started on: ${formattedStart}\n`;
+
             response += '\n';
         }
 
