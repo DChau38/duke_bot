@@ -53,14 +53,14 @@ export const selectMemberWithRequiredRoles = async () => {
         const guild = await client.guilds.fetch(process.env.SERVER_ID as string);
         const members = await guild.members.fetch();
 
-        let correctMembers:Collection<string,GuildMember>;
-        if (guild.id===process.env.DISCORD_GUILD_ID){
+        let correctMembers: Collection<string, GuildMember>;
+        if (guild.id === process.env.DISCORD_GUILD_ID) {
             correctMembers = members.filter((member) =>
                 member.roles.cache.some((role) => config.mis.requiredRoles.includes(role.name)) // Check for required roles
             );
         }
         else {
-            correctMembers=members;
+            correctMembers = members;
         }
 
         return correctMembers.random();
@@ -91,7 +91,7 @@ export function validateVoiceChannel(interaction: CommandInteraction): VoiceChan
     throw new Error("You must be in a regular voice channel, not a stage channel.");
 }
 
-export function returnCommandTimes(command : CommandInteraction) {
+export function returnCommandTimes(command: CommandInteraction) {
     const hours = (command.options.get('hours')?.value || 0) as number;
     const minutes = (command.options.get('minutes')?.value || 0) as number;
     const description = command.options.get('description')?.value;
@@ -119,25 +119,35 @@ export const seedTestTimers = (serverId: string, userId: string) => {
             startTime: now,
             duration: 5 * 60 * 1000, // 5 minutes
             description: "Test Timer 1 - Quick",
-            timeout: setTimeout(() => {}, 5 * 60 * 1000),
+            timeout: setTimeout(() => { }, 5 * 60 * 1000),
         },
         {
             userId,
             startTime: now,
             duration: 15 * 60 * 1000, // 15 minutes
             description: "Test Timer 2 - Medium",
-            timeout: setTimeout(() => {}, 15 * 60 * 1000),
+            timeout: setTimeout(() => { }, 15 * 60 * 1000),
         },
         {
             userId,
             startTime: now,
             duration: 30 * 60 * 1000, // 30 minutes
             description: "Test Timer 3 - Long",
-            timeout: setTimeout(() => {}, 30 * 60 * 1000),
+            timeout: setTimeout(() => { }, 30 * 60 * 1000),
         },
     ];
     activeTimers.set(serverId, timers);
 };
+
+export const removeFromActiveTimers = async (serverId: string, timeoutToRemove: NodeJS.Timeout) => {
+    const timersInformationPerServer = activeTimers.get(serverId);
+    if (!timersInformationPerServer) return;
+
+    const updatedTimers = timersInformationPerServer.filter(timer => timer.timeout !== timeoutToRemove);
+
+    activeTimers.set(serverId, updatedTimers);
+};
+
 export const timeZoneMap = {
     // North American Time Zones
     EST: 'America/New_York',         // Eastern Standard Time

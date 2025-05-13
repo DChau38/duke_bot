@@ -639,6 +639,8 @@ export const handleTimerSetInteraction = async (command: CommandInteraction) => 
                 `${description}\n` +
                 `Timer was started ${elapsed_hours} hours and ${elapsed_minutes} minutes ago`;
             sendReminder(channel, userIds, combinedDescription)
+
+            await HELPERS.removeFromActiveTimers(command.guildId!, timeout);
         }, total_ms);  // Use total_ms as the delay in milliseconds
 
         // Step 4: Track the timeout
