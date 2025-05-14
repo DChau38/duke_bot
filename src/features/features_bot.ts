@@ -619,7 +619,7 @@ export const handleTimerSetInteraction = async (command: CommandInteraction) => 
         const description = command.options.get('description')?.value as string || "<NO GIVEN DESCRIPTION>";
         HELPERS.handleTimerSetErrors(hours, minutes);
 
-        const total_ms = (hours! * 60 * 60 * 1000) + (minutes! * 60 * 1000);
+      const total_ms = UTILS.convertHoursToMilliseconds(hours!) + UTILS.convertMinutesToMilliseconds(minutes!);
 
         // Step 2: Send confirmation
         await interactionReply(command, true, './static/wumpus/wumpus_happy.gif', '⏰ Timer Set!',

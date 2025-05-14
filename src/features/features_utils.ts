@@ -11,3 +11,39 @@ export const calculateTimeDifference = (startTime: Date, endTime: Date) => {
 
     return { days, hours, minutes, seconds };
 };
+
+export const convertHoursToMinutes = (hours: number): number => 
+  hours * 60;
+
+export const convertMinutesToHours = (minutes: number): number => 
+  minutes / 60;
+
+export const convertHoursToSeconds = (hours: number): number => 
+  hours * 60 * 60;
+
+export const convertSecondsToHours = (seconds: number): number => 
+  seconds / 3600;
+
+export const convertMinutesToSeconds = (minutes: number): number => 
+  minutes * 60;
+
+export const convertSecondsToMinutes = (seconds: number): number => 
+  seconds / 60;
+
+export const convertMinutesToMilliseconds = (minutes: number): number => 
+  minutes * 60 * 1000;
+
+export const convertMillisecondsToMinutes = (milliseconds: number): number => 
+  milliseconds / (60 * 1000);
+
+export const convertHoursToMilliseconds = (hours: number): number => 
+  hours * 60 * 60 * 1000;
+
+export const convertMillisecondsToHours = (milliseconds: number): number => 
+  milliseconds / (60 * 60 * 1000);
+
+export const convertSecondsToMilliseconds = (seconds: number): number => 
+  seconds * 1000;
+
+export const convertMillisecondsToSeconds = (milliseconds: number): number => 
+  milliseconds / 1000;
