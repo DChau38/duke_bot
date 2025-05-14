@@ -612,10 +612,14 @@ export const handleJoinVCInteraction = async (interaction: CommandInteraction) =
 export const handleTimerSetInteraction = async (command: CommandInteraction) => {
     try {
         // Step 1: Get variables
-        const hours = (command.options.get('hours')?.value || 0) as number;
-        const minutes = (command.options.get('minutes')?.value || 0) as number;
+        const hourString = (command.options.get('hours')?.value || 0) as string;
+        const minuteString = (command.options.get('minutes')?.value || 0) as string;
+        const hours = await HELPERS.parseMathExpression(hourString);
+        const minutes = await HELPERS.parseMathExpression(minuteString);
         const description = command.options.get('description')?.value as string || "<NO GIVEN DESCRIPTION>";
-        const total_ms = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
+        HELPERS.handleTimerSetErrors(hours, minutes);
+
+        const total_ms = (hours! * 60 * 60 * 1000) + (minutes! * 60 * 1000);
 
         // Step 2: Send confirmation
         await interactionReply(command, true, './static/wumpus/wumpus_happy.gif', '⏰ Timer Set!',

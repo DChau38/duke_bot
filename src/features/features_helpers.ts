@@ -148,6 +148,37 @@ export const removeFromActiveTimers = async (serverId: string, timeoutToRemove: 
     activeTimers.set(serverId, updatedTimers);
 };
 
+export async function parseMathExpression(input: string): Promise<number | null> {
+    try {
+        // Evaluate if valid expression
+        if (!/^[\d+\-*/().\s]+$/.test(input)) {
+            throw new Error("Invalid characters");
+
+        }
+        // Return evaluated expression
+        return eval(input);
+    } catch (error) {
+        const atUser = process.env.DISCORD_ACCOUNT_ID!;
+        await centralErrorHandler(atUser, "parseMathExpression()", error.stack || String(error));
+        return null;
+    }
+}
+
+export const handleTimerSetErrors = (hours: number | null, minutes: number | null) => {
+    if (hours === null) {
+        throw new Error("Invalid hour input. Please provide a valid number for hours.");
+    }
+
+    if (minutes === null) {
+        throw new Error("Invalid minute input. Please provide a valid number for minutes.");
+    }
+
+    // Check if total time is greater than 0
+    const totalTimeInMinutes = (hours * 60) + minutes;
+    if (totalTimeInMinutes <= 0) {
+        throw new Error("The time must be positive in value");
+    }
+}
 export const timeZoneMap = {
     // North American Time Zones
     EST: 'America/New_York',         // Eastern Standard Time

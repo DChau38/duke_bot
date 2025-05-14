@@ -86,13 +86,13 @@ export const OUR_COMMANDS = [
                 required: true,
             },
             {
-                type: 4, // integer
+                type: 3, // string
                 name: 'hours',
                 description: 'The amount of hours you want added to the timer',
                 required: false,
             },
             {
-                type: 4, // integer
+                type: 3, // string
                 name: 'minutes',
                 description: 'The amount of minutes you want added to the timer',
                 required: false,
