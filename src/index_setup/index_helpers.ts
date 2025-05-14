@@ -84,9 +84,9 @@ export async function scheduleRecurringTasks() {
     try {
 
         // My Daily Reminder — at 7:00 AM EST every day
-        const messageDuke = "<inspirationalQuote>";
+        const messageDuke = process.env.DAILY_DUKE!;
         cron.schedule('0 7 * * *', async () => {
-            await INDEX_HELPERS_2.sendReminderInBotChannel("duke", messageDuke);
+            await INDEX_HELPERS_2.sendReminderInBotChannel("duke", messageDuke, ['💪', '🥗', '📚', '💻']);
         }, {
             timezone: "America/New_York",
         });
@@ -94,7 +94,7 @@ export async function scheduleRecurringTasks() {
         // Yan's Daily Reminder — at 7:00 AM EST every day
         const messageYan = "did you apply yet you bonobo";
         cron.schedule('0 7 * * *', async () => {
-            await INDEX_HELPERS_2.sendReminderInBotChannel("yan240", messageYan);
+            await INDEX_HELPERS_2.sendReminderInBotChannel("yan240", messageYan, []);
         }, {
             timezone: "America/New_York",
         });

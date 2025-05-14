@@ -273,7 +273,7 @@ export function findMemberByUsername(guild: Guild, username: string): GuildMembe
 }
 
 // sendReminderInBotChannel(username, message) => send a reminder in the bot channel
-export async function sendReminderInBotChannel(username: string, message: string) {
+export async function sendReminderInBotChannel(username: string, message: string, reactions: string[]) {
     try {
         // Step 1: Get variables (guild, botChannel, userId)
         const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID as string);
@@ -285,7 +285,7 @@ export async function sendReminderInBotChannel(username: string, message: string
         const userIds = [userId];
 
         // Step 2: Set Reminder
-        sendReminder(botChannel, userIds, message);
+        sendReminder(botChannel, userIds, message, reactions);
     } catch (error) {
         const atUser = process.env.DISCORD_ACCOUNT_ID!;
         await centralErrorHandler(atUser, "setMyScheduledReminder()", error.stack || String(error));
@@ -293,7 +293,7 @@ export async function sendReminderInBotChannel(username: string, message: string
     }
 }
 // sendReminder(guild, userIds, message) => sends a reminder
-export async function sendReminder(channel: TextChannel, userIds: string[], message: string): Promise<void> {
+export async function sendReminder(channel: TextChannel, userIds: string[], message: string, reactions: string[]): Promise<void> {
     try {
         // Ping users
         if (userIds.length > 0) {
@@ -304,7 +304,13 @@ export async function sendReminder(channel: TextChannel, userIds: string[], mess
         // Send Reminder Embed
         const formattedMessage =
             `\`\`\`${message}\`\`\`\n`;
-        await sendEmbed(channel, null, '⏰ Reminder', formattedMessage);
+        const embedMessage = await sendEmbed(channel, null, '⏰ Reminder', formattedMessage);
+
+        // Add reactions to the message
+        for (const emoji of reactions) {
+            await embedMessage.react(emoji);
+        }
+        
     } catch (error) {
         const atUser = process.env.DISCORD_ACCOUNT_ID!;
         await centralErrorHandler(atUser, "reminderFunction()", error.stack || String(error));

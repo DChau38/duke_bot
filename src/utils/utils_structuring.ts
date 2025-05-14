@@ -1,4 +1,4 @@
-import { AttachmentBuilder, CommandInteraction, EmbedBuilder, TextChannel } from "discord.js";
+import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message, TextChannel } from "discord.js";
 import config from "../config/config";
 import { client } from "../index_setup/client";
 
@@ -21,7 +21,7 @@ export async function centralErrorHandler(accountId: string, title: string, erro
     }
 }
 
-export const sendEmbed = async (channel: TextChannel, urlToImage: string | null, title: string, description: string) => {
+export const sendEmbed = async (channel: TextChannel, urlToImage: string | null, title: string, description: string): Promise<Message> => {
     try {
         // Step 1: Make embed
         const embed = new EmbedBuilder()
@@ -36,17 +36,18 @@ export const sendEmbed = async (channel: TextChannel, urlToImage: string | null,
             const fileName = urlToImage.match(/[^/]+$/)?.[0]; // This will capture everything after the last slash
             const attachment = new AttachmentBuilder(urlToImage);
             embed.setImage('attachment://' + fileName);
-            await channel.send({ embeds: [embed], files: [attachment] });
+            return await channel.send({ embeds: [embed], files: [attachment] });
         } else {
             const urlToImage = './static/anime/animeGirl_Mio_delighted.gif'
             const fileName = urlToImage.match(/[^/]+$/)?.[0]; // This will capture everything after the last slash
             const attachment = new AttachmentBuilder(urlToImage);
             embed.setImage('attachment://' + fileName);
-            await channel.send({ embeds: [embed], files: [attachment] });
+            return await channel.send({ embeds: [embed], files: [attachment] });
         }
     } catch (error) {
         // Part of error logging
         console.error('sendEmbed()', error.stack);
+        throw error;
     }
 
 };
