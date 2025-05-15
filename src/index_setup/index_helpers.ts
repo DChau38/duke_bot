@@ -86,15 +86,15 @@ export async function scheduleRecurringTasks() {
         // My Daily Reminder — at 7:00 AM EST every day
         const messageDuke = process.env.DAILY_DUKE!;
         cron.schedule('0 7 * * *', async () => {
-            await INDEX_HELPERS_2.sendReminderInBotChannel("duke", messageDuke, ['💪', '🥗', '📚', '💻']);
+            HELPERS.sendDailyMessage("duke", messageDuke, ['233713166096269313'], ['💪', '🍕', '📚', '💻', '😘'])
         }, {
             timezone: "America/New_York",
         });
 
         // Yan's Daily Reminder — at 7:00 AM EST every day
-        const messageYan = "did you apply yet you bonobo";
+        const messageYan = "YOURE GONNA BE A FUCKING FAILURE AND WORK AT MCDONALDS IF YOU DONT STOP BEING LAZY AND APPLY";
         cron.schedule('0 7 * * *', async () => {
-            await INDEX_HELPERS_2.sendReminderInBotChannel("yan240", messageYan, []);
+            HELPERS.sendDailyMessage("yan240", messageYan, ['381175099522285569'], []);
         }, {
             timezone: "America/New_York",
         });
@@ -106,7 +106,7 @@ export async function scheduleRecurringTasks() {
         const atUser = process.env.DISCORD_ACCOUNT_ID!
         await HELPERS.centralErrorHandler(atUser, "(5/6) SCHEDULE RECURRING TASKS: FAIL", error.stack || String(error))
     }
-    
+
 }
 
 

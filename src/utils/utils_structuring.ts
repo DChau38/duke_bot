@@ -102,6 +102,16 @@ export async function sendReminderInBotChannel(username: string, message: string
         await centralErrorHandler(atUser, "sendReminderInBotChannel()", error.stack || String(error));
     }
 }
+
+export async function sendDailyMessage(title: string, message: string, userIds: string[], reactions: string[]): Promise<void> {
+    const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID as string);
+    if (!guild) {
+        throw new Error("Main Guild Not Found");
+    }
+    const botChannel = await returnBotLogChannel(guild);
+    const dailyUrlToImage = 'static\anime\wakeUp\animeGirl_wakeUpPulling.gif'
+    sendMessage(botChannel, title, message, dailyUrlToImage, userIds, reactions);
+}
 export const interactionReply = async (
     interaction: CommandInteraction,
     localUrl: boolean | null,
