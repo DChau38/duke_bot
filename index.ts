@@ -33,7 +33,8 @@ async function initializeBot() {
         console.log('(6/6) BOT INTITIALIZATION: SUCCESS');
 
         const botChannel = await getTextChannel(client, process.env.DISCORD_GUILD_ID!, process.env.BOT_LOG_CHANNEL!);
-        sendEmbed(botChannel!, null, '✨ Bot Initialized✨ ', '...');
+        const initializeUrlToImage = 'static/anime/animeGirl_heatUp.gif'
+        sendEmbed(botChannel!, initializeUrlToImage, '✨ Bot Initialized✨ ', '...');
     } catch (error) {
         const atUser = process.env.DISCORD_ACCOUNT_ID!
         await centralErrorHandler(atUser, "(6/6) BOT INTITIALIZATION: FAILED", error.stack || String(error))
