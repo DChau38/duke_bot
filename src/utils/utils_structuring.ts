@@ -1,6 +1,8 @@
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message, TextChannel } from "discord.js";
 import config from "../config/config";
 import { client } from "../index_setup/client";
+import { returnBotLogChannel } from "../index_setup/index_helpers_2";
+import { getMemberIdStringByUsername } from "../features/features_helpers";
 
 export async function centralErrorHandler(accountId: string, title: string, error: string) {
     try {
@@ -51,7 +53,55 @@ export const sendEmbed = async (channel: TextChannel, urlToImage: string | null,
     }
 
 };
+// sendMessage(channel, message, []userIds, []reactions) => sends a message
+export async function sendMessage(channel: TextChannel, title: string, message: string, urlToImage: string | null, userIds: string[], reactions: string[]): Promise<void> {
+    try {
+        // Step 1: ping users
+        if (userIds.length > 0) {
+            const mentions = userIds.map(id => `<@${id}>`).join(' ');
+            await channel.send(`${mentions}`);
+        }
+        // Step 2: send embedMessage
+        const formattedMessage =
+            `\`\`\`${message}\`\`\`\n`;
+        const embedMessage = await sendEmbed(channel, urlToImage, title, formattedMessage);
 
+        // Step 3: add reactions to the embedMessage
+        for (const emoji of reactions) {
+            await embedMessage.react(emoji);
+        }
+
+    } catch (error) {
+        const atUser = process.env.DISCORD_ACCOUNT_ID!;
+        await centralErrorHandler(atUser, "sendMessage()", error.stack || String(error));
+    }
+}
+// sendReminder(channel, message, userIds) => sends a reminder in the channel and pings userIds
+export async function sendReminder(channel: TextChannel, message: string, userIds: string[], reactions: string[]): Promise<void> {
+    const reminderTitle = '⏰ Reminder';
+    const reminderUrlToImage = null;
+    sendMessage(channel, reminderTitle, message, reminderUrlToImage, userIds, reactions);
+}
+
+// sendReminderInBotChannel(username, message) => send a reminder in the bot channel
+export async function sendReminderInBotChannel(username: string, message: string, reactions: string[]) {
+    try {
+        // Step 1: Get variables (guild, botChannel, userId)
+        const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID as string);
+        if (!guild) {
+            throw new Error("Main Guild Not Found");
+        }
+        const botChannel = await returnBotLogChannel(guild);
+        const userId = getMemberIdStringByUsername(guild, username);
+        const userIds = [userId];
+
+        // Step 2: Set Reminder
+        sendReminder(botChannel, message, userIds, reactions);
+    } catch (error) {
+        const atUser = process.env.DISCORD_ACCOUNT_ID!;
+        await centralErrorHandler(atUser, "sendReminderInBotChannel()", error.stack || String(error));
+    }
+}
 export const interactionReply = async (
     interaction: CommandInteraction,
     localUrl: boolean | null,
