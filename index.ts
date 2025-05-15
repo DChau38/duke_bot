@@ -6,12 +6,13 @@ import config from './src/config/config'
 import 'dotenv/config';
 import * as INDEX_HELPERS from './src/index_setup/index_helpers'
 import { client } from './src/index_setup/client';
-import { centralErrorHandler } from './src/utils/utils_structuring';
+import { centralErrorHandler, sendEmbed } from './src/utils/utils_structuring';
+import { getTextChannel } from './src/index_setup/index_helpers_2';
 
 // Place before initializeBot() to handle early setup or loading dependencies as well
 process.on('uncaughtException', async (error) => {
     const atUser = process.env.DISCORD_ACCOUNT_ID!
-    await centralErrorHandler(atUser,"UNCAUGHT ERROR", error.stack || String(error))
+    await centralErrorHandler(atUser, "UNCAUGHT ERROR", error.stack || String(error))
 
 });
 initializeBot();
@@ -30,9 +31,12 @@ async function initializeBot() {
         // Step 5: Schedule recurring tasks
         await INDEX_HELPERS.scheduleRecurringTasks();
         console.log('(6/6) BOT INTITIALIZATION: SUCCESS');
+
+        const botChannel = await getTextChannel(client, process.env.DISCORD_GUILD_ID!, process.env.BOT_LOG_CHANNEL!);
+        sendEmbed(botChannel!, null, '✨ Bot Initialized✨ ', '...');
     } catch (error) {
         const atUser = process.env.DISCORD_ACCOUNT_ID!
-        await centralErrorHandler(atUser,"(6/6) BOT INTITIALIZATION: FAILED", error.stack || String(error))
+        await centralErrorHandler(atUser, "(6/6) BOT INTITIALIZATION: FAILED", error.stack || String(error))
     }
 }
 

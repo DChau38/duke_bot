@@ -1,4 +1,4 @@
-import { TextChannel, ChannelType, Interaction, GuildMember, Presence, Collection, Guild } from 'discord.js';
+import { TextChannel, ChannelType, Interaction, GuildMember, Presence, Collection, Guild, Client } from 'discord.js';
 import { client } from './client';
 import config from '../config/config';
 import * as BOT_FUNCTIONS from '../features/features_bot'
@@ -310,7 +310,7 @@ export async function sendReminder(channel: TextChannel, userIds: string[], mess
         for (const emoji of reactions) {
             await embedMessage.react(emoji);
         }
-        
+
     } catch (error) {
         const atUser = process.env.DISCORD_ACCOUNT_ID!;
         await centralErrorHandler(atUser, "reminderFunction()", error.stack || String(error));
@@ -331,3 +331,21 @@ export async function addToActiveTimers(serverId: string, timer: TimerInfo) {
         await centralErrorHandler(atUser, "addToActiveTimers()", error.stack || String(error));
     }
 }
+
+export async function getTextChannel(
+    client: Client,
+    serverId: string,
+    channelId: string
+): Promise<TextChannel | null> {
+    try {
+        const guild = await client.guilds.fetch(serverId);
+        const targetChannel = guild.channels.cache.find(
+            (ch) => ch.type === ChannelType.GuildText && ch.name === 'aaa'
+        );
+        return targetChannel as TextChannel;
+    } catch (error) {
+        console.error('Failed to fetch text channel:', error);
+        return null;
+    }
+}
+
