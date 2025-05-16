@@ -77,7 +77,7 @@ export const OUR_COMMANDS = [
     },
     {
         name: 'timerset',
-        description: 'Set a timer to remind yourself',
+        description: 'Set a timer to remind yourself. (e.g., /timerset bioTestTmr 24',
         options: [
             {
                 type: 3, // string
@@ -103,7 +103,7 @@ export const OUR_COMMANDS = [
     },
     {
         name: 'timersshow',
-        description: 'View active server timers with optional sorting. ⏱️',
+        description: 'View active server timers with optional sorting. ⏱️. (e.g., /timersshow',
         options: [
             {
                 type: 3, // Type 3 is for string input
@@ -113,5 +113,20 @@ export const OUR_COMMANDS = [
             },
         ],
     },
-
+    {
+        name: 'notepadset',
+        description: 'Add something new to the notepad. 📝. (e.g., /notepadset newInformation',
+        options: [
+            {
+                type: 3, // Type 3 is for string input
+                name: 'new_information',
+                description: 'What information you want to add. (e.g., newPassword=xyzabc)',
+                required: true,
+            },
+        ],
+    },
+    {
+        name: 'notepadshow',
+        description: 'View Current Notepad. 📝. (e.g., /notepadshow',
+    },
 ];

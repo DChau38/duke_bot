@@ -48,3 +48,5 @@ export type TimerInfo = {
 };
 
 export const activeTimers = new Map<string, TimerInfo[]>(); // Map<serverId, TimerInfo[]>
+
+export const notepad: string[] = [];

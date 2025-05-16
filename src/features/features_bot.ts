@@ -527,7 +527,7 @@ import { joinVoiceChannel } from '@discordjs/voice';
 import { addToActiveTimers } from '../index_setup/index_helpers_2';
 import { interactionReply, centralErrorHandler, sendEmbed, sendReminder } from '../utils/utils_structuring';
 import { client } from '../index_setup/client';
-import { activeTimers, TimerInfo, tracker } from '../index_setup/globalData';
+import { activeTimers, notepad, TimerInfo, tracker } from '../index_setup/globalData';
 export const handleJoinVCInteraction = async (interaction: CommandInteraction) => {
     try {
         // Check if the interaction is from a guild (not a DM)
@@ -730,3 +730,28 @@ export const handleShowServerTimersInteraction = async (command: CommandInteract
     }
 };
 
+export const handleNotepadSetInteraction = async (interaction: CommandInteraction) => {
+    try {
+        // Step 1: get variables
+        const notepadData = interaction.options.get('notepad_data')!.value as string;
+
+        // Step 2: add information to notepad
+        notepad.push(notepadData);
+        interactionReply(interaction, null, null, 'notepad has been written into', `information added: ${notepadData}`);
+
+    } catch (error) {
+        const atUser = process.env.DISCORD_ACCOUNT_ID!;
+        await centralErrorHandler(atUser, "handleNotepadSetInteraction()", error.stack || String(error));
+    }
+};
+
+export const handleNotepadShowInteraction = async (interaction: CommandInteraction) => {
+    try {
+        // Step 1: show notepadd
+        interactionReply(interaction, null, null, 'View Notepad Information', `:${notepad}`);
+
+    } catch (error) {
+        const atUser = process.env.DISCORD_ACCOUNT_ID!;
+        await centralErrorHandler(atUser, "handleNotepadShowInteraction()", error.stack || String(error));
+    }
+};
