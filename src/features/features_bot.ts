@@ -733,10 +733,10 @@ export const handleShowServerTimersInteraction = async (command: CommandInteract
 export const handleNotepadSetInteraction = async (interaction: CommandInteraction) => {
     try {
         // Step 1: get variables
-        const notepadData = interaction.options.get('notepad_data')!.value as string;
+        const notepadData = interaction.options.get('new_information')!.value as string;
 
         // Step 2: add information to notepad
-        notepad.push(notepadData);
+        notepad.push(`\n\n${notepadData}`);
         interactionReply(interaction, null, null, 'notepad has been written into', `information added: ${notepadData}`);
 
     } catch (error) {
