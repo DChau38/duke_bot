@@ -109,7 +109,7 @@ export async function sendDailyMessage(title: string, message: string, userIds: 
         throw new Error("Main Guild Not Found");
     }
     const botChannel = await returnBotLogChannel(guild);
-    const dailyUrlToImage = 'static\anime\wakeUp\animeGirl_wakeUpPulling.gif'
+    const dailyUrlToImage = './static/anime/wakeUp/animeGirl_wakeUpPulling.gif'
     sendMessage(botChannel, title, message, dailyUrlToImage, userIds, reactions);
 }
 export const interactionReply = async (
