@@ -103,6 +103,14 @@ export async function scheduleRecurringTasks() {
             timezone: "America/New_York",
         });
 
+        // Jul
+        const messageJul = process.env.DAILY_JUL!;
+        cron.schedule('0 21 * * *', async () => {
+            HELPERS.sendDailyMessage(guildMooseId, "general", "jul", messageJul, ['1217389889260224532'], []);
+        }, {
+            timezone: "America/New_York",
+        });
+
 
         // Log
         console.log('(5/6) SCHEDULE RECURRING TASKS: SUCCESS');
