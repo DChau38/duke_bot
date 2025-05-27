@@ -83,10 +83,14 @@ export async function attachEventHandlers() {
 export async function scheduleRecurringTasks() {
     try {
 
+        // Variables
+        const guildMountId = process.env.DISCORD_GUILD_MOUNT_ID!;
+        const guildMooseId = process.env.DISCORD_GUILD_MOOSE_ID!;
+
         // My Daily Reminder — at 7:00 AM EST every day
         const messageDuke = process.env.DAILY_DUKE!;
         cron.schedule('0 7 * * *', async () => {
-            HELPERS.sendDailyMessage("duke", messageDuke, ['233713166096269313'], ['💪', '🍕', '📚', '💻', '😘'])
+            HELPERS.sendDailyMessage(guildMountId, "aaa", "duke", messageDuke, ['233713166096269313'], ['💪', '🍕', '📚', '💻', '😘'])
         }, {
             timezone: "America/New_York",
         });
@@ -94,7 +98,7 @@ export async function scheduleRecurringTasks() {
         // Yan's Daily Reminder — at 7:00 AM EST every day
         const messageYan = "YOURE GONNA BE A FUCKING FAILURE AND WORK AT MCDONALDS IF YOU DONT STOP BEING LAZY AND APPLY";
         cron.schedule('0 7 * * *', async () => {
-            HELPERS.sendDailyMessage("yan240", messageYan, ['381175099522285569'], []);
+            HELPERS.sendDailyMessage(guildMountId, "aaa", "yan", messageYan, ['381175099522285569'], []);
         }, {
             timezone: "America/New_York",
         });

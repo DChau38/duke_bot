@@ -32,7 +32,7 @@ async function initializeBot() {
         await INDEX_HELPERS.scheduleRecurringTasks();
         console.log('(6/6) BOT INTITIALIZATION: SUCCESS');
 
-        const botChannel = await getTextChannel(client, process.env.DISCORD_GUILD_ID!, process.env.BOT_LOG_CHANNEL!);
+        const botChannel = await getTextChannel(client, process.env.DISCORD_GUILD_MOUNT_ID!, process.env.BOT_LOG_CHANNEL!);
         const initializeUrlToImage = 'static/anime/animeGirl_heatUp.gif'
         const now = new Date();
         const formatted = now.toLocaleString();

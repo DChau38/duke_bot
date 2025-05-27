@@ -1,7 +1,7 @@
 import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message, TextChannel } from "discord.js";
 import config from "../config/config";
 import { client } from "../index_setup/client";
-import { returnBotLogChannel } from "../index_setup/index_helpers_2";
+import { returnChannelByGuild } from "../index_setup/index_helpers_2";
 import { getMemberIdStringByUsername } from "../features/features_helpers";
 
 export async function centralErrorHandler(accountId: string, title: string, error: string) {
@@ -91,7 +91,7 @@ export async function sendReminderInBotChannel(username: string, message: string
         if (!guild) {
             throw new Error("Main Guild Not Found");
         }
-        const botChannel = await returnBotLogChannel(guild);
+        const botChannel = await returnChannelByGuild(guild);
         const userId = getMemberIdStringByUsername(guild, username);
         const userIds = [userId];
 
@@ -103,14 +103,14 @@ export async function sendReminderInBotChannel(username: string, message: string
     }
 }
 
-export async function sendDailyMessage(title: string, message: string, userIds: string[], reactions: string[]): Promise<void> {
-    const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID as string);
+export async function sendDailyMessage(guildId: string, channelTitle: string, title: string, message: string, userIds: string[], reactions: string[]): Promise<void> {
+    const guild = client.guilds.cache.get(guildId);
     if (!guild) {
         throw new Error("Main Guild Not Found");
     }
-    const botChannel = await returnBotLogChannel(guild);
+    const channel = await returnChannelByGuild(guild, channelTitle);
     const dailyUrlToImage = './static/anime/wakeUp/animeGirl_wakeUpPulling.gif'
-    sendMessage(botChannel, title, message, dailyUrlToImage, userIds, reactions);
+    sendMessage(channel, title, message, dailyUrlToImage, userIds, reactions);
 }
 export const interactionReply = async (
     interaction: CommandInteraction,

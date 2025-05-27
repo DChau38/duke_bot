@@ -260,9 +260,9 @@ export async function handleDisconnect() {
         await sendEmbed(channel as TextChannel, null, "...", "Uhhhh I got to go. I'll be back soon! (@DEVELOPER - this is suppose to be brokennnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
     }
 }
-export async function returnBotLogChannel(guild: Guild) {
+export async function returnChannelByGuild(guild: Guild, channelName: string) {
     const channel = guild.channels.cache.find(
-        (ch) => ch.type === ChannelType.GuildText && ch.name === 'aaa'
+        (ch) => ch.type === ChannelType.GuildText && ch.name === channelName
     ) as TextChannel;
     if (!channel) {
         throw new Error("returnBotLog() - No Bot Log Channel Found");
