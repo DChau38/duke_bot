@@ -3,6 +3,7 @@ import config from "../config/config";
 import { client } from "../index_setup/client";
 import { returnChannelByGuild } from "../index_setup/index_helpers_2";
 import { getMemberIdStringByUsername } from "../features/features_helpers";
+import { wordPool } from "../index_setup/globalData";
 
 export async function centralErrorHandler(accountId: string, title: string, error: string) {
     try {
@@ -153,5 +154,52 @@ export const interactionReply = async (
     } catch (error) {
         const atUser = process.env.DISCORD_ACCOUNT_ID!
         await centralErrorHandler(atUser, "interactionReply()", error.stack || String(error))
+    }
+};
+
+export const sendDailyWord = async (
+    channel: TextChannel,
+    userIds: string[],
+): Promise<void> => {
+
+    // 2025-06-21
+    const today = new Date().toISOString().split('T')[0];
+    // 20250621
+    const hash = today.split('-').join('');
+    // maps it to an index of wordPool
+    const dailyIndex = parseInt(hash) % wordPool.length;
+    const word = wordPool[dailyIndex];
+
+    try {
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        const data = await response.json();
+        if (!data || !Array.isArray(data) || !data.length) {
+            throw new Error(`No definition found for word: ${word}`);
+        }
+
+        const entry = data[0];
+
+        let definitionsText = '';
+        for (const meaning of entry.meanings) {
+            const partOfSpeech = meaning.partOfSpeech;
+            const definitions = meaning.definitions;
+
+            definitionsText += `\n📌 ${partOfSpeech}\n`;
+            definitions.forEach((defObj, index) => {
+                const def = defObj.definition;
+                const example = defObj.example ? `\n> _Example_: ${defObj.example}` : '';
+                definitionsText += `• ${def}${example}\n`;
+            });
+        }
+
+        const title = `📘 **Word of the Day**: **${word}**`;
+
+        sendMessage(channel, title, definitionsText,null,userIds,[])
+
+
+
+
+    } catch (error) {
+        console.error(`Failed to fetch definition for ${word}:`, error);
     }
 };

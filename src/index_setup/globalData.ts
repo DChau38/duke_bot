@@ -50,3 +50,24 @@ export type TimerInfo = {
 export const activeTimers = new Map<string, TimerInfo[]>(); // Map<serverId, TimerInfo[]>
 
 export const notepad: string[] = [];
+
+export const wordPool: string[] = [
+  "Brood",
+  "Civic",
+  "Circa",
+  "Clandestine",
+  "Delineate",
+  "Deputy",
+  "Emphatic",
+  "Ideate",
+  "Lexical",
+  "Malaise",
+  "Salient",
+  "Sud",
+  "Umbrage",
+  "Ecosystem",
+  "Actors",
+  "Components",
+  "Wealth",
+  "Finance"
+];

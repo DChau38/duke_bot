@@ -87,7 +87,8 @@ export async function scheduleRecurringTasks() {
         const guildMountId = process.env.DISCORD_GUILD_MOUNT_ID!;
         const guildMooseId = process.env.DISCORD_GUILD_MOOSE_ID!;
 
-        // My Daily Reminder — at 7:00 AM EST every day
+
+        /*// My Daily Reminder — at 7:00 AM EST every day
         const messageDuke = process.env.DAILY_DUKE!;
         cron.schedule('0 7 * * *', async () => {
             HELPERS.sendDailyMessage(guildMountId, "aaa", "duke", messageDuke, ['233713166096269313'], ['💪', '🍕', '📚', '💻', '😘'])
@@ -101,7 +102,16 @@ export async function scheduleRecurringTasks() {
             HELPERS.sendDailyMessage(guildMountId, "aaa", "yan", messageYan, ['381175099522285569'], []);
         }, {
             timezone: "America/New_York",
+        });*/
+
+        const guildMount = client.guilds.cache.get(guildMountId);
+        const channel = await INDEX_HELPERS_2.returnChannelByGuild(guildMount!, 'aaa');
+        cron.schedule('0 7 * * *', async () => {
+            HELPERS.sendDailyWord(channel, ['233713166096269313','381175099522285569']);
+        }, {
+            timezone: "America/New_York",
         });
+        
 
         // Jul
         const messageJul = process.env.DAILY_JUL!;
