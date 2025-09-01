@@ -21,7 +21,7 @@ initializeBot();
 async function initializeBot() {
     try {
         // Step 1: Error handling
-        INDEX_HELPERS.handleInitializationErrors();
+        await INDEX_HELPERS.handleInitializationErrors();
         // Step 2: Attach event handlers
         await INDEX_HELPERS.attachEventHandlers()
         // Step 3: Login to Discord
