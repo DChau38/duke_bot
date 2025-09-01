@@ -103,7 +103,7 @@ export async function scheduleRecurringTasks() {
         }, {
             timezone: "America/New_York",
         });*/
-
+/*
         const guildMount = client.guilds.cache.get(guildMountId);
         const channel = await INDEX_HELPERS_2.returnChannelByGuild(guildMount!, 'aaa');
         cron.schedule('0 7 * * *', async () => {
@@ -119,7 +119,7 @@ export async function scheduleRecurringTasks() {
             HELPERS.sendDailyMessage(guildMooseId, "general", "jul", messageJul, ['1217389889260224532'], []);
         }, {
             timezone: "America/New_York",
-        });
+        });*/
 
 
         // Log
