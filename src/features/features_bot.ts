@@ -8,7 +8,9 @@ import config from '../config/config';
 
 
 export async function testFunction(commandInteraction: CommandInteraction) {
-    const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID!);
+    // because of what happens below, this function call occurs after the allocated window of 3s, resulting in issues. but now because it gives the item that the application did not reply, i moved it up here. but it was down initially to not go through if there was an issue with the below commands
+    await commandInteraction.reply('TEST===TRUE');
+    const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_MOUNT_ID!);
     if (guild) {
         guild.channels.cache.forEach((channel) => {
             console.log(`Channel Name: ${channel.name}, Channel Type: ${ChannelType[channel.type]}`);
@@ -25,7 +27,7 @@ export async function testFunction(commandInteraction: CommandInteraction) {
         'Reminder',
         'Don’t forget to do your racket :)'
     );
-    await commandInteraction.reply('TEST===TRUE');
+
 }
 
 export const handleCoinFlipInteraction = async (interaction: CommandInteraction) => {
