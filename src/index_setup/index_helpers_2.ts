@@ -242,6 +242,9 @@ export async function handleInteraction(interaction: Interaction) {
             case 'NOTEPADSHOW':
                 await BOT_FUNCTIONS.handleNotepadShowInteraction(interaction);
                 break;
+           case 'AIGENERATE':
+                await BOT_FUNCTIONS.handleAiGenerateInteraction(interaction);
+                break;
             default:
                 console.warn(`Unknown command: ${commandName.toUpperCase()}`);
                 break;

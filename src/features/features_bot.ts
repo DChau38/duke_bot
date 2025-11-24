@@ -3,7 +3,7 @@ import { generate } from 'random-words'
 import * as HELPERS from './features_helpers';
 import * as UTILS from './features_utils';
 import config from '../config/config';
-
+import { ollamaClient } from '../index_setup/globalData';
 
 
 
@@ -755,5 +755,27 @@ export const handleNotepadShowInteraction = async (interaction: CommandInteracti
     } catch (error) {
         const atUser = process.env.DISCORD_ACCOUNT_ID!;
         await centralErrorHandler(atUser, "handleNotepadShowInteraction()", error.stack || String(error));
+    }
+};
+
+export const handleAiGenerateInteraction = async (interaction: CommandInteraction) => {
+    try {
+        const question = interaction.options.get('question')!.value as string;
+        console.log("AAAAAAAA")
+        if (!question) {
+            return interactionReply(interaction, null, null, 'Error', 'No question was provided.');
+        }
+
+        // Use the exported client
+        const response = await ollamaClient.chat({
+            model: 'llama3.2:3b',
+            messages: [{ role: 'user', content: question }]
+        });
+
+        interactionReply(interaction, null, null, 'AI Response', response.message.content);
+
+    } catch (error) {
+        const atUser = process.env.DISCORD_ACCOUNT_ID!;
+        await centralErrorHandler(atUser, "handleAiGenerateInteraction()", error.stack || String(error));
     }
 };

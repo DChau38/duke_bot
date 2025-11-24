@@ -129,4 +129,16 @@ export const OUR_COMMANDS = [
         name: 'notepadshow',
         description: 'View Current Notepad. 📝. (e.g., /notepadshow',
     },
+    {
+        name: 'aigenerate',
+        description: 'Ask the bot a question and get an AI-generated response. 🤖',
+        options: [
+            {
+                type: 3, // string input
+                name: 'question',
+                description: 'Your question for the AI bot.',
+                required: true,
+            },
+        ],
+    },
 ];
