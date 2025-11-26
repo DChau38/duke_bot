@@ -141,4 +141,16 @@ export const OUR_COMMANDS = [
             },
         ],
     },
+    {
+        name: 'aichat',
+        description: 'Continue to chat with the bot. 🤖',
+        options: [
+            {
+                type: 3, // string input
+                name: 'question',
+                description: 'Your question for the AI bot.',
+                required: true,
+            },
+        ],
+    },
 ];

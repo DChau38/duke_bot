@@ -72,7 +72,25 @@ export const wordPool: string[] = [
   "Finance"
 ];
 
+// AiBot stuff
 import { Ollama } from 'ollama';
 export const ollamaClient = new Ollama({
   host: 'http://127.0.0.1:11434'
 });
+
+export interface ChatMessage {
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+}
+
+export const userChatHistories = new Map<string, ChatMessage[]>();
+/**
+ * const chatHistory: ChatMessage[] = [
+    { role: 'user', content: 'Hello, how are you?' },
+    { role: 'assistant', content: 'I am good, thank you! How can I assist you today?' },
+    { role: 'system', content: 'Session started at 12:00 PM' },  // System-generated message
+    { role: 'user', content: 'What is the weather like today?' },
+    { role: 'assistant', content: 'The weather is sunny with a chance of rain later.' }
+];
+ * 
+ */

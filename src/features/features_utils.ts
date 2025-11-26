@@ -1,5 +1,6 @@
 import { TextChannel, EmbedBuilder, AttachmentBuilder, CommandInteraction, ChannelType, Guild } from "discord.js";
 import { client } from "../index_setup/client";
+import { ChatMessage, userChatHistories } from "../index_setup/globalData";
 
 export const calculateTimeDifference = (startTime: Date, endTime: Date) => {
     const timeDiff = endTime.getTime() - startTime.getTime();
@@ -47,3 +48,21 @@ export const convertSecondsToMilliseconds = (seconds: number): number =>
 
 export const convertMillisecondsToSeconds = (milliseconds: number): number => 
   milliseconds / 1000;
+
+export const getUserHistory = (userId: string): ChatMessage[] => {
+    let history = userChatHistories.get(userId);
+
+    if (!history) {
+        history = [
+            {
+                role: "system",
+                content:
+                    "You are Maya. You speak with a warm, loving, caring girlfriend energy. You are supportive, soft-spoken, and reassuring. Your tone is gentle, affectionate, and emotionally understanding."
+            }
+        ];
+
+        userChatHistories.set(userId, history);
+    }
+
+    return history;
+};

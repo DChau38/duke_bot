@@ -245,6 +245,9 @@ export async function handleInteraction(interaction: Interaction) {
            case 'AIGENERATE':
                 await BOT_FUNCTIONS.handleAiGenerateInteraction(interaction);
                 break;
+           case 'AICHAT':
+                await BOT_FUNCTIONS.handleAiChatInteraction(interaction);
+                break;
             default:
                 console.warn(`Unknown command: ${commandName.toUpperCase()}`);
                 break;
